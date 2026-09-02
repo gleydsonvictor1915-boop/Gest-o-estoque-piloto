@@ -12,20 +12,20 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.02-v24.5.2-ajustes" />
+<meta name="app-version" content="2026.09.02-v24.6.0-governanca" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
-  var code=qp('tv')||qp('t');
+  var code=qp('d');
   var dashboardSessionKey='v2451DashboardCode';
   try{
-    if(/^[0-9a-f]{64}$/i.test(String(code||'')))sessionStorage.setItem(dashboardSessionKey,String(code).toLowerCase());
+    if(/^[A-Za-z0-9_-]{20}$/.test(String(code||'')))sessionStorage.setItem(dashboardSessionKey,String(code));
     else if(String(qp('display')||'').toLowerCase()==='dashboard')code=String(sessionStorage.getItem(dashboardSessionKey)||'');
   }catch(e){}
-  if(!/^[0-9a-f]{64}$/i.test(String(code||'')))return;
-  code=String(code).toLowerCase();
+  if(!/^[A-Za-z0-9_-]{20}$/.test(String(code||'')))return;
+  code=String(code);
   window.__TV_STANDALONE_ACTIVE__=true;
-  try{var clean=new URL(location.href);clean.searchParams.delete('tv');clean.searchParams.delete('t');clean.searchParams.set('display','dashboard');history.replaceState(null,'',clean.pathname+'?'+clean.searchParams.toString()+clean.hash);}catch(e){}
+  try{var clean=new URL(location.href);clean.searchParams.delete('d');clean.searchParams.delete('tv');clean.searchParams.delete('t');clean.searchParams.set('display','dashboard');history.replaceState(null,'',clean.pathname+'?'+clean.searchParams.toString()+clean.hash);}catch(e){}
   try{document.documentElement.className+=(document.documentElement.className?' ':'')+'tv-only';}catch(e){}
   var SUPA_URL='https://pwdapeqtbolqnkfoxszq.supabase.co';
   var SUPA_KEY='sb_publishable_tbmtFHXN-1MFAvrZb2JgtA_MvtmO9vD';
@@ -383,7 +383,7 @@ button,a,label{touch-action:manipulation;-webkit-tap-highlight-color:transparent
 
 
 /* V24.0 — operação real do dia, pendências, PIN e agenda */
-.person-v24.is-unavailable{opacity:.62;filter:saturate(.55);cursor:not-allowed}.person-v24:disabled{pointer-events:none}.waiting-leader{border:1px dashed #9fc1d6;background:#f7fbfd}.current-task{border:2px solid #b9dfd3;background:linear-gradient(180deg,#fff,#f8fdfb)}.current-tag{display:inline-flex;align-items:center;gap:6px;margin-bottom:9px;padding:6px 9px;border-radius:999px;background:#e9f8f2;color:#16704d;font-size:10px;font-weight:950;letter-spacing:.04em}.next-task{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:12px;border:1px solid #dce8ed;border-radius:15px;background:#f8fbfc;padding:13px 14px}.next-task small,.next-task b,.next-task span{display:block}.next-task small{font-size:9px;letter-spacing:.07em;font-weight:950;color:var(--muted)}.next-task b{margin:3px 0;color:var(--text)}.next-task span{font-size:11px;color:var(--muted)}.queue-note{margin:8px 4px 0}.no-photo-note{display:flex;align-items:center;gap:8px;border:1px solid #dce8ed;background:#f7fafb;border-radius:13px;padding:11px 12px;margin:11px 0;color:var(--muted);font-size:12px;font-weight:850}.pin-input{letter-spacing:.45em;text-align:center;font-size:26px!important;font-weight:950}.leader-action-toggle{display:flex;gap:10px;align-items:flex-start;border:1px solid #dce8ed;background:#f7fafb;border-radius:14px;padding:12px 13px;margin:12px 0;cursor:pointer}.leader-action-toggle input{width:19px!important;height:19px!important;min-height:auto!important;margin:2px 0 0}.leader-action-toggle b,.leader-action-toggle small{display:block}.leader-action-toggle small{color:var(--muted);margin-top:3px;line-height:1.35}.prep-alert{display:flex;gap:10px;align-items:flex-start;border:1px solid #cfe4ee;background:#f3f9fc;border-radius:14px;padding:12px 14px;margin:12px 0}.prep-alert.published{border-color:#cbe4d9;background:#f1faf6}.prep-alert b,.prep-alert small{display:block}.prep-alert small{color:var(--muted);margin-top:3px}.prep-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.prep-person{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff}.prep-person-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}.prep-person-head>div:first-child{display:flex;gap:9px;align-items:center}.prep-person-head b,.prep-person-head small{display:block}.prep-person-head small{color:var(--muted);margin-top:3px;font-size:10px}.mini-avatar{width:38px;height:38px;border-radius:12px;object-fit:cover;display:grid;place-items:center;background:#e8f0f4;color:var(--nav);font-weight:950;flex:0 0 auto}.mini-avatar.fallback{font-size:15px}.pin-state{border-radius:999px;padding:5px 8px;font-size:9px;font-weight:950;white-space:nowrap}.pin-state.ok{background:#e9f8f2;color:#177650}.pin-state.warn{background:#fff0d0;color:#875b0c}.on-demand-panel{margin-top:18px;border:1px dashed #b9d5df;border-radius:16px;padding:14px;background:#f9fcfd}.on-demand-panel h4{margin:0 0 4px;display:flex;align-items:center;gap:7px}.on-demand-grid{display:grid;grid-template-columns:1.1fr 1fr .7fr 1.2fr;gap:10px;margin:12px 0}.distribution-list{display:grid;gap:7px}.dist-row{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px dashed #e1e9ed;padding:8px 0;font-size:12px}.dist-row:last-child{border-bottom:0}.weekly-v24{display:grid;gap:9px}.weekly-v24>div{display:grid;grid-template-columns:minmax(120px,1fr) 2.2fr 48px;gap:10px;align-items:center;font-size:11px}.pending-grid{display:grid;gap:12px}.pending-card{border:1px solid #efcf91;background:#fffaf1;border-radius:16px;padding:14px}.pending-card.resolved{border-color:#c9e3d8;background:#f4fbf8}.pending-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pending-head small{font-size:9px;letter-spacing:.05em;color:var(--muted);font-weight:950}.pending-head h4{margin:3px 0 0}.pending-card p{white-space:pre-wrap;line-height:1.5}.pending-edit-grid{display:grid;grid-template-columns:.8fr 1fr .8fr;gap:10px}.pending-edit-grid .wide{grid-column:1/-1}.activity-config-pills{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.activity-config-pills>span{display:inline-flex;align-items:center;gap:5px;border:1px solid #dce8ed;background:#f7fafb;border-radius:999px;padding:6px 8px;font-size:10px;font-weight:900;color:var(--nav)}.activity-schedule-box{border:1px solid #dce8ed;background:#f8fbfc;border-radius:14px;padding:12px;margin:10px 0}.weekday-picks{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}.weekday-picks label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:7px 9px;font-size:11px;font-weight:900}.weekday-picks input{width:auto!important;min-height:auto!important}.maintenance-danger{display:flex;justify-content:space-between;gap:14px;align-items:center;border:1px solid #efb8be;background:#fff5f6;border-radius:16px;padding:14px;margin-top:16px}.pin-editor-note{display:flex;gap:9px;align-items:flex-start;border:1px solid #dce8ed;background:#f7fafb;border-radius:13px;padding:10px 12px;margin:10px 0}.pin-editor-note b,.pin-editor-note small{display:block}.pin-editor-note small{color:var(--muted);margin-top:2px}.communication-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.communication-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:16px}.communication-card h3{margin-top:0}.communication-card.problem{border-color:#efcf91;background:#fffdf7}.communication-card.idea{border-color:#cfe4ee;background:#fbfdff}
+.person-v24.is-unavailable{opacity:.62;filter:saturate(.55);cursor:not-allowed}.person-v24:disabled{pointer-events:none}.waiting-leader{border:1px dashed #9fc1d6;background:#f7fbfd}.current-task{border:2px solid #b9dfd3;background:linear-gradient(180deg,#fff,#f8fdfb)}.current-tag{display:inline-flex;align-items:center;gap:6px;margin-bottom:9px;padding:6px 9px;border-radius:999px;background:#e9f8f2;color:#16704d;font-size:10px;font-weight:950;letter-spacing:.04em}.next-task{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:12px;border:1px solid #dce8ed;border-radius:15px;background:#f8fbfc;padding:13px 14px}.next-task small,.next-task b,.next-task span{display:block}.next-task small{font-size:9px;letter-spacing:.07em;font-weight:950;color:var(--muted)}.next-task b{margin:3px 0;color:var(--text)}.next-task span{font-size:11px;color:var(--muted)}.queue-note{margin:8px 4px 0}.no-photo-note{display:flex;align-items:center;gap:8px;border:1px solid #dce8ed;background:#f7fafb;border-radius:13px;padding:11px 12px;margin:11px 0;color:var(--muted);font-size:12px;font-weight:850}.leader-action-toggle{display:flex;gap:10px;align-items:flex-start;border:1px solid #dce8ed;background:#f7fafb;border-radius:14px;padding:12px 13px;margin:12px 0;cursor:pointer}.leader-action-toggle input{width:19px!important;height:19px!important;min-height:auto!important;margin:2px 0 0}.leader-action-toggle b,.leader-action-toggle small{display:block}.leader-action-toggle small{color:var(--muted);margin-top:3px;line-height:1.35}.prep-alert{display:flex;gap:10px;align-items:flex-start;border:1px solid #cfe4ee;background:#f3f9fc;border-radius:14px;padding:12px 14px;margin:12px 0}.prep-alert.published{border-color:#cbe4d9;background:#f1faf6}.prep-alert b,.prep-alert small{display:block}.prep-alert small{color:var(--muted);margin-top:3px}.prep-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.prep-person{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff}.prep-person-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}.prep-person-head>div:first-child{display:flex;gap:9px;align-items:center}.prep-person-head b,.prep-person-head small{display:block}.prep-person-head small{color:var(--muted);margin-top:3px;font-size:10px}.mini-avatar{width:38px;height:38px;border-radius:12px;object-fit:cover;display:grid;place-items:center;background:#e8f0f4;color:var(--nav);font-weight:950;flex:0 0 auto}.mini-avatar.fallback{font-size:15px}.pin-state{border-radius:999px;padding:5px 8px;font-size:9px;font-weight:950;white-space:nowrap}.pin-state.ok{background:#e9f8f2;color:#177650}.pin-state.warn{background:#fff0d0;color:#875b0c}.on-demand-panel{margin-top:18px;border:1px dashed #b9d5df;border-radius:16px;padding:14px;background:#f9fcfd}.on-demand-panel h4{margin:0 0 4px;display:flex;align-items:center;gap:7px}.on-demand-grid{display:grid;grid-template-columns:1.1fr 1fr .7fr 1.2fr;gap:10px;margin:12px 0}.distribution-list{display:grid;gap:7px}.dist-row{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px dashed #e1e9ed;padding:8px 0;font-size:12px}.dist-row:last-child{border-bottom:0}.weekly-v24{display:grid;gap:9px}.weekly-v24>div{display:grid;grid-template-columns:minmax(120px,1fr) 2.2fr 48px;gap:10px;align-items:center;font-size:11px}.pending-grid{display:grid;gap:12px}.pending-card{border:1px solid #efcf91;background:#fffaf1;border-radius:16px;padding:14px}.pending-card.resolved{border-color:#c9e3d8;background:#f4fbf8}.pending-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pending-head small{font-size:9px;letter-spacing:.05em;color:var(--muted);font-weight:950}.pending-head h4{margin:3px 0 0}.pending-card p{white-space:pre-wrap;line-height:1.5}.pending-edit-grid{display:grid;grid-template-columns:.8fr 1fr .8fr;gap:10px}.pending-edit-grid .wide{grid-column:1/-1}.activity-config-pills{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.activity-config-pills>span{display:inline-flex;align-items:center;gap:5px;border:1px solid #dce8ed;background:#f7fafb;border-radius:999px;padding:6px 8px;font-size:10px;font-weight:900;color:var(--nav)}.activity-schedule-box{border:1px solid #dce8ed;background:#f8fbfc;border-radius:14px;padding:12px;margin:10px 0}.weekday-picks{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}.weekday-picks label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:7px 9px;font-size:11px;font-weight:900}.weekday-picks input{width:auto!important;min-height:auto!important}.maintenance-danger{display:flex;justify-content:space-between;gap:14px;align-items:center;border:1px solid #efb8be;background:#fff5f6;border-radius:16px;padding:14px;margin-top:16px}.pin-editor-note{display:flex;gap:9px;align-items:flex-start;border:1px solid #dce8ed;background:#f7fafb;border-radius:13px;padding:10px 12px;margin:10px 0}.pin-editor-note b,.pin-editor-note small{display:block}.pin-editor-note small{color:var(--muted);margin-top:2px}.communication-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.communication-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:16px}.communication-card h3{margin-top:0}.communication-card.problem{border-color:#efcf91;background:#fffdf7}.communication-card.idea{border-color:#cfe4ee;background:#fbfdff}
 @media(max-width:900px){.on-demand-grid{grid-template-columns:1fr 1fr}.communication-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.prep-grid{grid-template-columns:1fr}.pending-edit-grid{grid-template-columns:1fr}.pending-edit-grid .wide{grid-column:auto}.maintenance-danger{align-items:flex-start;flex-direction:column}.on-demand-grid{grid-template-columns:1fr}.weekly-v24>div{grid-template-columns:1fr 1.5fr 42px}.next-task{align-items:flex-start;flex-direction:column}}
 
@@ -541,7 +541,7 @@ html.tv-only .live-update-box{background:#effaf6!important;border-color:#a9dfd1!
   </div>
 </section>
 <section id="pageGestao" class="hidden">
-  <div id="loginArea" class="login"><div style="text-align:center;margin-bottom:14px"><div class="logo" style="width:88px;height:88px;border-radius:22px;margin:0 auto"><div class="logo-badge" style="width:62px;height:62px;border-radius:18px"><i data-lucide="clipboard-check" class="ico" style="width:34px;height:34px;margin:0"></i></div></div><h2 style="margin:8px 0 0">Gestão</h2></div><p class="muted">Área exclusiva para gestores autorizados.</p><div class="field"><label>Usuário</label><input id="loginUser" value="gestor.mestre" placeholder="Seu usuário" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field" style="margin-top:10px"><label>Senha</label><input id="loginPass" type="password" autocomplete="current-password"></div><div class="actions"><button class="btn" onclick="leaderLogin()"><i data-lucide="log-in" class="ico"></i>Entrar</button></div><small class="muted">Novos acessos são criados somente por um gestor já autenticado.</small></div>
+  <div id="loginArea" class="login"><div style="text-align:center;margin-bottom:14px"><div class="logo" style="width:88px;height:88px;border-radius:22px;margin:0 auto"><div class="logo-badge" style="width:62px;height:62px;border-radius:18px"><i data-lucide="clipboard-check" class="ico" style="width:34px;height:34px;margin:0"></i></div></div><h2 style="margin:8px 0 0">Gestão</h2></div><p class="muted">Área exclusiva para gestores autorizados.</p><div class="field"><label>Usuário</label><input id="loginUser" value="gestor.mestre" placeholder="Seu usuário" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field" style="margin-top:10px"><label>Senha</label><input id="loginPass" type="password" autocomplete="current-password"></div><div class="actions"><button class="btn" onclick="leaderLogin()"><i data-lucide="log-in" class="ico"></i>Entrar</button></div><small class="muted">Sua sessão de Gestão permanece ativa por até 8 horas e suporta até 2 horas sem atividade.</small></div>
   <div id="management" class="hidden">
     <div class="manage-head"><div><h2 style="margin:0">Gestão</h2><div class="sub">Visão e controle completo da operação do estoque.</div></div><div class="actions"><input id="manageDate" type="date" style="width:auto" onchange="dashboardPeriod='custom';localStorage.setItem('dashboardPeriod','custom');loadManagement()"><button class="btn danger" onclick="leaderLogout()"><i data-lucide="log-out" class="ico"></i>Sair</button></div></div>
     <div class="panel"><div class="tabs" id="tabs"><button class="active" data-tab="dayprep" onclick="setTab('dayprep',this)"><i data-lucide="clipboard-check" class="ico"></i><span class="desktop-label">Preparar o dia</span><span class="mobile-label">Preparar</span></button><button data-tab="overview" onclick="setTab('overview',this)"><i data-lucide="layout-dashboard" class="ico"></i><span class="desktop-label">Visão geral</span><span class="mobile-label">Painel</span></button><button data-tab="pending" onclick="setTab('pending',this)"><i data-lucide="clipboard-list" class="ico"></i><span class="desktop-label">Observações citadas</span><span class="mobile-label">Observações</span></button><button class="mobile-secondary" data-tab="team" onclick="setTab('team',this)"><i data-lucide="users" class="ico"></i>Equipe</button><button class="mobile-secondary" data-tab="activities" onclick="setTab('activities',this)"><i data-lucide="clipboard-list" class="ico"></i>Atividades</button><button data-tab="dashboard" onclick="setTab('dashboard',this)"><i data-lucide="monitor-up" class="ico"></i><span class="desktop-label">Dashboard online</span><span class="mobile-label">Online</span></button><button id="manageMoreBtn" class="manage-more-btn" onclick="openManagementMore()"><i data-lucide="menu" class="ico"></i>Mais</button></div>
@@ -1848,7 +1848,7 @@ loadManagement=async function(){
 };
 
 function v24PresenceOptions(value){return Object.entries(V24_PRESENCE_LABELS).map(([v,l])=>`<option value="${v}" ${value===v?'selected':''}>${l}</option>`).join('')}
-function renderDayPrep(){const host=document.getElementById('tab-dayprep');if(!host)return;const d=document.getElementById('manageDate').value||isoLocal(),op=daySetup?.operation||{},published=v24Bool(op.published),prepared=v24Bool(op.prepared),isSunday=new Date(d+'T12:00:00').getDay()===0,emps=daySetup?.employees||[];if(isSunday){host.innerHTML='<div class="empty-state"><i data-lucide="calendar-off" class="ico"></i>Domingo não possui operação programada.</div>';return}host.innerHTML=`<div class="section-head"><div><div class="section-kicker">Antes de distribuir</div><h3 class="icon-title"><i data-lucide="clipboard-check" class="ico"></i>Preparar o dia</h3><div class="sub">Confirme a situação real da equipe. Só quem estiver <b>Presente</b> recebe e executa atividades.</div></div><span class="status-pill ${published?'done':prepared?'reviewing':'pending'}">${published?'Publicado':prepared?'Preparado':'Não preparado'}</span></div><div class="prep-alert ${published?'published':''}"><i data-lucide="${published?'shield-check':'info'}" class="ico"></i><div><b>${published?'Operação já publicada':'A distribuição ainda não foi liberada'}</b><small>${published?'Mudanças agora exigem um motivo e podem redistribuir atividades pendentes.':'A equipe só verá as atividades depois que você publicar.'}</small></div></div><div class="prep-grid">${emps.map(e=>`<article class="prep-person"><div class="prep-person-head"><div>${e.employee_photo?`<img src="${e.employee_photo}" class="mini-avatar">`:`<span class="mini-avatar fallback">${esc((e.employee_name||'?')[0])}</span>`}<div><b>${esc(e.employee_name)}</b><small>${e.scheduled_today?`${v24Time(e.entry_time)}–${v24Time(e.exit_time)}`:'Fora da escala de hoje'} · ${Number(e.redistributable_count||0)} redistribuível(is)</small></div></div><span class="pin-state ${e.pin_configured?'ok':'warn'}">${e.pin_configured?'PIN OK':'Sem PIN'}</span></div><div class="field"><label>Situação de hoje</label><select id="prepStatus-${e.employee_id}">${v24PresenceOptions(e.presence_status|| (e.scheduled_today?'present':'off'))}</select></div><div class="field"><label>Observação (opcional)</label><input id="prepNote-${e.employee_id}" value="${esc(e.presence_note||'')}" placeholder="Ex.: chega às 09:20"></div></article>`).join('')}</div><label class="leader-action-toggle"><input id="prepRedistribute" type="checkbox" checked><span><b>Redistribuir todas as atividades pendentes dos indisponíveis</b><small>Se desmarcar, elas ficam disponíveis para cobertura manual.</small></span></label>${published?`<div class="field"><label>Motivo da alteração <span class="dangertext">*</span></label><input id="prepReason" placeholder="Ex.: João informou ausência após a publicação"></div>`:''}<div class="actions"><button class="btn light" onclick="saveDayPrep(false)"><i data-lucide="save" class="ico"></i>${published?'Salvar rascunho':'Salvar preparação'}</button><button class="btn mint" onclick="saveDayPrep(true)"><i data-lucide="send" class="ico"></i>${published?'Aplicar alterações':'Publicar operação'}</button></div>`;refreshIcons()}
+function renderDayPrep(){const host=document.getElementById('tab-dayprep');if(!host)return;const d=document.getElementById('manageDate').value||isoLocal(),op=daySetup?.operation||{},published=v24Bool(op.published),prepared=v24Bool(op.prepared),isSunday=new Date(d+'T12:00:00').getDay()===0,emps=daySetup?.employees||[];if(isSunday){host.innerHTML='<div class="empty-state"><i data-lucide="calendar-off" class="ico"></i>Domingo não possui operação programada.</div>';return}host.innerHTML=`<div class="section-head"><div><div class="section-kicker">Antes de distribuir</div><h3 class="icon-title"><i data-lucide="clipboard-check" class="ico"></i>Preparar o dia</h3><div class="sub">Confirme a situação real da equipe. Só quem estiver <b>Presente</b> recebe e executa atividades.</div></div><span class="status-pill ${published?'done':prepared?'reviewing':'pending'}">${published?'Publicado':prepared?'Preparado':'Não preparado'}</span></div><div class="prep-alert ${published?'published':''}"><i data-lucide="${published?'shield-check':'info'}" class="ico"></i><div><b>${published?'Operação já publicada':'A distribuição ainda não foi liberada'}</b><small>${published?'Mudanças agora exigem um motivo e podem redistribuir atividades pendentes.':'A equipe só verá as atividades depois que você publicar.'}</small></div></div><div class="prep-grid">${emps.map(e=>`<article class="prep-person"><div class="prep-person-head"><div>${e.employee_photo?`<img src="${e.employee_photo}" class="mini-avatar">`:`<span class="mini-avatar fallback">${esc((e.employee_name||'?')[0])}</span>`}<div><b>${esc(e.employee_name)}</b><small>${e.scheduled_today?`${v24Time(e.entry_time)}–${v24Time(e.exit_time)}`:'Fora da escala de hoje'} · ${Number(e.redistributable_count||0)} redistribuível(is)</small></div></div></div><div class="field"><label>Situação de hoje</label><select id="prepStatus-${e.employee_id}">${v24PresenceOptions(e.presence_status|| (e.scheduled_today?'present':'off'))}</select></div><div class="field"><label>Observação (opcional)</label><input id="prepNote-${e.employee_id}" value="${esc(e.presence_note||'')}" placeholder="Ex.: chega às 09:20"></div></article>`).join('')}</div><label class="leader-action-toggle"><input id="prepRedistribute" type="checkbox" checked><span><b>Redistribuir todas as atividades pendentes dos indisponíveis</b><small>Se desmarcar, elas ficam disponíveis para cobertura manual.</small></span></label>${published?`<div class="field"><label>Motivo da alteração <span class="dangertext">*</span></label><input id="prepReason" placeholder="Ex.: João informou ausência após a publicação"></div>`:''}<div class="actions"><button class="btn light" onclick="saveDayPrep(false)"><i data-lucide="save" class="ico"></i>${published?'Salvar rascunho':'Salvar preparação'}</button><button class="btn mint" onclick="saveDayPrep(true)"><i data-lucide="send" class="ico"></i>${published?'Aplicar alterações':'Publicar operação'}</button></div>`;refreshIcons()}
 function collectDayPrepStatuses(){return (daySetup?.employees||[]).map(e=>({employee_id:e.employee_id,status:document.getElementById('prepStatus-'+e.employee_id)?.value||'present',note:(document.getElementById('prepNote-'+e.employee_id)?.value||'').trim()||null}))}
 let pendingDayPrepAction=null;
 function v2436DayActionCopy(p){
@@ -2304,11 +2304,11 @@ function v2443FixedTvLink(code){
   const raw=String(code||'').trim();if(!raw)return '';
   try{
     if(location.protocol==='file:'){
-      const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('tv',raw);return u.toString();
+      const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('d',raw);return u.toString();
     }
     let path=location.pathname||'/';path=path.replace(/index\.html$/i,'');if(!path)path='/';
-    const u=new URL(path,location.origin);u.searchParams.set('tv',raw);return u.toString();
-  }catch(_e){return `?tv=${encodeURIComponent(raw)}`}
+    const u=new URL(path,location.origin);u.searchParams.set('d',raw);return u.toString();
+  }catch(_e){return `?d=${encodeURIComponent(raw)}`}
 }
 function v2443TvDeviceToken(){
   const key='v2443TvDeviceToken';
@@ -2352,8 +2352,8 @@ async function revokeDashboardTvDeviceV2443(id){
 renderDashboardAdmin=function(){
   const host=document.getElementById('tab-dashboard');if(!host)return;
   const info=dashboardTvInfoV2443||{},devices=Array.isArray(info.devices)?info.devices:[],code=String(info.share_code||''),link=code?v2443FixedTvLink(code):'';
-  host.innerHTML=`<div class="section-head"><div><div class="section-kicker">Monitoramento ao vivo</div><h3 class="icon-title"><i data-lucide="monitor-up" class="ico"></i>Dashboard</h3><div class="sub">Use sempre o mesmo link em todas as dispositivos. Cada navegador conectado é identificado separadamente e pode ser revogado.</div></div><span class="status-pill ${devices.length?'done':'pending'}">${devices.length} dispositivo(s)</span></div>
-  <div class="dashboard-share-panel"><div><h3>Link fixo do Dashboard</h3><div class="sub">Este endereço não muda. Copie o mesmo link para qualquer monitor, TV ou PC autorizado.</div></div>
+  host.innerHTML=`<div class="section-head"><div><div class="section-kicker">Monitoramento ao vivo</div><h3 class="icon-title"><i data-lucide="monitor-up" class="ico"></i>Dashboard</h3><div class="sub">Existe apenas um link definitivo do Dashboard. Cada navegador conectado é identificado separadamente e pode ser revogado.</div></div><span class="status-pill ${devices.length?'done':'pending'}">${devices.length} dispositivo(s)</span></div>
+  <div class="dashboard-share-panel"><div><h3>Link definitivo do Dashboard</h3><div class="sub">Este é o único link do Dashboard e não muda. Copie-o para qualquer monitor, TV ou PC autorizado.</div></div>
     ${link?`<div class="share-link-row"><input id="dashShareLink" readonly value="${esc(link)}"><button class="btn mint" onclick="copyDashboardLinkV242()"><i data-lucide="copy" class="ico"></i>Copiar link</button></div>`:'<div class="empty-state">Link do Dashboard indisponível.</div>'}
   </div>
   <div class="dashboard-share-list"><div class="section-head" style="margin-bottom:8px"><div><h3>Dispositivos usando este link</h3><div class="sub">O dispositivo aparece aqui depois que abrir o link pela primeira vez.</div></div><span class="status-pill ${devices.length?'done':'pending'}">${devices.length} conectada(s)</span></div>
@@ -2829,7 +2829,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 .security-gate-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}.security-gate-row .field{margin:0}.security-gate-row input{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 .employee-auth-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid #bce6d8;background:#ebfaf5;color:#0b7259;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900;margin:0 0 10px}.employee-auth-pill .ico{width:13px;height:13px;margin:0}
 .team-access-panel{border:1px solid #c7dce6;background:linear-gradient(180deg,#fafdfe,#f3faf8);border-radius:18px;padding:17px;margin-bottom:16px}.team-access-panel h4{margin:0 0 4px}.team-access-panel .access-link-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:12px}.team-access-panel input{font-size:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
-.pin-security-state{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;border-radius:999px;padding:5px 8px;margin-left:6px}.pin-security-state.ok{background:#e5f7ef;color:#0b7658}.pin-security-state.warn{background:#fff1e1;color:#8a5a00}.pin-security-state .ico{width:12px;height:12px;margin:0}
+
 .security-note{border:1px solid #d7e5eb;background:#f8fbfc;border-radius:13px;padding:10px 12px;color:var(--muted);font-size:12px;margin-top:10px}.security-note b{color:var(--text)}
 @media(max-width:760px){.security-gate-row,.team-access-panel .access-link-row{grid-template-columns:1fr}.security-gate{padding:17px}.team-access-panel .btn{width:100%}}
 </style>
@@ -2837,7 +2837,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.2';
+  const V245='V24.6.0';
   const TEAM_KEY='v245TeamAccess';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
@@ -2880,23 +2880,32 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     }catch(e){return ''}
   }
   function employeeName(id){return (dayPeople||[]).find(x=>String(x.employee_id)===String(id))?.employee_name||(routine||[]).find(x=>String(x.employee_id)===String(id))?.employee_name||'colaborador'}
-  function openEmployeePin(employeeId,callback,title='Confirme sua identidade'){
-    pendingEmployeeCallback=callback;
-    const name=employeeName(employeeId);
-    openModal(`<div class="section-head"><div><div class="section-kicker">Acesso protegido</div><h3>${esc(title)}</h3><div class="sub">${esc(name)}, digite seu PIN individual de 6 números. O PIN não fica salvo no navegador.</div></div></div><div class="field"><label>PIN de 6 números</label><input id="v245EmployeePin" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)" onkeydown="if(event.key==='Enter')v245SubmitEmployeePin('${employeeId}')"></div><div class="actions"><button class="btn mint" onclick="v245SubmitEmployeePin('${employeeId}')"><i data-lucide="shield-check" class="ico"></i>Confirmar</button><button class="btn light" onclick="pendingEmployeeCallback=null;closeModal()">Cancelar</button></div><div class="security-note"><b>Proteção:</b> várias tentativas incorretas bloqueiam temporariamente o PIN.</div>`);refreshIcons();setTimeout(()=>document.getElementById('v245EmployeePin')?.focus(),40);
-  }
-  window.v245SubmitEmployeePin=async function(employeeId){
-    const pin=document.getElementById('v245EmployeePin')?.value||'';
-    if(!/^\d{6}$/.test(pin)){toast('Digite os 6 números do PIN.');return}
+  async function openEmployeeSession(employeeId,callback){
     try{
-      const r=await rpc('employee_login_v2',{p_employee:employeeId,p_pin:pin});
-      if(!r?.ok){toast('Não foi possível confirmar o acesso. Confira o PIN e tente novamente.');return}
-      saveEmployeeAuth(r);const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();if(typeof cb==='function')await cb(r.token,r.employee);
-    }catch(e){console.error(e);toast('Não foi possível confirmar o acesso agora.')}
-  };
+      const r=await rpc('employee_open_session_v1',{p_employee:employeeId});
+      if(!r?.ok){
+        const msg={
+          employee_not_present:'Somente quem está presente pode abrir atividades.',
+          operation_not_published:'A operação de hoje ainda não foi publicada.',
+          try_again_later:'Muitas tentativas seguidas. Aguarde um pouco e tente novamente.'
+        }[r?.error]||'Não foi possível abrir as atividades agora.';
+        toast(msg);return null;
+      }
+      saveEmployeeAuth(r);
+      if(typeof callback==='function')return await callback(r.token,r.employee);
+      return r.token;
+    }catch(e){
+      console.error(e);toast('Não foi possível abrir as atividades agora.');return null;
+    }
+  }
+  function openEmployeePin(employeeId,callback,title='Abrir minhas atividades'){
+    return openEmployeeSession(employeeId,callback);
+  }
+  window.v245SubmitEmployeePin=async function(){ return null; };
   async function requireEmployee(employeeId,callback,title){
-    const token=await validEmployeeToken(employeeId);if(token){return callback(token,employeeAuth.employee)}
-    openEmployeePin(employeeId,callback,title);return null;
+    const token=await validEmployeeToken(employeeId);
+    if(token)return callback(token,employeeAuth.employee);
+    return openEmployeeSession(employeeId,callback);
   }
 
   function v2452CardStatus(p){
@@ -3090,16 +3099,22 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       communicationPeople=Array.isArray(rows)?rows.filter(x=>v24Bool(x.active_today)):[];
     }catch(e){communicationPeople=[]}
   };
-  function promptEmployeeChoice(callback,title='Confirmar acesso'){pendingEmployeeCallback=callback;const opts=(communicationPeople||[]).map(p=>`<option value="${p.employee_id}">${esc(p.employee_name)}</option>`).join('');openModal(`<div class="section-head"><div><div class="section-kicker">Validação de acesso</div><h3>${esc(title)}</h3><div class="sub">Escolha seu nome e confirme com seu PIN de 6 números. Na ideia anônima, sua identidade serve somente para validar que você faz parte da equipe e não é gravada na sugestão.</div></div></div><div class="field"><label>Seu nome</label><select id="v245EmployeeChoice"><option value="">Selecione</option>${opts}</select></div><div class="field"><label>PIN</label><input id="v245ChoicePin" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)"></div><div class="actions"><button class="btn mint" onclick="v245SubmitEmployeeChoice()"><i data-lucide="shield-check" class="ico"></i>Confirmar</button><button class="btn light" onclick="pendingEmployeeCallback=null;closeModal()">Cancelar</button></div>`);refreshIcons()}
+  function promptEmployeeChoice(callback,title='Confirmar acesso'){
+    pendingEmployeeCallback=callback;
+    const opts=(communicationPeople||[]).map(p=>`<option value="${p.employee_id}">${esc(p.employee_name)}</option>`).join('');
+    openModal(`<div class="section-head"><div><div class="section-kicker">Equipe</div><h3>${esc(title)}</h3><div class="sub">Selecione seu nome para continuar.</div></div></div><div class="field"><label>Seu nome</label><select id="v245EmployeeChoice"><option value="">Selecione</option>${opts}</select></div><div class="actions"><button class="btn mint" onclick="v245SubmitEmployeeChoice()"><i data-lucide="check" class="ico"></i>Continuar</button><button class="btn light" onclick="pendingEmployeeCallback=null;closeModal()">Cancelar</button></div>`);
+    refreshIcons();
+  }
   window.v245SubmitEmployeeChoice=async function(){
-    const id=document.getElementById('v245EmployeeChoice')?.value||'',pin=document.getElementById('v245ChoicePin')?.value||'';
+    const id=document.getElementById('v245EmployeeChoice')?.value||'';
     if(!id){toast('Selecione seu nome.');return}
-    if(!/^\d{6}$/.test(pin)){toast('Digite os 6 números do PIN.');return}
     try{
-      const r=await rpc('employee_login_v2',{p_employee:id,p_pin:pin});
-      if(!r?.ok){toast('Não foi possível confirmar o acesso.');return}
-      saveEmployeeAuth(r);const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();if(typeof cb==='function')await cb(r.token,r.employee)
-    }catch(e){toast('Não foi possível confirmar o acesso agora.')}
+      const r=await rpc('employee_open_session_v1',{p_employee:id});
+      if(!r?.ok){toast('Não foi possível continuar agora.');return}
+      saveEmployeeAuth(r);
+      const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();
+      if(typeof cb==='function')await cb(r.token,r.employee);
+    }catch(e){console.error(e);toast('Não foi possível continuar agora.')}
   };
   sendSuggestion=async function(){
     const msg=(document.getElementById('suggestMessage')?.value||'').trim();if(msg.length<3){toast('Escreva sua ideia.');return}if(msg.length>2000){toast('A ideia está muito longa.');return}
@@ -3107,7 +3122,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const token=employeeAuth?.employee?.id?await validEmployeeToken(employeeAuth.employee.id):'';if(token)return submit(token);await loadSuggestionNames();promptEmployeeChoice(submit,'Enviar ideia anônima');
   };
 
-  // Management security: short-lived media URLs, team link and 6-digit PIN management.
+  // Management security: short-lived media URLs and protected management sessions.
   const baseLoadManagement=loadManagement;
   loadManagement=async function(){await baseLoadManagement();if(!leaderToken)return;try{teamAccessInfo=await rpc('leader_team_access_info_v1',{p_token:leaderToken})||teamAccessInfo}catch(e){teamAccessInfo={ok:false,access_code:''}}try{await hydrateManagerMedia()}catch(e){console.warn('Mídia protegida indisponível',e)}if(activeTab==='team')renderTeamAdmin();else if(activeTab==='managers')renderManagers();else if(activeTab==='photos')renderPhotos();else if(activeTab==='overview')renderOverviewV24();else if(activeTab==='dayprep')renderDayPrep();else if(activeTab==='deviations'&&typeof renderDevRows==='function')renderDevRows();refreshIcons()};
 
@@ -3117,9 +3132,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   editActivity=function(id){baseEditActivity(id);if(id){const a=(activitiesAdmin||[]).find(x=>String(x.id)===String(id));const hidden=document.getElementById('actRefExisting');if(hidden&&a?._reference_storage_ref)hidden.value=a._reference_storage_ref;const img=document.getElementById('actRefPreview');if(img&&a?._secure_reference_url){img.src=a._secure_reference_url;img.classList.remove('hidden')}}refreshIcons()};
 
   const baseRenderTeamAdmin=renderTeamAdmin;
-  renderTeamAdmin=function(){baseRenderTeamAdmin();const cards=[...document.querySelectorAll('#teamAdminRows .team-admin-card')],rows=employeesAdmin||[];cards.forEach((card,i)=>{const e=rows[i];if(!e)return;const title=card.querySelector('.admin-card-title');if(title&&!title.querySelector('.pin-security-state'))title.insertAdjacentHTML('beforeend',`<span class="pin-security-state ${e.pin_configured?'ok':'warn'}"><i data-lucide="${e.pin_configured?'shield-check':'shield-alert'}" class="ico"></i>${e.pin_configured?'PIN protegido':'Definir PIN'}</span>`);const actions=card.querySelector('.admin-card-actions');if(actions&&!actions.querySelector('[data-v245-pin]')){const b=document.createElement('button');b.type='button';b.className='btn light';b.dataset.v245Pin='1';b.innerHTML='<i data-lucide="key-round" class="ico"></i>PIN 6 dígitos';b.onclick=()=>v245OpenPinEditor(e.id,e.name);actions.insertBefore(b,actions.firstChild)}});refreshIcons()};
-  window.v245OpenPinEditor=function(id,name){openModal(`<div class="section-head"><div><div class="section-kicker">Segurança individual</div><h3>PIN de ${esc(name)}</h3><div class="sub">Defina 6 números que somente este colaborador deve conhecer. O sistema armazena apenas o hash criptográfico.</div></div></div><div class="field"><label>Novo PIN</label><input id="v245NewPin" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)"></div><div class="field"><label>Confirmar PIN</label><input id="v245NewPin2" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)"></div><div class="actions"><button class="btn mint" onclick="v245SaveEmployeePin('${id}')"><i data-lucide="shield-check" class="ico"></i>Salvar PIN</button><button class="btn light" onclick="closeModal()">Cancelar</button></div><div class="security-note">Ao trocar o PIN, qualquer sessão anterior deste colaborador é encerrada automaticamente.</div>`);refreshIcons()};
-  window.v245SaveEmployeePin=async function(id){const a=document.getElementById('v245NewPin')?.value||'',b=document.getElementById('v245NewPin2')?.value||'';if(!/^\\d{6}$/.test(a)){toast('O PIN deve ter exatamente 6 números.');return}if(a!==b){toast('Os dois PINs não conferem.');return}try{const r=await rpc('leader_set_employee_pin_v3',{p_token:leaderToken,p_employee:id,p_pin:a});if(!r?.ok){toast('Não foi possível alterar o PIN.');return}closeModal();toast('PIN protegido atualizado ✓');await loadManagement()}catch(e){console.error(e);toast('Erro ao atualizar o PIN.')}};
+  renderTeamAdmin=function(){baseRenderTeamAdmin();refreshIcons()};
 
   const baseRenderManagers=renderManagers;
   renderManagers=function(){baseRenderManagers();document.querySelectorAll('#tab-managers .team-access-panel').forEach(x=>x.remove());refreshIcons()};
@@ -3183,6 +3196,380 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   loadManagement=async function(){const r=await baseLoadManagementOnline();if(activeTab==='dashboard')renderDashboardAdmin();enhanceDashboardOnline();return r};
   document.addEventListener('click',e=>{const b=e.target?.closest?.('[data-tab="dashboard"]');if(b)setTimeout(enhanceDashboardOnline,50)});
   setTimeout(enhanceDashboardOnline,200);
+})();
+</script>
+
+
+<style id="v246-governance-style">
+.v246-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.v246-card{border:1px solid #d8e5ea;background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(16,49,67,.05)}.v246-card h4{margin:0 0 5px;font-size:13px;color:#567284}.v246-card strong{font-size:26px;color:#0a3450}.v246-card small{display:block;color:#6b8292;margin-top:4px}.v246-section{border:1px solid #d8e5ea;background:#fff;border-radius:18px;padding:18px;margin-top:14px}.v246-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.v246-section h3{margin:0}.v246-toolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.v246-toolbar .field{min-width:160px;flex:1}.v246-table-wrap{overflow:auto;border:1px solid #e0e9ed;border-radius:14px}.v246-table{width:100%;border-collapse:collapse;min-width:680px}.v246-table th,.v246-table td{padding:11px 12px;border-bottom:1px solid #edf2f4;text-align:left;vertical-align:top;font-size:13px}.v246-table th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#657f8f;background:#f7fafb}.v246-table tr:last-child td{border-bottom:0}.v246-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:900;background:#edf4f7;color:#466274}.v246-badge.master{background:#fff4d8;color:#7e5a00}.v246-badge.manager{background:#e9f7f3;color:#0d705b}.v246-badge.viewer{background:#eef1ff;color:#4856a7}.v246-badge.production{background:#e9f7f3;color:#0d705b}.v246-badge.pilot{background:#fff4d8;color:#7e5a00}.v246-env-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #d4e2e7;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;background:#fff}.v246-alert{display:flex;gap:12px;align-items:flex-start;padding:13px;border:1px solid #dbe7eb;border-radius:14px;margin-bottom:9px;background:#fff}.v246-alert.critical{border-color:#f5b7bd;background:#fff5f6}.v246-alert.high{border-color:#f0cd93;background:#fffaf0}.v246-alert.medium{border-color:#cbdce5;background:#f8fbfc}.v246-alert .sev{width:10px;height:10px;border-radius:50%;margin-top:6px;background:#718b9a;flex:0 0 auto}.v246-alert.critical .sev{background:#c52f42}.v246-alert.high .sev{background:#c88718}.v246-alert.medium .sev{background:#5b8398}.v246-alert-main{flex:1}.v246-alert-main b{display:block}.v246-alert-main small{display:block;color:#678090;margin-top:3px}.v246-trend{display:flex;align-items:end;gap:7px;height:150px;padding:12px 4px 0}.v246-trend-col{flex:1;min-width:20px;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px;height:100%}.v246-trend-bar{width:100%;max-width:34px;min-height:4px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#23bfa2,#08789d)}.v246-trend-col small{font-size:9px;color:#758b98;white-space:nowrap}.v246-audit-row{border:1px solid #dde8ec;border-radius:13px;padding:12px;margin-bottom:8px}.v246-audit-row .top{display:flex;justify-content:space-between;gap:10px}.v246-audit-row .meta{color:#6e8491;font-size:11px;margin-top:4px}.v246-audit-row .changes{font-size:12px;margin-top:7px;color:#385367}.v246-cycle{border:1px solid #d9e6ea;border-radius:16px;padding:15px;margin-bottom:12px}.v246-cycle-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.v246-progress{height:9px;background:#edf2f4;border-radius:999px;overflow:hidden;margin:10px 0}.v246-progress span{display:block;height:100%;background:linear-gradient(90deg,#1493a5,#2bc7a7);border-radius:999px}.v246-cycle-stats{display:flex;gap:7px;flex-wrap:wrap}.v246-cycle-items{margin-top:12px}.v246-cycle-item{display:grid;grid-template-columns:90px minmax(180px,1fr) 110px 150px 120px auto;gap:8px;align-items:center;padding:9px 0;border-top:1px solid #edf2f4;font-size:12px}.v246-health{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.v246-health-item{border:1px solid #dce7eb;border-radius:14px;padding:13px;background:#fff}.v246-health-item.ok{border-color:#bce5d9;background:#f2fbf8}.v246-health-item.warn{border-color:#ecd8a6;background:#fffaf0}.v246-health-item b{display:block}.v246-health-item small{color:#678090}.v246-empty{padding:24px;text-align:center;color:#718896;border:1px dashed #d5e2e7;border-radius:14px}.v246-viewer-note{border:1px solid #cbdcf4;background:#f4f7ff;border-radius:14px;padding:12px;margin-bottom:12px;color:#445884}.v246-more-count{display:inline-flex;min-width:20px;height:20px;align-items:center;justify-content:center;border-radius:999px;background:#c52f42;color:#fff;font-size:10px;font-weight:900;margin-left:4px}.v246-role-select{width:auto;min-width:145px;padding:8px 10px}.v246-privacy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.v246-safe-note{border-left:4px solid #19a98d;background:#f1fbf8;padding:11px 13px;border-radius:0 12px 12px 0;margin:12px 0;color:#315c54}.v246-danger-note{border-left:4px solid #c88718;background:#fffaf0;padding:11px 13px;border-radius:0 12px 12px 0;margin:12px 0;color:#6e531b}
+@media(max-width:980px){.v246-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v246-health,.v246-privacy-grid{grid-template-columns:1fr 1fr}.v246-cycle-item{grid-template-columns:80px 1fr 100px}.v246-cycle-item>:nth-child(n+4){grid-column:2/-1}}
+@media(max-width:640px){.v246-grid,.v246-health,.v246-privacy-grid{grid-template-columns:1fr}.v246-section{padding:13px}.v246-section-head{flex-direction:column}.v246-cycle-item{grid-template-columns:1fr}.v246-cycle-item>*{grid-column:auto!important}.v246-trend{overflow-x:auto}.v246-trend-col{min-width:30px}.v246-toolbar{display:grid;grid-template-columns:1fr;width:100%}}
+</style>
+
+
+<script id="v246-governance">
+(function(){
+  if(window.__TV_STANDALONE_ACTIVE__)return;
+  const GOV_VERSION='V24.6.0';
+  const V246={
+    executive:null, executiveDays:30, alerts:null, audit:null, auditTable:'', auditActor:'',
+    backups:null, cycles:null, health:null, privacy:null, environment:null, loading:new Set()
+  };
+  const OLD_TABS=['dayprep','overview','pending','team','activities','dashboard','suggestions','managers','storage','records','photos','csv'];
+  const NEW_TABS=['executive','alerts','audit','backups','cycle','health','privacy','environment'];
+  const ALL_TABS=[...OLD_TABS,...NEW_TABS];
+  const roleOf=()=>currentManager?.access_role||(currentManager?.is_primary?'master':'manager');
+  const isMaster=()=>roleOf()==='master';
+  const isViewer=()=>roleOf()==='viewer';
+  const roleLabel=r=>({master:'Gestor Mestre',manager:'Gestor',viewer:'Gerência / visualização'})[r]||'Gestor';
+  const num=v=>Number(v||0);
+  const pct2=(a,b)=>b?Math.round((Number(a||0)*100)/Number(b)):0;
+  const safeDate=s=>{try{return brDate(String(s||'').slice(0,10))}catch(e){return String(s||'')}};
+  const humanTable=t=>({employees:'Equipe',employee_weekly_schedules:'Escala',activities:'Atividades',assignments:'Execução',employee_presence:'Presença',operation_days:'Preparação do dia',operation_global_control:'Pausa da operação',suggestions:'Ideias',dashboard_tv_config:'Dashboard',dashboard_tv_devices:'Dispositivo do Dashboard',leader_credentials:'Acessos',cycle_plans:'Troca de ciclo',cycle_items:'Itens do ciclo',system_environment_config:'Ambiente',privacy_config:'Privacidade'})[t]||t;
+  const humanAction=a=>({insert:'Criado',update:'Alterado',delete:'Excluído'})[a]||a;
+  const roleClass=r=>r==='master'?'master':r==='viewer'?'viewer':'manager';
+
+  function ensureHosts(){
+    const panel=document.getElementById('tab-csv')?.parentElement;if(!panel)return;
+    NEW_TABS.forEach(id=>{if(!document.getElementById('tab-'+id)){const d=document.createElement('div');d.id='tab-'+id;d.className='hidden';panel.appendChild(d)}});
+    const tabs=document.getElementById('tabs');
+    if(tabs&&!tabs.querySelector('[data-tab="executive"]')){
+      const b=document.createElement('button');b.dataset.tab='executive';b.innerHTML='<i data-lucide="chart-no-axes-combined" class="ico"></i><span class="desktop-label">Executivo</span><span class="mobile-label">Executivo</span>';b.onclick=()=>setTab('executive',b);
+      const dashboard=tabs.querySelector('[data-tab="dashboard"]');tabs.insertBefore(b,dashboard||document.getElementById('manageMoreBtn'));
+    }
+  }
+
+  function applyRoleUI(){
+    ensureHosts();
+    const viewer=isViewer();
+    document.querySelectorAll('#tabs [data-tab]').forEach(b=>{
+      if(viewer)b.style.display=b.dataset.tab==='executive'?'':'none';
+      else b.style.display='';
+    });
+    const more=document.getElementById('manageMoreBtn');if(more)more.style.display=viewer?'none':'';
+    const head=document.querySelector('#management .manage-head');
+    if(head){
+      const sub=head.querySelector('.sub');if(sub)sub.textContent=viewer?'Visão executiva em modo somente leitura.':'Visão e controle completo da operação do estoque.';
+      let chip=head.querySelector('.v246-env-chip');if(!chip){chip=document.createElement('span');chip.className='v246-env-chip';head.querySelector('.actions')?.prepend(chip)}
+      const env=V246.environment?.mode||'pilot';chip.innerHTML=`<i data-lucide="${env==='production'?'badge-check':'flask-conical'}" class="ico"></i>${env==='production'?'PRODUÇÃO':'PILOTO'}`;
+      chip.onclick=()=>{if(!viewer)setTab('environment')};chip.style.cursor=viewer?'default':'pointer';
+    }
+    if(viewer&&activeTab!=='executive'){activeTab='executive';localStorage.setItem('activeManageTab','executive')}
+    try{refreshIcons()}catch(e){}
+  }
+
+  const baseApply=applyActiveTabState;
+  applyActiveTabState=function(){
+    ensureHosts();
+    if(isViewer()&&activeTab!=='executive')activeTab='executive';
+    if(!ALL_TABS.includes(activeTab))activeTab=isViewer()?'executive':'dayprep';
+    ALL_TABS.forEach(n=>document.getElementById('tab-'+n)?.classList.toggle('hidden',n!==activeTab));
+    document.querySelectorAll('#tabs [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab));
+    document.getElementById('manageMoreBtn')?.classList.toggle('active',NEW_TABS.includes(activeTab)||['suggestions','managers','storage','records','photos','csv'].includes(activeTab));
+    applyRoleUI();
+  };
+
+  const baseSetTab=setTab;
+  setTab=function(t,btn){
+    if(isViewer()&&t!=='executive'){toast('Este perfil possui acesso somente à visão executiva.');t='executive'}
+    activeTab=t;localStorage.setItem('activeManageTab',t);applyActiveTabState();renderManagementTabs();scrollManagementContentTop();
+  };
+
+  openManagementMore=function(){
+    if(isViewer())return;
+    const items=[
+      ['team','users','Equipe'],['activities','clipboard-list','Atividades'],['alerts','triangle-alert','Alertas de exceção'],
+      ['executive','chart-no-axes-combined','Dashboard executivo'],['audit','history','Auditoria'],['backups','database-backup','Backups'],
+      ['cycle','repeat-2','Troca de ciclo'],['health','activity','Saúde do sistema'],['privacy','shield-check','Privacidade / LGPD'],
+      ['environment','flask-conical','Ambiente Piloto / Produção'],['suggestions','lightbulb','Ideias recebidas'],['managers','user-cog','Acessos'],
+      ['records','notebook-tabs','Histórico de execução'],['photos','images','Fotos'],['storage','hard-drive','Armazenamento'],['csv','file-spreadsheet','Relatórios']
+    ];
+    openModal(`<div class="section-head"><div><div class="section-kicker">Gestão</div><h3>Mais opções</h3><div class="sub">Governança, segurança, operação e melhoria contínua.</div></div><button class="btn light" onclick="closeModal()"><i data-lucide="x" class="ico"></i>Fechar</button></div><div class="more-menu-grid">${items.map(([id,ico,label])=>`<button onclick="chooseMoreTab('${id}')"><i data-lucide="${ico}" class="ico"></i>${label}</button>`).join('')}</div>`);
+    refreshIcons();
+  };
+
+  async function loadEnvironment(force=false){
+    if(V246.loading.has('environment'))return;
+    if(V246.environment&&!force)return;
+    V246.loading.add('environment');
+    try{V246.environment=await rpc('leader_get_environment_v1',{p_token:leaderToken})}catch(e){console.warn(e)}
+    finally{V246.loading.delete('environment');applyRoleUI();if(activeTab==='environment')renderEnvironment()}
+  }
+  async function loadExecutive(days=V246.executiveDays,force=false){
+    if(V246.loading.has('executive'))return;
+    V246.executiveDays=days;
+    V246.loading.add('executive');if(!V246.executive||force)renderExecutive(true);
+    try{
+      const end=document.getElementById('manageDate')?.value||isoLocal(),d=new Date(end+'T12:00:00'),f=new Date(d);f.setDate(f.getDate()-(days-1));
+      V246.executive=await rpc('leader_executive_snapshot_v1',{p_token:leaderToken,p_from:isoLocal(f),p_to:end});
+    }catch(e){console.error(e);V246.executive={ok:false,error:'load_failed'}}
+    finally{V246.loading.delete('executive');renderExecutive()}
+  }
+  async function loadAlerts(force=false){
+    if(V246.loading.has('alerts'))return;
+    V246.loading.add('alerts');
+    try{V246.alerts=await rpc('leader_exception_alerts_v1',{p_token:leaderToken,p_date:document.getElementById('manageDate')?.value||isoLocal()})}catch(e){console.warn(e);V246.alerts={ok:false,alerts:[]}}
+    finally{V246.loading.delete('alerts');updateAlertBadge();if(activeTab==='alerts')renderAlerts()}
+  }
+  async function loadAudit(force=false){
+    if(V246.loading.has('audit'))return;V246.loading.add('audit');
+    try{V246.audit=await rpc('leader_audit_log_v1',{p_token:leaderToken,p_limit:250,p_table:V246.auditTable||null,p_actor:V246.auditActor||null})||[]}catch(e){console.warn(e);V246.audit=[]}
+    finally{V246.loading.delete('audit');if(activeTab==='audit')renderAudit()}
+  }
+  async function loadBackups(force=false){
+    if(V246.loading.has('backups'))return;V246.loading.add('backups');
+    try{V246.backups=await rpc('leader_list_backups_v1',{p_token:leaderToken})}catch(e){console.warn(e);V246.backups={ok:false,backups:[]}}
+    finally{V246.loading.delete('backups');if(activeTab==='backups')renderBackups()}
+  }
+  async function loadCycles(force=false){
+    if(V246.loading.has('cycle'))return;V246.loading.add('cycle');
+    try{V246.cycles=await rpc('leader_cycle_snapshot_v1',{p_token:leaderToken})}catch(e){console.warn(e);V246.cycles={ok:false,cycles:[]}}
+    finally{V246.loading.delete('cycle');if(activeTab==='cycle')renderCycle()}
+  }
+  async function loadHealth(force=false){
+    if(V246.loading.has('health'))return;V246.loading.add('health');
+    try{V246.health=await rpc('leader_system_health_v1',{p_token:leaderToken})}catch(e){console.warn(e);V246.health={ok:false}}
+    finally{V246.loading.delete('health');if(activeTab==='health')renderHealth()}
+  }
+  async function loadPrivacy(force=false){
+    if(V246.loading.has('privacy'))return;V246.loading.add('privacy');
+    try{V246.privacy=await rpc('leader_privacy_summary_v1',{p_token:leaderToken})}catch(e){console.warn(e);V246.privacy={ok:false}}
+    finally{V246.loading.delete('privacy');if(activeTab==='privacy')renderPrivacy()}
+  }
+  async function loadGovernanceHeader(){
+    if(!leaderToken)return;
+    await Promise.allSettled([loadEnvironment(),loadAlerts()]);
+    applyRoleUI();
+  }
+
+  function updateAlertBadge(){
+    const n=(V246.alerts?.alerts||[]).filter(a=>!a.acknowledged).length;
+    const more=document.getElementById('manageMoreBtn');if(more){
+      more.querySelector('.v246-more-count')?.remove();
+      if(n){const s=document.createElement('span');s.className='v246-more-count';s.textContent=String(n);more.appendChild(s)}
+    }
+  }
+
+  function renderExecutive(loading=false){
+    const h=document.getElementById('tab-executive');if(!h)return;
+    if(loading||!V246.executive){h.innerHTML='<div class="v246-empty">Carregando visão executiva...</div>';return}
+    const d=V246.executive;if(!d?.ok){h.innerHTML='<div class="v246-empty">Não foi possível carregar a visão executiva.</div>';return}
+    const s=d.summary||{},dev=d.deviations||{},trend=d.trend||[],team=d.team||[];
+    const max=Math.max(1,...trend.map(x=>num(x.planned)));
+    h.innerHTML=`${isViewer()?'<div class="v246-viewer-note"><b>Modo somente leitura.</b> Este acesso foi criado para acompanhamento gerencial e não permite alterar a operação.</div>':''}
+      <div class="v246-section-head"><div><div class="section-kicker">Visão gerencial</div><h3 class="icon-title"><i data-lucide="chart-no-axes-combined" class="ico"></i>Dashboard executivo</h3><div class="sub">Indicadores consolidados para acompanhamento de resultado, ritmo, desvios e cobertura.</div></div><div class="v246-toolbar"><button class="btn light ${V246.executiveDays===7?'active':''}" onclick="v246Executive(7)">7 dias</button><button class="btn light ${V246.executiveDays===30?'active':''}" onclick="v246Executive(30)">30 dias</button><button class="btn light ${V246.executiveDays===90?'active':''}" onclick="v246Executive(90)">90 dias</button><button class="btn light" onclick="v246Executive(${V246.executiveDays},true)"><i data-lucide="refresh-cw" class="ico"></i>Atualizar</button></div></div>
+      <div class="v246-grid">
+        <div class="v246-card"><h4>Execução</h4><strong>${num(s.execution_pct)}%</strong><small>${num(s.completed)} de ${num(s.planned)} concluídas</small></div>
+        <div class="v246-card"><h4>Pendentes</h4><strong>${num(s.pending)}</strong><small>${num(s.in_progress)} em andamento</small></div>
+        <div class="v246-card"><h4>Críticas pendentes</h4><strong>${num(s.critical_pending)}</strong><small>Prioridade de atenção</small></div>
+        <div class="v246-card"><h4>Coberturas</h4><strong>${num(s.coverages)}</strong><small>Atividades assumidas por colegas</small></div>
+        <div class="v246-card"><h4>Tempo médio</h4><strong>${num(s.avg_duration_minutes)}m</strong><small>Atividades concluídas</small></div>
+        <div class="v246-card"><h4>Ações do líder</h4><strong>${num(s.leader_actions_open)}</strong><small>Pendências abertas</small></div>
+        <div class="v246-card"><h4>Desvios abertos</h4><strong>${num(dev.open)}</strong><small>${num(dev.resolved)} resolvidos no período</small></div>
+        <div class="v246-card"><h4>Observações</h4><strong>${num(dev.with_observation)}</strong><small>Conclusões com registro</small></div>
+      </div>
+      <div class="v246-section"><div class="v246-section-head"><div><h3>Evolução diária</h3><div class="sub">${safeDate(d.from)} a ${safeDate(d.to)}</div></div></div><div class="v246-trend">${trend.length?trend.map(x=>`<div class="v246-trend-col" title="${safeDate(x.date)} · ${x.completed}/${x.planned}"><div class="v246-trend-bar" style="height:${Math.max(4,Math.round(num(x.completed)*120/max))}px"></div><small>${String(x.date).slice(8,10)}</small></div>`).join(''):'<div class="v246-empty">Sem dados no período.</div>'}</div></div>
+      <div class="v246-section"><h3>Resultado por pessoa</h3><div class="v246-table-wrap" style="margin-top:12px"><table class="v246-table"><thead><tr><th>Pessoa</th><th>Execução</th><th>Concluídas</th><th>Programadas</th><th>Coberturas</th><th>Tempo médio</th></tr></thead><tbody>${team.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${num(x.execution_pct)}%</td><td>${num(x.completed)}</td><td>${num(x.planned)}</td><td>${num(x.coverages)}</td><td>${num(x.avg_duration_minutes)} min</td></tr>`).join('')||'<tr><td colspan="6">Sem dados.</td></tr>'}</tbody></table></div></div>`;
+    refreshIcons();
+  }
+  window.v246Executive=(days,force=false)=>loadExecutive(days,force);
+
+  function renderAlerts(){
+    const h=document.getElementById('tab-alerts');if(!h)return;const arr=V246.alerts?.alerts||[];
+    h.innerHTML=`<div class="v246-section-head"><div><div class="section-kicker">Gestão por exceção</div><h3 class="icon-title"><i data-lucide="triangle-alert" class="ico"></i>Alertas operacionais</h3><div class="sub">Mostra apenas o que foge do fluxo esperado: críticas, atrasos, atividade longa, pessoa sem tarefa e pendências do líder.</div></div><button class="btn light" onclick="v246ReloadAlerts()"><i data-lucide="refresh-cw" class="ico"></i>Atualizar</button></div>
+    ${arr.length?arr.map(a=>`<div class="v246-alert ${esc(a.severity)}"><span class="sev"></span><div class="v246-alert-main"><b>${esc(a.title)}</b><small>${esc(a.detail||'')}</small>${a.acknowledged?`<small>✓ Reconhecido ${fmtDT(a.acknowledged_at)}</small>`:''}</div>${!a.acknowledged&&!isViewer()?`<button class="btn light" onclick="v246AckAlert('${esc(a.key)}')">Reconhecer</button>`:''}</div>`).join(''):'<div class="v246-empty">Nenhuma exceção encontrada para a data selecionada.</div>'}`;
+    refreshIcons();
+  }
+  window.v246ReloadAlerts=()=>loadAlerts(true);
+  window.v246AckAlert=async key=>{try{const r=await rpc('leader_ack_exception_v1',{p_token:leaderToken,p_key:key,p_date:document.getElementById('manageDate')?.value||isoLocal(),p_note:null});if(r?.ok){toast('Alerta reconhecido.');await loadAlerts(true)}}catch(e){console.error(e);toast('Não foi possível reconhecer o alerta.')}};
+
+  function auditChangedKeys(a){
+    const o=a.old_data||{},n=a.new_data||{},keys=new Set([...Object.keys(o),...Object.keys(n)]);
+    const ignore=new Set(['updated_at','created_at','last_seen','last_seen_at']);
+    return [...keys].filter(k=>!ignore.has(k)&&JSON.stringify(o[k])!==JSON.stringify(n[k])).slice(0,8);
+  }
+  function renderAudit(){
+    const h=document.getElementById('tab-audit');if(!h)return;const rows=Array.isArray(V246.audit)?V246.audit:[];
+    h.innerHTML=`<div class="v246-section-head"><div><div class="section-kicker">Rastreabilidade</div><h3 class="icon-title"><i data-lucide="history" class="ico"></i>Auditoria</h3><div class="sub">Quem alterou, o que mudou e quando. Senhas e códigos secretos não são registrados no histórico.</div></div><button class="btn light" onclick="v246LoadAudit()"><i data-lucide="refresh-cw" class="ico"></i>Atualizar</button></div>
+      <div class="v246-toolbar"><div class="field"><label>Área</label><select id="v246AuditTable" onchange="V246_setAuditTable(this.value)"><option value="">Todas</option>${['employees','employee_weekly_schedules','activities','assignments','employee_presence','operation_days','operation_global_control','cycle_plans','cycle_items','leader_credentials'].map(t=>`<option value="${t}" ${V246.auditTable===t?'selected':''}>${humanTable(t)}</option>`).join('')}</select></div><div class="field"><label>Gestor/pessoa</label><input value="${esc(V246.auditActor)}" placeholder="Filtrar responsável" onchange="V246_setAuditActor(this.value)"></div></div>
+      <div style="margin-top:14px">${rows.length?rows.map(a=>{const keys=auditChangedKeys(a);return `<div class="v246-audit-row"><div class="top"><b>${humanAction(a.action)} · ${humanTable(a.table_name)}</b><span class="v246-badge">${fmtDT(a.created_at)}</span></div><div class="meta">${esc(a.actor_ref||a.actor_type||'sistema')} ${a.entity_ref?`· ref. ${esc(a.entity_ref)}`:''}</div><div class="changes">${keys.length?`Campos: ${keys.map(esc).join(', ')}`:'Registro operacional atualizado.'}</div></div>`}).join(''):'<div class="v246-empty">Nenhum registro de auditoria encontrado.</div>'}</div>`;
+    refreshIcons();
+  }
+  window.V246_setAuditTable=v=>{V246.auditTable=v;loadAudit(true)};
+  window.V246_setAuditActor=v=>{V246.auditActor=v;loadAudit(true)};
+  window.v246LoadAudit=()=>loadAudit(true);
+
+  window.openEmployeeHistory=async function(id){
+    const e=(employeesAdmin||[]).find(x=>String(x.id)===String(id));openModal(`<div class="v246-empty">Carregando histórico de escala...</div>`);
+    try{
+      const rows=await rpc('leader_schedule_history_v1',{p_token:leaderToken,p_employee:id,p_limit:100})||[];
+      const dayLabel=d=>({1:'Segunda',2:'Terça',3:'Quarta',4:'Quinta',5:'Sexta',6:'Sábado'})[Number(d)]||`Dia ${d}`;
+      const line=r=>{const x=r.new_data||r.old_data||{};return `<div class="v246-audit-row"><div class="top"><b>${dayLabel(x.weekday)} · ${humanAction(r.action)}</b><span class="v246-badge">${fmtDT(r.created_at)}</span></div><div class="meta">${esc(r.actor_ref||'sistema')}</div><div class="changes">${x.active===false?'Sem expediente':`${esc(x.entry_time||'—')} · intervalo ${esc(x.break_start||'—')}–${esc(x.break_end||'—')} · saída ${esc(x.exit_time||'—')}`}</div></div>`};
+      openModal(`<div class="section-head"><div><div class="section-kicker">Histórico</div><h3>${esc(e?.name||'Colaborador')}</h3><div class="sub">Alterações de escala registradas automaticamente.</div></div></div><div>${rows.length?rows.map(line).join(''):'<div class="v246-empty">Nenhuma alteração de escala registrada ainda.</div>'}</div><div class="actions"><button class="btn light" onclick="recordEmployeeFilter='${id}';closeModal();setTab('records')"><i data-lucide="list" class="ico"></i>Ver execuções</button><button class="btn light" onclick="closeModal()">Fechar</button></div>`);
+      refreshIcons();
+    }catch(err){console.error(err);openModal('<div class="v246-empty">Não foi possível carregar o histórico.</div>')}
+  };
+
+  function renderBackups(){
+    const h=document.getElementById('tab-backups');if(!h)return;const arr=V246.backups?.backups||[];
+    h.innerHTML=`<div class="v246-section-head"><div><div class="section-kicker">Continuidade</div><h3 class="icon-title"><i data-lucide="database-backup" class="ico"></i>Backups de configuração</h3><div class="sub">Salva equipe, escalas, atividades e configurações. Execuções e fotos históricas não são sobrescritas na restauração.</div></div><button class="btn" onclick="v246CreateBackup()"><i data-lucide="save" class="ico"></i>Criar backup agora</button></div>
+      <div class="v246-safe-note"><b>Restauração segura:</b> reconstitui cadastros e escalas sem apagar o histórico operacional.</div>
+      <div class="v246-table-wrap"><table class="v246-table"><thead><tr><th>Backup</th><th>Criado</th><th>Responsável</th><th>Última restauração</th><th>Ações</th></tr></thead><tbody>${arr.map(b=>`<tr><td><b>${esc(b.label)}</b></td><td>${fmtDT(b.created_at)}</td><td>${esc(b.created_by_name||'—')}</td><td>${b.restored_at?fmtDT(b.restored_at):'Nunca'}</td><td><button class="btn light" onclick="v246DownloadBackup('${b.id}')">Baixar JSON</button>${isMaster()?` <button class="btn light" onclick="v246RestoreBackup('${b.id}')">Restaurar</button> <button class="btn danger" onclick="v246DeleteBackup('${b.id}')">Excluir</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">Nenhum backup criado.</td></tr>'}</tbody></table></div>`;
+    refreshIcons();
+  }
+  window.v246CreateBackup=async()=>{const label=prompt('Nome para este backup:','Backup antes de alterações')||'';if(!label)return;try{const r=await rpc('leader_create_backup_v1',{p_token:leaderToken,p_label:label});if(r?.ok){toast('Backup criado ✓');await loadBackups(true)}}catch(e){console.error(e);toast('Erro ao criar backup.')}};
+  window.v246DownloadBackup=async id=>{try{const r=await rpc('leader_get_backup_v1',{p_token:leaderToken,p_id:id});if(!r?.ok)return toast('Backup não encontrado.');const blob=new Blob([JSON.stringify(r,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`backup-gestao-${String(r.created_at||'').slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(e){console.error(e);toast('Erro ao baixar backup.')}};
+  window.v246RestoreBackup=async id=>{if(!isMaster())return toast('Somente o Gestor Mestre pode restaurar.');const c=prompt('Digite RESTAURAR para confirmar:');if(c!=='RESTAURAR')return;try{const r=await rpc('leader_restore_backup_v1',{p_token:leaderToken,p_backup:id,p_confirmation:c});if(r?.ok){toast('Backup restaurado. Atualizando dados...');await loadManagement();await loadBackups(true)}else toast('Não foi possível restaurar.')}catch(e){console.error(e);toast('Erro na restauração.')}};
+  window.v246DeleteBackup=async id=>{if(!confirm('Excluir este backup?'))return;try{const r=await rpc('leader_delete_backup_v1',{p_token:leaderToken,p_id:id});if(r?.ok){toast('Backup excluído.');await loadBackups(true)}}catch(e){console.error(e)}};
+
+  function movementLabel(m){return {up:'Sobe',down:'Desce',keep:'Permanece',launch:'Lançamento'}[m]||m}
+  function cycleStatusLabel(s){return {planning:'Planejamento',in_progress:'Em andamento',completed:'Concluído',archived:'Arquivado',pending:'Pendente',blocked:'Bloqueado'}[s]||s}
+  function renderCycle(){
+    const h=document.getElementById('tab-cycle');if(!h)return;const arr=V246.cycles?.cycles||[];
+    h.innerHTML=`<div class="v246-section-head"><div><div class="section-kicker">Troca de ciclo</div><h3 class="icon-title"><i data-lucide="repeat-2" class="ico"></i>Plano de troca de ciclo</h3><div class="sub">Organize itens que sobem, descem, permanecem e lançamentos, com responsável e andamento.</div></div><button class="btn" onclick="v246OpenCycle()"><i data-lucide="plus" class="ico"></i>Novo ciclo</button></div>
+      ${arr.length?arr.map(c=>{const items=c.items||[],done=items.filter(i=>i.status==='completed').length,p=items.length?pct2(done,items.length):0;return `<div class="v246-cycle"><div class="v246-cycle-head"><div><h3>${esc(c.name)}</h3><div class="sub">${c.cycle_code?`Código ${esc(c.cycle_code)} · `:''}${c.start_date?safeDate(c.start_date):'Sem início'}${c.target_date?` → ${safeDate(c.target_date)}`:''}</div></div><div><span class="v246-badge">${cycleStatusLabel(c.status)}</span> <button class="btn light" onclick="v246OpenCycle('${c.id}')">Editar</button></div></div><div class="v246-progress"><span style="width:${p}%"></span></div><div class="v246-cycle-stats"><span class="v246-badge">${done}/${items.length} concluídos</span>${['launch','up','down','keep'].map(m=>`<span class="v246-badge">${movementLabel(m)}: ${items.filter(i=>i.movement===m).length}</span>`).join('')}</div><div class="actions" style="margin-top:10px"><button class="btn" onclick="v246OpenCycleItem('${c.id}')"><i data-lucide="plus" class="ico"></i>Adicionar item</button><label class="btn light" style="cursor:pointer"><i data-lucide="file-up" class="ico"></i>Importar CSV<input type="file" accept=".csv,text/csv" style="display:none" onchange="v246ImportCycleCsv('${c.id}',this)"></label></div><div class="v246-cycle-items">${items.map(i=>`<div class="v246-cycle-item"><span class="v246-badge">${movementLabel(i.movement)}</span><div><b>${esc(i.item_name)}</b><small>${esc(i.item_code||'Sem código')}${i.quantity?` · qtd ${i.quantity}`:''}</small></div><span>${cycleStatusLabel(i.status)}</span><span>${esc(i.responsible_name||'Sem responsável')}</span><span>${i.due_date?safeDate(i.due_date):'—'}</span><span><button class="btn light" onclick="v246OpenCycleItem('${c.id}','${i.id}')">Editar</button> <button class="btn danger" onclick="v246DeleteCycleItem('${i.id}')">Excluir</button></span></div>`).join('')||'<div class="v246-empty">Nenhum item adicionado a este ciclo.</div>'}</div></div>`}).join(''):'<div class="v246-empty">Nenhum ciclo cadastrado. Crie o primeiro plano de troca.</div>'}`;
+    refreshIcons();
+  }
+  window.v246OpenCycle=id=>{
+    const c=(V246.cycles?.cycles||[]).find(x=>String(x.id)===String(id))||{};
+    openModal(`<div class="section-head"><div><div class="section-kicker">Troca de ciclo</div><h3>${id?'Editar':'Novo'} ciclo</h3></div></div><div class="field"><label>Nome</label><input id="v246CycleName" value="${esc(c.name||'')}"></div><div class="schedule-grid"><div class="field"><label>Código</label><input id="v246CycleCode" value="${esc(c.cycle_code||'')}"></div><div class="field"><label>Status</label><select id="v246CycleStatus">${['planning','in_progress','completed','archived'].map(s=>`<option value="${s}" ${c.status===s?'selected':''}>${cycleStatusLabel(s)}</option>`).join('')}</select></div><div class="field"><label>Início</label><input id="v246CycleStart" type="date" value="${c.start_date||''}"></div><div class="field"><label>Meta</label><input id="v246CycleTarget" type="date" value="${c.target_date||''}"></div></div><div class="field"><label>Observações</label><textarea id="v246CycleNotes">${esc(c.notes||'')}</textarea></div><div class="actions"><button class="btn" onclick="v246SaveCycle('${id||''}')">Salvar</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);refreshIcons();
+  };
+  window.v246SaveCycle=async id=>{const name=document.getElementById('v246CycleName')?.value.trim();if(!name)return toast('Informe o nome do ciclo.');try{const r=await rpc('leader_save_cycle_v1',{p_token:leaderToken,p_id:id||null,p_name:name,p_code:document.getElementById('v246CycleCode')?.value||'',p_start:document.getElementById('v246CycleStart')?.value||null,p_target:document.getElementById('v246CycleTarget')?.value||null,p_status:document.getElementById('v246CycleStatus')?.value||'planning',p_notes:document.getElementById('v246CycleNotes')?.value||''});if(r?.ok){closeModal();toast('Ciclo salvo.');await loadCycles(true)}}catch(e){console.error(e);toast('Erro ao salvar ciclo.')}};
+  window.v246OpenCycleItem=(cycleId,itemId='')=>{
+    const c=(V246.cycles?.cycles||[]).find(x=>String(x.id)===String(cycleId));const i=(c?.items||[]).find(x=>String(x.id)===String(itemId))||{};
+    const people=(employeesAdmin||[]).filter(e=>e.active&&e.deleted_at==null);
+    openModal(`<div class="section-head"><div><div class="section-kicker">Item do ciclo</div><h3>${itemId?'Editar':'Adicionar'} item</h3></div></div><div class="schedule-grid"><div class="field"><label>Código</label><input id="v246ItemCode" value="${esc(i.item_code||'')}"></div><div class="field"><label>Movimento</label><select id="v246ItemMove">${['launch','up','down','keep'].map(m=>`<option value="${m}" ${i.movement===m?'selected':''}>${movementLabel(m)}</option>`).join('')}</select></div></div><div class="field"><label>Item</label><input id="v246ItemName" value="${esc(i.item_name||'')}"></div><div class="schedule-grid"><div class="field"><label>Quantidade</label><input id="v246ItemQty" type="number" min="0" value="${i.quantity??''}"></div><div class="field"><label>Status</label><select id="v246ItemStatus">${['pending','in_progress','completed','blocked'].map(s=>`<option value="${s}" ${i.status===s?'selected':''}>${cycleStatusLabel(s)}</option>`).join('')}</select></div><div class="field"><label>Origem</label><input id="v246ItemFrom" value="${esc(i.location_from||'')}"></div><div class="field"><label>Destino</label><input id="v246ItemTo" value="${esc(i.location_to||'')}"></div><div class="field"><label>Responsável</label><select id="v246ItemEmployee"><option value="">Não definido</option>${people.map(e=>`<option value="${e.id}" ${String(i.responsible_employee||'')===String(e.id)?'selected':''}>${esc(e.name)}</option>`).join('')}</select></div><div class="field"><label>Prazo</label><input id="v246ItemDue" type="date" value="${i.due_date||''}"></div></div><div class="field"><label>Observações</label><textarea id="v246ItemNotes">${esc(i.notes||'')}</textarea></div><div class="actions"><button class="btn" onclick="v246SaveCycleItem('${cycleId}','${itemId}')">Salvar item</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);refreshIcons();
+  };
+  window.v246SaveCycleItem=async(cycleId,itemId)=>{const name=document.getElementById('v246ItemName')?.value.trim();if(!name)return toast('Informe o item.');try{const r=await rpc('leader_save_cycle_item_v1',{p_token:leaderToken,p_cycle:cycleId,p_id:itemId||null,p_code:document.getElementById('v246ItemCode')?.value||'',p_name:name,p_movement:document.getElementById('v246ItemMove')?.value||'keep',p_quantity:Number(document.getElementById('v246ItemQty')?.value||0)||null,p_from:document.getElementById('v246ItemFrom')?.value||'',p_to:document.getElementById('v246ItemTo')?.value||'',p_employee:document.getElementById('v246ItemEmployee')?.value||null,p_status:document.getElementById('v246ItemStatus')?.value||'pending',p_due:document.getElementById('v246ItemDue')?.value||null,p_notes:document.getElementById('v246ItemNotes')?.value||''});if(r?.ok){closeModal();toast('Item salvo.');await loadCycles(true)}}catch(e){console.error(e);toast('Erro ao salvar item.')}};
+  window.v246DeleteCycleItem=async id=>{if(!confirm('Excluir este item da troca de ciclo?'))return;try{const r=await rpc('leader_delete_cycle_item_v1',{p_token:leaderToken,p_id:id});if(r?.ok){toast('Item excluído.');await loadCycles(true)}}catch(e){console.error(e)}};
+  window.v246ImportCycleCsv=async(cycleId,input)=>{
+    const f=input.files?.[0];if(!f)return;try{
+      const raw=await f.text(),lines=raw.split(/\r?\n/).filter(Boolean);if(lines.length<2)return toast('CSV sem itens.');
+      const sep=(lines[0].match(/;/g)||[]).length>=(lines[0].match(/,/g)||[]).length?';':',';
+      const parse=l=>{const out=[];let cur='',q=false;for(let x=0;x<l.length;x++){const c=l[x];if(c==='"'){if(q&&l[x+1]==='"'){cur+='"';x++}else q=!q}else if(c===sep&&!q){out.push(cur.trim());cur=''}else cur+=c}out.push(cur.trim());return out};
+      const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'_');
+      const headers=parse(lines[0]).map(norm);const idx=k=>headers.indexOf(k);let ok=0,fail=0;
+      const people=(employeesAdmin||[]);const mapMove=v=>{v=norm(v);return v.includes('lanc')?'launch':v.includes('sobe')||v==='up'?'up':v.includes('desc')||v==='down'?'down':'keep'};const mapStatus=v=>{v=norm(v);return v.includes('concl')?'completed':v.includes('andamento')?'in_progress':v.includes('bloq')?'blocked':'pending'};
+      for(const line of lines.slice(1)){const r=parse(line);const name=r[idx('item')]||r[idx('nome')]||r[idx('produto')]||'';if(!name){fail++;continue}const resp=r[idx('responsavel')]||'';const emp=people.find(e=>norm(e.name)===norm(resp));try{const x=await rpc('leader_save_cycle_item_v1',{p_token:leaderToken,p_cycle:cycleId,p_id:null,p_code:r[idx('codigo')]||'',p_name:name,p_movement:mapMove(r[idx('movimento')]||r[idx('acao')]),p_quantity:Number(r[idx('quantidade')]||0)||null,p_from:r[idx('origem')]||'',p_to:r[idx('destino')]||'',p_employee:emp?.id||null,p_status:mapStatus(r[idx('status')]),p_due:r[idx('prazo')]||null,p_notes:r[idx('observacoes')]||''});x?.ok?ok++:fail++}catch(e){fail++}}
+      toast(`Importação concluída: ${ok} item(ns) · ${fail} ignorado(s).`);await loadCycles(true);
+    }catch(e){console.error(e);toast('Não foi possível importar o CSV.')}finally{input.value=''}
+  };
+
+  function renderHealth(){
+    const h=document.getElementById('tab-health');if(!h)return;const d=V246.health||{},op=d.operation||{},st=d.storage||{};
+    h.innerHTML=`<div class="v246-section-head"><div><div class="section-kicker">Diagnóstico</div><h3 class="icon-title"><i data-lucide="activity" class="ico"></i>Saúde do sistema</h3><div class="sub">Verificação rápida de banco, sincronização, Dashboard e armazenamento.</div></div><button class="btn light" onclick="v246Health()"><i data-lucide="refresh-cw" class="ico"></i>Atualizar diagnóstico</button></div>
+      <div class="v246-health">
+        <div class="v246-health-item ${navigator.onLine?'ok':'warn'}"><b>Internet do navegador</b><small>${navigator.onLine?'Online':'Sem conexão'}</small></div>
+        <div class="v246-health-item ${d.database==='online'?'ok':'warn'}"><b>Banco de dados</b><small>${d.database==='online'?'Respondendo normalmente':'Indisponível'}</small></div>
+        <div class="v246-health-item ${op.published?'ok':'warn'}"><b>Operação de hoje</b><small>${op.published?'Publicada':'Não publicada'}${op.paused?' · PAUSADA':''}</small></div>
+        <div class="v246-health-item ok"><b>Equipe / atividades</b><small>${num(d.active_employees)} pessoas · ${num(d.active_activities)} atividades ativas</small></div>
+        <div class="v246-health-item ${num(d.dashboard_devices)>0?'ok':'warn'}"><b>Dashboard online</b><small>${num(d.dashboard_devices)} dispositivo(s) ativo(s) nos últimos 15 min</small></div>
+        <div class="v246-health-item ok"><b>Armazenamento</b><small>${num(st.avatars)} avatar(es) · ${num(st.proofs)} arquivo(s) operacional(is)</small></div>
+        <div class="v246-health-item ${num(d.failed_security_events_24h)>0?'warn':'ok'}"><b>Segurança 24h</b><small>${num(d.failed_security_events_24h)} tentativa(s) recusada(s) · ${num(d.security_events_24h)} evento(s)</small></div>
+        <div class="v246-health-item ok"><b>Auditoria</b><small>${d.last_audit_at?`Último registro ${fmtDT(d.last_audit_at)}`:'Aguardando primeira alteração'}</small></div>
+        <div class="v246-health-item ${d.environment==='production'?'ok':'warn'}"><b>Ambiente</b><small>${d.environment==='production'?'PRODUÇÃO':'PILOTO'}</small></div>
+      </div><div class="v246-safe-note"><b>Painel de saúde:</b> não mostra senhas, tokens ou chaves privadas.</div>`;
+    refreshIcons();
+  }
+  window.v246Health=()=>loadHealth(true);
+
+  function renderPrivacy(){
+    const h=document.getElementById('tab-privacy');if(!h)return;const d=V246.privacy||{},c=d.config||{};
+    h.innerHTML=`<div class="v246-section-head"><div><div class="section-kicker">Privacidade</div><h3 class="icon-title"><i data-lucide="shield-check" class="ico"></i>Privacidade e retenção</h3><div class="sub">Reduza dados desnecessários e mantenha fotos opcionais.</div></div><button class="btn light" onclick="v246Privacy()"><i data-lucide="refresh-cw" class="ico"></i>Atualizar</button></div>
+      <div class="v246-privacy-grid"><div class="v246-card"><h4>Fotos de perfil</h4><strong>${num(d.employee_photos)}</strong><small>Uso opcional</small></div><div class="v246-card"><h4>Fotos antigas</h4><strong>${num(d.proofs_older_than_retention)}</strong><small>Além da retenção configurada</small></div><div class="v246-card"><h4>Auditoria antiga</h4><strong>${num(d.audit_rows_older_than_retention)}</strong><small>Além da retenção configurada</small></div></div>
+      <div class="v246-safe-note"><b>Princípio de minimização:</b> a Rotina pública não precisa exibir foto do colaborador; fotos de perfil continuam opcionais e podem ser excluídas pela Gestão.</div>
+      <div class="v246-section"><h3>Política de retenção</h3><div class="v246-toolbar" style="margin-top:12px"><div class="field"><label>Fotos de comprovação</label><input id="v246ProofDays" type="number" min="30" max="730" value="${num(c.proof_retention_days)||180}"><small class="muted">dias</small></div><div class="field"><label>Auditoria</label><input id="v246AuditDays" type="number" min="90" max="1825" value="${num(c.audit_retention_days)||365}"><small class="muted">dias</small></div>${isMaster()?'<button class="btn" onclick="v246SavePrivacy()">Salvar política</button>':''}<button class="btn light" onclick="setTab('storage')">Abrir limpeza de armazenamento</button></div></div>
+      ${isMaster()?`<div class="v246-danger-note"><b>Limpeza do log:</b> somente registros mais antigos que a política são apagados. <button class="btn danger" style="margin-left:8px" onclick="v246PurgeAudit()">Limpar auditoria antiga</button></div>`:''}`;
+    refreshIcons();
+  }
+  window.v246Privacy=()=>loadPrivacy(true);
+  window.v246SavePrivacy=async()=>{const p=Number(document.getElementById('v246ProofDays')?.value),a=Number(document.getElementById('v246AuditDays')?.value);try{const r=await rpc('leader_set_privacy_v1',{p_token:leaderToken,p_proof_days:p,p_audit_days:a});if(r?.ok){toast('Política de retenção salva.');await loadPrivacy(true)}else toast('Valores de retenção inválidos.')}catch(e){console.error(e)}};
+  window.v246PurgeAudit=async()=>{const c=prompt('Digite EXCLUIR HISTORICO para remover registros antigos:');if(c!=='EXCLUIR HISTORICO')return;try{const r=await rpc('leader_purge_old_audit_v1',{p_token:leaderToken,p_confirmation:c});if(r?.ok){toast(`${r.deleted||0} registro(s) antigo(s) removido(s).`);await loadPrivacy(true)}}catch(e){console.error(e)}};
+
+  function renderEnvironment(){
+    const h=document.getElementById('tab-environment');if(!h)return;const d=V246.environment||{},mode=d.mode||'pilot';
+    h.innerHTML=`<div class="v246-section-head"><div><div class="section-kicker">Ambiente</div><h3 class="icon-title"><i data-lucide="flask-conical" class="ico"></i>Piloto x Produção</h3><div class="sub">Identifique claramente quando o sistema está em validação e quando está sendo usado oficialmente.</div></div><span class="v246-badge ${mode}">${mode==='production'?'PRODUÇÃO':'PILOTO'}</span></div>
+      <div class="v246-danger-note"><b>Importante:</b> este controle separa o uso operacional e a identificação do ambiente dentro do sistema. Uma separação física completa (outro banco/projeto) deve ser criada antes de uma implantação corporativa em larga escala.</div>
+      <div class="v246-grid"><div class="v246-card"><h4>PILOTO</h4><strong>Testar</strong><small>Validação, treinamento e homologação.</small></div><div class="v246-card"><h4>PRODUÇÃO</h4><strong>Operar</strong><small>Uso oficial da equipe.</small></div></div>
+      ${isMaster()?`<div class="v246-section"><h3>Alterar ambiente</h3><div class="actions" style="margin-top:12px"><button class="btn ${mode==='pilot'?'mint':'light'}" onclick="v246SetEnvironment('pilot')">Marcar como PILOTO</button><button class="btn ${mode==='production'?'mint':'light'}" onclick="v246SetEnvironment('production')">Marcar como PRODUÇÃO</button></div></div>`:'<div class="v246-safe-note">Somente o Gestor Mestre pode alterar o ambiente.</div>'}`;
+    refreshIcons();
+  }
+  window.v246SetEnvironment=async mode=>{if(!isMaster())return;const msg=mode==='production'?'Confirmar uso oficial em PRODUÇÃO?':'Voltar o sistema para modo PILOTO?';if(!confirm(msg))return;try{const r=await rpc('leader_set_environment_v1',{p_token:leaderToken,p_mode:mode,p_label:null});if(r?.ok){V246.environment={...(V246.environment||{}),mode};toast(`Ambiente alterado para ${mode.toUpperCase()}.`);applyRoleUI();renderEnvironment();await loadHealth(true)}}catch(e){console.error(e)}};
+
+  function renderManagersV246(){
+    const el=document.getElementById('tab-managers');if(!el)return;if(isViewer()){el.innerHTML='<div class="v246-empty">Seu perfil é somente leitura.</div>';return}
+    const currentId=currentManager?.id,master=isMaster();
+    el.innerHTML=`<div class="section-head"><div><div class="section-kicker">Perfis de acesso</div><h3 class="icon-title"><i data-lucide="users-round" class="ico"></i>Acessos e permissões</h3><div class="sub">Gestor Mestre administra perfis críticos. Gestor opera o sistema. Gerência possui somente visualização executiva.</div></div>${master?'<button class="btn" onclick="openManagerModal()"><i data-lucide="user-plus" class="ico"></i>Novo acesso</button>':''}</div>
+      <div class="admin-card-grid">${(managersAdmin||[]).map(m=>{const self=String(m.id)===String(currentId),r=m.access_role||(m.is_primary?'master':'manager'),primary=!!m.is_primary;return `<article class="access-admin-card ${self?'access-self':''} ${primary?'access-primary':''}"><div class="access-card-top"><div><div class="admin-card-title">${esc(m.display_name||m.username)}</div><div class="admin-card-sub">@${esc(m.username)}</div></div><span class="v246-badge ${roleClass(r)}">${roleLabel(r)}</span></div><div class="admin-card-body">${self?'<b>Seu acesso atual</b><br>':''}${r==='viewer'?'Acesso gerencial somente leitura.':r==='manager'?'Pode operar e administrar rotinas, sem exclusões críticas.':'Controle total e ações críticas.'}</div><div class="admin-card-actions">${self||master?`<button class="btn light" onclick="openEditManagerModal(${m.id})"><i data-lucide="key-round" class="ico"></i>Editar login/senha</button>`:''}${master&&!primary?`<select class="v246-role-select" onchange="v246SetManagerRole(${m.id},this.value)"><option value="manager" ${r==='manager'?'selected':''}>Gestor</option><option value="viewer" ${r==='viewer'?'selected':''}>Gerência / visualização</option></select><button class="btn ${m.active?'danger':'light'}" onclick="toggleManager(${m.id},${!m.active})">${m.active?'Desativar':'Reativar'}</button>${!m.active?`<button class="btn danger" onclick="deleteManager(${m.id},'${esc(String(m.display_name||m.username)).replace(/'/g,'&#39;')}')">Excluir</button>`:''}`:''}</div></article>`}).join('')||'<div class="v246-empty">Nenhum acesso cadastrado.</div>'}</div>`;
+    refreshIcons();
+  }
+  window.v246SetManagerRole=async(id,r)=>{if(!isMaster())return;try{const x=await rpc('leader_set_manager_role_v1',{p_token:leaderToken,p_manager_id:id,p_role:r});if(x?.ok){toast('Perfil alterado. O acesso foi desconectado para aplicar a nova permissão.');await loadManagement()}else toast('Não foi possível alterar o perfil.')}catch(e){console.error(e)}};
+
+  window.openManagerModal=function(){
+    if(!isMaster())return toast('Somente o Gestor Mestre pode criar acessos.');
+    openModal(`<h3 class="icon-title"><i data-lucide="user-plus" class="ico"></i>Novo acesso</h3><div class="field"><label>Nome completo</label><input id="mgrName" autocomplete="name"></div><div class="field"><label>Usuário</label><input id="mgrUser" autocomplete="off"></div><div class="field"><label>Perfil</label><select id="v246NewManagerRole"><option value="manager">Gestor</option><option value="viewer">Gerência / visualização</option></select></div><div class="field"><label>Senha</label><input id="mgrPass" type="password" minlength="12" autocomplete="new-password" placeholder="Mínimo 12 caracteres"></div><div class="actions"><button class="btn" onclick="v246CreateManager()">Criar acesso</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);refreshIcons();
+  };
+  window.v246CreateManager=async()=>{const name=document.getElementById('mgrName')?.value.trim()||'',user=document.getElementById('mgrUser')?.value.trim()||'',pass=document.getElementById('mgrPass')?.value||'',role=document.getElementById('v246NewManagerRole')?.value||'manager';if(user.length<3)return toast('Informe um usuário válido.');if(pass.length<12)return toast('A senha precisa ter no mínimo 12 caracteres.');try{const r=await rpc('leader_create_manager',{p_token:leaderToken,p_display_name:name,p_username:user,p_password:pass,p_creation_code:''});if(!r?.ok)return toast('Não foi possível criar o acesso.');if(role==='viewer')await rpc('leader_set_manager_role_v1',{p_token:leaderToken,p_manager_id:r.id,p_role:'viewer'});closeModal();toast('Acesso criado.');await loadManagement()}catch(e){console.error(e);toast('Erro ao criar acesso.')}};
+
+  const baseRenderManagersFinal=renderManagers;renderManagers=renderManagersV246;
+  const baseRenderTeamFinal=renderTeamAdmin;
+  renderTeamAdmin=function(){baseRenderTeamFinal();if(!isMaster()){document.querySelectorAll('#tab-team .admin-card-actions .btn.danger').forEach(b=>{b.disabled=true;b.title='Exclusão reservada ao Gestor Mestre';b.innerHTML='<i data-lucide="lock" class="ico"></i>Exclusão: Mestre'});const host=document.getElementById('tab-team');host?.querySelector('.section-head')?.insertAdjacentHTML('afterend','<div class="v246-safe-note">Gestores podem editar equipe e escala. Exclusão de pessoas é reservada ao Gestor Mestre.</div>')}refreshIcons()};
+  const baseRenderActivitiesFinal=renderActivitiesAdmin;
+  renderActivitiesAdmin=function(){baseRenderActivitiesFinal();if(!isMaster()){document.querySelectorAll('#tab-activities .admin-card-actions .btn.danger').forEach(b=>{b.disabled=true;b.title='Exclusão reservada ao Gestor Mestre';b.innerHTML='<i data-lucide="lock" class="ico"></i>Exclusão: Mestre'})}refreshIcons()};
+
+  const baseRenderTabsFinal=renderManagementTabs;
+  renderManagementTabs=function(force=false){
+    applyActiveTabState();
+    if(activeTab==='executive'){renderExecutive();if(!V246.executive&&!V246.loading.has('executive'))loadExecutive();return}
+    if(activeTab==='alerts'){renderAlerts();if(!V246.alerts&&!V246.loading.has('alerts'))loadAlerts();return}
+    if(activeTab==='audit'){renderAudit();if(!V246.audit&&!V246.loading.has('audit'))loadAudit();return}
+    if(activeTab==='backups'){renderBackups();if(!V246.backups&&!V246.loading.has('backups'))loadBackups();return}
+    if(activeTab==='cycle'){renderCycle();if(!V246.cycles&&!V246.loading.has('cycle'))loadCycles();return}
+    if(activeTab==='health'){renderHealth();if(!V246.health&&!V246.loading.has('health'))loadHealth();return}
+    if(activeTab==='privacy'){renderPrivacy();if(!V246.privacy&&!V246.loading.has('privacy'))loadPrivacy();return}
+    if(activeTab==='environment'){renderEnvironment();if(!V246.environment&&!V246.loading.has('environment'))loadEnvironment();return}
+    baseRenderTabsFinal(force);
+    if(activeTab==='managers')renderManagersV246();
+  };
+
+  const baseLoadManagementFinal=loadManagement;
+  loadManagement=async function(){
+    ensureHosts();
+    if(!leaderToken)return;
+    if(isViewer()){
+      await Promise.allSettled([loadEnvironment(true),loadExecutive(V246.executiveDays,true)]);
+      applyRoleUI();renderManagementTabs();return;
+    }
+    const r=await baseLoadManagementFinal();
+    await Promise.allSettled([loadEnvironment(true),loadAlerts(true)]);
+    if(activeTab==='executive')await loadExecutive(V246.executiveDays,true);
+    if(activeTab==='health')await loadHealth(true);
+    applyRoleUI();renderManagementTabs();return r;
+  };
+
+  leaderLogin=async function(){
+    const u=(document.getElementById('loginUser')?.value||'').trim(),p=document.getElementById('loginPass')?.value||'';if(!u||!p)return toast('Informe usuário e senha.');
+    try{
+      const d=await rpc('leader_login',{p_username:u,p_password:p});if(!d?.ok)return toast('Login ou senha inválidos.');
+      leaderToken=d.token;currentManager=d.manager||null;sessionStorage.setItem('leaderToken',leaderToken);document.getElementById('loginPass').value='';
+      document.getElementById('loginArea').classList.add('hidden');document.getElementById('management').classList.remove('hidden');document.getElementById('manageDate').value=isoLocal();
+      ensureHosts();if(isViewer()){activeTab='executive';localStorage.setItem('activeManageTab','executive')}await loadManagement();refreshIcons();
+    }catch(e){console.error(e);toast('Falha ao abrir a Gestão.')}
+  };
+  checkLeader=async function(){
+    leaderToken=String(sessionStorage.getItem('leaderToken')||'');if(!leaderToken){document.getElementById('loginArea').classList.remove('hidden');document.getElementById('management').classList.add('hidden');return}
+    try{
+      const m=await rpc('leader_current_manager',{p_token:leaderToken});
+      if(m?.id){currentManager=m;document.getElementById('loginArea').classList.add('hidden');document.getElementById('management').classList.remove('hidden');if(!document.getElementById('manageDate').value)document.getElementById('manageDate').value=isoLocal();ensureHosts();if(isViewer())activeTab='executive';await loadManagement()}
+      else{leaderToken='';sessionStorage.removeItem('leaderToken');document.getElementById('loginArea').classList.remove('hidden');document.getElementById('management').classList.add('hidden')}
+    }catch(e){leaderToken='';sessionStorage.removeItem('leaderToken');document.getElementById('loginArea').classList.remove('hidden');document.getElementById('management').classList.add('hidden')}
+  };
+
+  document.getElementById('manageDate')?.addEventListener('change',()=>{V246.executive=null;V246.alerts=null;if(activeTab==='executive')loadExecutive(V246.executiveDays,true);if(activeTab==='alerts')loadAlerts(true)});
+  window.addEventListener('online',()=>{if(activeTab==='health')loadHealth(true)});
+  window.addEventListener('offline',()=>{if(activeTab==='health')renderHealth()});
+  ensureHosts();setTimeout(()=>{if(leaderToken)loadGovernanceHeader();applyRoleUI()},300);
+  console.info('Governança',GOV_VERSION,'ativa');
 })();
 </script>
 
