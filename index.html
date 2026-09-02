@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.02-v24.5.1-ajustes" />
+<meta name="app-version" content="2026.09.02-v24.5.2-ajustes" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -2837,7 +2837,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.1';
+  const V245='V24.5.2';
   const TEAM_KEY='v245TeamAccess';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
@@ -2846,15 +2846,13 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   let teamAccessInfo={ok:false,access_code:''};
   let pendingEmployeeCallback=null;
   const signedCache=new Map();
+  let v2452CoverageOptions=[];
 
   function loadSecrets(){
     try{
       localStorage.removeItem('leaderToken');
-      const u=new URL(location.href);
-      const incoming=(u.searchParams.get('team')||u.searchParams.get('access')||'').trim().toLowerCase();
-      if(/^[0-9a-f]{64}$/.test(incoming))sessionStorage.setItem(TEAM_KEY,incoming);
-      if(u.searchParams.has('team')||u.searchParams.has('access')){u.searchParams.delete('team');u.searchParams.delete('access');history.replaceState(null,'',u.pathname+(u.searchParams.toString()?'?'+u.searchParams.toString():'')+u.hash)}
-      teamCode=String(sessionStorage.getItem(TEAM_KEY)||'').toLowerCase();
+      try{sessionStorage.removeItem(TEAM_KEY)}catch(_e){}
+      teamCode='';
       const raw=JSON.parse(sessionStorage.getItem(EMP_KEY)||'null');
       if(raw&&/^[0-9a-f]{64}$/.test(String(raw.token||''))&&raw.employee?.id&&Number(raw.client_expires_at||0)>Date.now())employeeAuth=raw;
       else{employeeAuth=null;sessionStorage.removeItem(EMP_KEY)}
@@ -2888,9 +2886,10 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     openModal(`<div class="section-head"><div><div class="section-kicker">Acesso protegido</div><h3>${esc(title)}</h3><div class="sub">${esc(name)}, digite seu PIN individual de 6 números. O PIN não fica salvo no navegador.</div></div></div><div class="field"><label>PIN de 6 números</label><input id="v245EmployeePin" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)" onkeydown="if(event.key==='Enter')v245SubmitEmployeePin('${employeeId}')"></div><div class="actions"><button class="btn mint" onclick="v245SubmitEmployeePin('${employeeId}')"><i data-lucide="shield-check" class="ico"></i>Confirmar</button><button class="btn light" onclick="pendingEmployeeCallback=null;closeModal()">Cancelar</button></div><div class="security-note"><b>Proteção:</b> várias tentativas incorretas bloqueiam temporariamente o PIN.</div>`);refreshIcons();setTimeout(()=>document.getElementById('v245EmployeePin')?.focus(),40);
   }
   window.v245SubmitEmployeePin=async function(employeeId){
-    const pin=document.getElementById('v245EmployeePin')?.value||'';if(!/^\\d{6}$/.test(pin)){toast('Digite os 6 números do PIN.');return}
+    const pin=document.getElementById('v245EmployeePin')?.value||'';
+    if(!/^\d{6}$/.test(pin)){toast('Digite os 6 números do PIN.');return}
     try{
-      const r=await rpc('employee_login_v1',{p_team_code:teamCode,p_employee:employeeId,p_pin:pin});
+      const r=await rpc('employee_login_v2',{p_employee:employeeId,p_pin:pin});
       if(!r?.ok){toast('Não foi possível confirmar o acesso. Confira o PIN e tente novamente.');return}
       saveEmployeeAuth(r);const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();if(typeof cb==='function')await cb(r.token,r.employee);
     }catch(e){console.error(e);toast('Não foi possível confirmar o acesso agora.')}
@@ -2900,56 +2899,102 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     openEmployeePin(employeeId,callback,title);return null;
   }
 
-  function renderTeamGate(message='Este piloto usa um link privado da equipe.'){
-    routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;
-    const host=document.getElementById('teamCards');
-    if(host)host.innerHTML=`<div class="security-gate" style="grid-column:1/-1"><div class="security-mark"><i data-lucide="shield-check" class="ico"></i></div><h3>Acesso protegido da equipe</h3><p>${esc(message)}</p><div class="security-gate-row"><div class="field"><label>Código de acesso</label><input id="v245TeamCodeInput" type="password" maxlength="64" autocomplete="off" placeholder="Cole o código ou abra o link enviado pela liderança"></div><button class="btn mint" onclick="v245UnlockTeam()"><i data-lucide="key-round" class="ico"></i>Acessar</button></div><div class="security-note">O código fica somente nesta aba do navegador e é removido da barra de endereço após a abertura.</div></div>`;
-    const sel=document.getElementById('selectedActivity');if(sel)sel.innerHTML='';
-    const ce=document.getElementById('coverExecutor'),ca=document.getElementById('coverAbsent'),cb=document.getElementById('coverActionBtn');if(ce){ce.innerHTML='<option>Acesso protegido</option>';ce.disabled=true}if(ca){ca.innerHTML='<option>Acesso protegido</option>';ca.disabled=true}if(cb)cb.disabled=true;refreshIcons();
+  function v2452CardStatus(p){
+    const total=Number(p.assignment_count||0),done=Number(p.completed_count||0),running=Number(p.in_progress_count||0);
+    if(!v24Bool(p.active_today))return {label:'Ausente',cls:'absent'};
+    if(total>0&&done>=total)return {label:'Concluída',cls:'done'};
+    if(running>0)return {label:'Em andamento',cls:'run'};
+    return {label:'Pendente',cls:''};
   }
-  window.v245UnlockTeam=async function(){
-    const code=(document.getElementById('v245TeamCodeInput')?.value||'').trim().toLowerCase();
-    if(!/^[0-9a-f]{64}$/.test(code)){toast('Código de acesso inválido.');return}
-    try{const r=await rpc('team_get_operation_day_state_v1',{p_team_code:code,p_date:isoLocal()});if(!r?.ok){toast('Código de acesso inválido.');return}teamCode=code;sessionStorage.setItem(TEAM_KEY,code);await clearEmployeeAuth();toast('Acesso da equipe liberado ✓');await loadRoutine(isoLocal())}catch(e){console.error(e);toast('Não foi possível validar o acesso.')}
+
+  renderRoutine=function(force=false){
+    const host=document.getElementById('teamCards');if(!host)return;
+    const rows=Array.isArray(dayPeople)?dayPeople:[];
+    host.innerHTML=rows.map(p=>{
+      const st=v2452CardStatus(p),count=Number(p.assignment_count||0),critical=Number(p.critical_count||0);
+      const initial=esc((p.employee_name||'?').slice(0,1).toUpperCase());
+      return `<button class="person person-v24 ${v24Bool(p.active_today)?'':'is-unavailable'} ${critical>0?'has-critical':''}" ${v24Bool(p.active_today)?`onclick="selectPerson('${p.employee_id}')"`:'disabled'}><div class="avatar">${initial}</div><div><div class="name">${esc(p.employee_name)}</div><div class="role">${esc(p.employee_role||'Equipe')}</div><small class="role">${count} ${count===1?'atividade':'atividades'}</small>${critical>0?`<span class="person-critical-badge"><i data-lucide="siren" class="ico"></i>Prioridade crítica</span>`:''}</div><span class="status ${st.cls}">${st.label}</span></button>`;
+    }).join('')||'<div class="empty-state">Nenhuma pessoa ativa na equipe.</div>';
+
+    const present=rows.filter(p=>v24Bool(p.active_today));
+    const exec=document.getElementById('coverExecutor'),abs=document.getElementById('coverAbsent'),btn=document.getElementById('coverActionBtn');
+    if(exec){
+      exec.disabled=false;
+      exec.innerHTML='<option value="">Selecione</option>'+present.map(p=>`<option value="${p.employee_id}">${esc(p.employee_name)}</option>`).join('');
+      exec.onchange=()=>v2452PrepareCoverage(exec.value);
+    }
+    if(abs){abs.disabled=true;abs.innerHTML='<option value="">Escolha primeiro quem vai cobrir</option>'}
+    if(btn)btn.disabled=true;
+    if(selectedEmployeeId)renderSelected(true);
+    refreshIcons();
   };
 
   const baseShowPage=showPage;
   showPage=function(p){
-    if((p==='rotina'||p==='sugestoes')&&!teamCode){p='rotina'}
     localStorage.setItem('activePage',p);
     document.getElementById('pageRotina').classList.toggle('hidden',p!=='rotina');document.getElementById('pageGestao').classList.toggle('hidden',p!=='gestao');document.getElementById('pageSugestoes').classList.toggle('hidden',p!=='sugestoes');
     document.getElementById('navRotina').classList.toggle('active',p==='rotina');document.getElementById('navGestao').classList.toggle('active',p==='gestao');document.getElementById('navSugestoes').classList.toggle('active',p==='sugestoes');refreshIcons();requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
-    if(p==='rotina'){if(teamCode)loadRoutine(isoLocal());else renderTeamGate()}
+    if(p==='rotina')loadRoutine(isoLocal());
     else if(p==='gestao')checkLeader();
-    else if(p==='sugestoes'){if(teamCode)loadSuggestionNames();else{toast('Abra primeiro o link protegido da equipe.');showPage('rotina')}}
+    else if(p==='sugestoes')loadSuggestionNames();
   };
 
   const baseLoadRoutine=loadRoutine;
   loadRoutine=async function(date=isoLocal()){
     if(typeof v242IsLeaderPreview==='function'&&v242IsLeaderPreview())return baseLoadRoutine(date);
-    if(!teamCode){renderTeamGate();return}
     const target=isoLocal();
     if(syncBusy){routineQueued=true;return}syncBusy=true;
     try{
-      routineDate=target;const view=new Date(target+'T12:00:00');document.getElementById('weekText').textContent=weekRange(view);document.getElementById('todayText').textContent=view.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
-      const [state,people,fresh]=await Promise.all([rpc('team_get_operation_day_state_v1',{p_team_code:teamCode,p_date:target}),rpc('team_get_day_people_v1',{p_team_code:teamCode,p_date:target}),rpc('team_get_day_routine_v1',{p_team_code:teamCode,p_date:target})]);
-      if(!state?.ok){teamCode='';sessionStorage.removeItem(TEAM_KEY);await clearEmployeeAuth();renderTeamGate('O acesso da equipe expirou ou foi trocado pela Gestão. Peça o link atualizado.');return}
-      dayPeople=Array.isArray(people)?people:[];followupUnreadCounts=new Map();
-      if(!v24Bool(state.published)){routine=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderRoutineWaitingForLeader(state);return}
-      routine=Array.isArray(fresh)?fresh:[];
-      if(selectedEmployeeId&&!dayPeople.some(x=>String(x.employee_id)===String(selectedEmployeeId))){selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null}
-      if(selectedEmployeeId&&String(employeeAuth?.employee?.id)!==String(selectedEmployeeId)){selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null}
+      routineDate=target;
+      const view=new Date(target+'T12:00:00');
+      document.getElementById('weekText').textContent=weekRange(view);
+      document.getElementById('todayText').textContent=view.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+      const localOp=operationState(target);
+      if(localOp.reason==='sunday'||(localOp.isToday&&!localOp.open)){
+        routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderClosedRoutine(localOp);return;
+      }
+      const [state,cards]=await Promise.all([
+        rpc('public_operation_state_v3',{p_date:target}),
+        rpc('public_routine_cards_v1',{p_date:target})
+      ]);
+      if(!state?.ok)throw new Error('state_unavailable');
+      dayPeople=Array.isArray(cards)?cards:[];
+      followupUnreadCounts=new Map();
+      if(!v24Bool(state.published)){
+        routine=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderRoutineWaitingForLeader();return;
+      }
+      if(employeeAuth?.employee?.id){
+        const token=await validEmployeeToken(employeeAuth.employee.id);
+        if(token){
+          const own=await rpc('employee_day_routine_secure_v2',{p_employee_token:token,p_date:target});
+          routine=Array.isArray(own)?own:[];
+          if(selectedEmployeeId&&String(selectedEmployeeId)!==String(employeeAuth.employee.id)){selectedEmployeeId=null;selected=null}
+          else if(selectedEmployeeId)selected=routine.find(x=>String(x.employee_id)===String(selectedEmployeeId)||String(x.executor_id)===String(selectedEmployeeId))||null;
+        }else{routine=[];selectedEmployeeId=null;selected=null}
+      }else{routine=[];selectedEmployeeId=null;selected=null}
       renderRoutine(true);
-    }catch(e){console.error(e);document.getElementById('teamCards').innerHTML='<div class="activitybox" style="grid-column:1/-1"><b>Não foi possível carregar a operação.</b><div class="sub">Verifique a conexão e tente novamente. Nenhum dado antigo foi mantido em cache.</div></div>';toast('Erro ao sincronizar rotina')}
-    finally{syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(isoLocal()),180)}}
+    }catch(e){
+      console.error(e);
+      const h=document.getElementById('teamCards');
+      if(h)h.innerHTML='<div class="activitybox" style="grid-column:1/-1"><b>Não foi possível carregar a operação.</b><div class="sub">Verifique a conexão e tente novamente.</div></div>';
+      toast('Erro ao sincronizar rotina');
+    }finally{
+      syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(isoLocal()),180)}
+    }
   };
 
-  function selectAuthenticatedEmployee(employeeId){selectedEmployeeId=employeeId;coverageExecutorId=null;coverageAssignmentId=null;followupsExpandedEmployeeId=null;lastSelectedRenderSignature='';selected=routine.find(x=>String(x.employee_id)===String(employeeId))||null;renderSelected(true);document.getElementById('selectedActivity')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
+  async function selectAuthenticatedEmployee(employeeId,token){
+    const rows=await rpc('employee_day_routine_secure_v2',{p_employee_token:token,p_date:isoLocal()});
+    routine=Array.isArray(rows)?rows:[];
+    selectedEmployeeId=employeeId;coverageExecutorId=null;coverageAssignmentId=null;followupsExpandedEmployeeId=null;lastSelectedRenderSignature='';
+    selected=routine.find(x=>String(x.employee_id)===String(employeeId)||String(x.executor_id)===String(employeeId))||null;
+    renderSelected(true);document.getElementById('selectedActivity')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
   selectPerson=async function(employeeId){
     if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}
     const p=(dayPeople||[]).find(x=>String(x.employee_id)===String(employeeId));if(!p||!v24Bool(p.active_today)){toast('Somente quem está marcado como presente pode abrir atividades.');return}
-    if(String(selectedEmployeeId)===String(employeeId)&&!coverageAssignmentId){selectedEmployeeId=null;selected=null;renderSelected(true);return}
-    await requireEmployee(employeeId,async()=>selectAuthenticatedEmployee(employeeId),'Abrir minhas atividades');
+    if(String(selectedEmployeeId)===String(employeeId)&&String(employeeAuth?.employee?.id)===String(employeeId)&&!coverageAssignmentId){selectedEmployeeId=null;selected=null;routine=[];renderSelected(true);return}
+    await requireEmployee(employeeId,async token=>selectAuthenticatedEmployee(employeeId,token),'Abrir minhas atividades');
   };
 
   const baseRenderSelected=renderSelected;
@@ -2957,9 +3002,40 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
   startAssignment=async function(a,e){if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}return requireEmployee(e,async token=>{const key='start:'+a;if(!beginAction(key))return;try{const r=await rpc('start_assignment_secure_v1',{p_employee_token:token,p_assignment:a});if(!r?.ok){toast(v24ErrorMessage(r?.error));return}await loadRoutine(isoLocal());toast('Atividade iniciada ✓')}catch(err){console.error(err);toast('Não foi possível iniciar.')}finally{endAction(key)}},'Confirmar início da atividade')};
   startCoverage=async function(a,e){if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}return requireEmployee(e,async token=>{const key='cover:'+a;if(!beginAction(key))return;try{const r=await rpc('claim_coverage_secure_v1',{p_employee_token:token,p_assignment:a});if(!r?.ok){toast(v24ErrorMessage(r?.error));return}coverageExecutorId=null;coverageAssignmentId=null;selectedEmployeeId=e;await loadRoutine(isoLocal());toast('Cobertura iniciada ✓')}catch(err){console.error(err);toast('Não foi possível iniciar a cobertura.')}finally{endAction(key)}},'Confirmar cobertura')};
+  window.v2452PrepareCoverage=async function(employeeId){
+    const absent=document.getElementById('coverAbsent'),btn=document.getElementById('coverActionBtn');
+    v2452CoverageOptions=[];
+    if(!employeeId){
+      if(absent){absent.disabled=true;absent.innerHTML='<option value="">Escolha primeiro quem vai cobrir</option>'}
+      if(btn)btn.disabled=true;return;
+    }
+    const p=(dayPeople||[]).find(x=>String(x.employee_id)===String(employeeId));
+    if(!p||!v24Bool(p.active_today)){toast('Selecione um colaborador presente.');return}
+    await requireEmployee(employeeId,async token=>{
+      try{
+        const rows=await rpc('employee_coverage_options_v2',{p_employee_token:token,p_date:isoLocal()});
+        v2452CoverageOptions=Array.isArray(rows)?rows:[];
+        if(absent){
+          absent.disabled=false;
+          absent.innerHTML='<option value="">Selecione a atividade do ausente</option>'+v2452CoverageOptions.map(r=>`<option value="${r.assignment_id}">${esc(r.employee_name)} — ${esc(r.activity_name)}</option>`).join('');
+          absent.onchange=()=>{if(btn)btn.disabled=!absent.value};
+        }
+        if(btn)btn.disabled=true;
+        if(!v2452CoverageOptions.length)toast('Não há atividade de colega ausente disponível para cobertura.');
+      }catch(e){console.error(e);toast('Não foi possível carregar as coberturas.')}
+    },'Confirmar quem fará a cobertura');
+  };
   openCoverage=async function(){
-    if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}const exec=document.getElementById('coverExecutor')?.value||'',ass=document.getElementById('coverAbsent')?.value||'';if(!exec||!ass){toast('Selecione quem cobre e a atividade do ausente.');return}const target=(routine||[]).find(r=>String(r.assignment_id)===String(ass));if(!target||v24Bool(target.active_today)){toast('Somente atividades de quem está indisponível podem ser cobertas.');return}
-    await requireEmployee(exec,async()=>{selected=target;selectedEmployeeId=exec;coverageExecutorId=exec;coverageAssignmentId=ass;lastSelectedRenderSignature='';renderSelected(true);document.getElementById('selectedActivity')?.scrollIntoView({behavior:'smooth',block:'nearest'});toast((target.activity_photo_requirement||'before_after')==='before_after'?'Cobertura preparada. Tire a foto ANTES para iniciar.':'Cobertura preparada. Clique em Iniciar quando estiver pronto.')},'Confirmar quem fará a cobertura');
+    if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}
+    const exec=document.getElementById('coverExecutor')?.value||'',ass=document.getElementById('coverAbsent')?.value||'';
+    if(!exec||!ass){toast('Selecione quem cobre e a atividade do ausente.');return}
+    const target=v2452CoverageOptions.find(r=>String(r.assignment_id)===String(ass));
+    if(!target){toast('Atualize a lista de cobertura e tente novamente.');return}
+    await requireEmployee(exec,async()=>{
+      routine=[target];selected=target;selectedEmployeeId=exec;coverageExecutorId=exec;coverageAssignmentId=ass;lastSelectedRenderSignature='';
+      renderSelected(true);document.getElementById('selectedActivity')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+      toast((target.activity_photo_requirement||'before_after')==='before_after'?'Cobertura preparada. Tire a foto ANTES para iniciar.':'Cobertura preparada. Clique em Iniciar quando estiver pronto.');
+    },'Confirmar quem fará a cobertura');
   };
   finishAssignment=async function(id){if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}const r=(routine||[]).find(x=>String(x.assignment_id)===String(id));const eid=r?.executor_id||r?.employee_id||selectedEmployeeId;if(!eid)return;return requireEmployee(eid,async token=>{const key='finish:'+id;if(!beginAction(key))return;try{const obs=(document.getElementById('finishObs')?.value||'').trim(),leaderAction=!!document.getElementById('finishLeaderAction')?.checked,cat=document.getElementById('finishCategory')?.value||null;const res=await rpc('finish_assignment_secure_v1',{p_employee_token:token,p_assignment:id,p_observation:obs,p_category:cat,p_leader_action:leaderAction});if(!res?.ok){toast(v24ErrorMessage(res?.error));return}closeModal();toast(leaderAction?'Atividade concluída e observação enviada para acompanhamento ✓':'Atividade concluída ✓');await loadRoutine(isoLocal())}catch(e){console.error(e);toast('Erro ao finalizar a atividade.')}finally{endAction(key)}},'Confirmar conclusão')};
 
@@ -3008,9 +3084,23 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const host=document.getElementById(hostId);if(!host||!employeeId)return;const token=await validEmployeeToken(employeeId);if(!token){host.innerHTML='<div class="empty-state">Sessão expirada. Feche e abra novamente o calendário.</div>';return}const m=new Date(monthDate.getFullYear(),monthDate.getMonth(),1,12);calendarMonth=m;const first=new Date(m.getFullYear(),m.getMonth(),1),last=new Date(m.getFullYear(),m.getMonth()+1,0);let rows=[];try{rows=await rpc('get_employee_calendar_secure_v1',{p_employee_token:token,p_from:isoLocal(first),p_to:isoLocal(last)})||[]}catch(e){host.innerHTML='<div class="muted">Não foi possível carregar o calendário agora.</div>';return}const byDate=Object.fromEntries(rows.map(r=>[r.work_date,r])),offset=(first.getDay()+6)%7,days=last.getDate(),today=isoLocal();let cells='';for(let i=0;i<offset;i++)cells+='<div class="cal-day empty"></div>';for(let d=1;d<=days;d++){const dt=new Date(m.getFullYear(),m.getMonth(),d,12),key=isoLocal(dt),dow=dt.getDay();if(dow===0){cells+=`<div class="cal-day future" style="opacity:.45"><span>${d}</span></div>`;continue}const r=byDate[key];let cls='future',label='';if(r?.own_status==='completed'){cls='done';label=r.executor_id&&String(r.executor_id)!==String(employeeId)?'Coberta':'Feita'}else if(r?.coverage_executed){cls='done';label='Cobriu'}else if(key===today){cls='todaydue';label='Hoje'}else if(key<today){cls='missed';label='Não feita'}cells+=`<div class="cal-day ${cls}"><span>${d}</span>${label?`<small>${label}</small>`:''}</div>`}host.innerHTML=`<div class="calendar-shell"><div class="calendar-head"><button class="btn light" onclick="changeCalendarMonth(-1)"><i data-lucide="chevron-left" class="ico"></i></button><h4>${m.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</h4><button class="btn light" onclick="changeCalendarMonth(1)"><i data-lucide="chevron-right" class="ico"></i></button></div><div class="calendar-grid">${['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(x=>`<div class="calendar-dow">${x}</div>`).join('')}${cells}</div><div class="legend"><span><i class="dot g"></i>Feita</span><span><i class="dot r"></i>Não feita</span><span><i class="dot y"></i>Hoje</span></div></div>`;refreshIcons();
   };
 
-  loadSuggestionNames=async function(){if(!teamCode){communicationPeople=[];return}try{const rows=await rpc('team_get_day_people_v1',{p_team_code:teamCode,p_date:isoLocal()});communicationPeople=Array.isArray(rows)?rows.filter(x=>v24Bool(x.active_today)):[]}catch(e){communicationPeople=[]}};
+  loadSuggestionNames=async function(){
+    try{
+      const rows=await rpc('public_routine_cards_v1',{p_date:isoLocal()});
+      communicationPeople=Array.isArray(rows)?rows.filter(x=>v24Bool(x.active_today)):[];
+    }catch(e){communicationPeople=[]}
+  };
   function promptEmployeeChoice(callback,title='Confirmar acesso'){pendingEmployeeCallback=callback;const opts=(communicationPeople||[]).map(p=>`<option value="${p.employee_id}">${esc(p.employee_name)}</option>`).join('');openModal(`<div class="section-head"><div><div class="section-kicker">Validação de acesso</div><h3>${esc(title)}</h3><div class="sub">Escolha seu nome e confirme com seu PIN de 6 números. Na ideia anônima, sua identidade serve somente para validar que você faz parte da equipe e não é gravada na sugestão.</div></div></div><div class="field"><label>Seu nome</label><select id="v245EmployeeChoice"><option value="">Selecione</option>${opts}</select></div><div class="field"><label>PIN</label><input id="v245ChoicePin" class="pin-input" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,6)"></div><div class="actions"><button class="btn mint" onclick="v245SubmitEmployeeChoice()"><i data-lucide="shield-check" class="ico"></i>Confirmar</button><button class="btn light" onclick="pendingEmployeeCallback=null;closeModal()">Cancelar</button></div>`);refreshIcons()}
-  window.v245SubmitEmployeeChoice=async function(){const id=document.getElementById('v245EmployeeChoice')?.value||'',pin=document.getElementById('v245ChoicePin')?.value||'';if(!id){toast('Selecione seu nome.');return}if(!/^\\d{6}$/.test(pin)){toast('Digite os 6 números do PIN.');return}try{const r=await rpc('employee_login_v1',{p_team_code:teamCode,p_employee:id,p_pin:pin});if(!r?.ok){toast('Não foi possível confirmar o acesso.');return}saveEmployeeAuth(r);const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();if(typeof cb==='function')await cb(r.token,r.employee)}catch(e){toast('Não foi possível confirmar o acesso agora.')}};
+  window.v245SubmitEmployeeChoice=async function(){
+    const id=document.getElementById('v245EmployeeChoice')?.value||'',pin=document.getElementById('v245ChoicePin')?.value||'';
+    if(!id){toast('Selecione seu nome.');return}
+    if(!/^\d{6}$/.test(pin)){toast('Digite os 6 números do PIN.');return}
+    try{
+      const r=await rpc('employee_login_v2',{p_employee:id,p_pin:pin});
+      if(!r?.ok){toast('Não foi possível confirmar o acesso.');return}
+      saveEmployeeAuth(r);const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();if(typeof cb==='function')await cb(r.token,r.employee)
+    }catch(e){toast('Não foi possível confirmar o acesso agora.')}
+  };
   sendSuggestion=async function(){
     const msg=(document.getElementById('suggestMessage')?.value||'').trim();if(msg.length<3){toast('Escreva sua ideia.');return}if(msg.length>2000){toast('A ideia está muito longa.');return}
     const submit=async token=>{try{const r=await rpc('submit_anonymous_suggestion_secure_v1',{p_employee_token:token,p_message:msg});if(!r?.ok){toast('Não foi possível enviar.');return}document.getElementById('suggestMessage').value='';toast('Ideia anônima enviada ✓')}catch(e){console.error(e);toast('Erro ao enviar a ideia.')}};
@@ -3032,11 +3122,8 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   window.v245SaveEmployeePin=async function(id){const a=document.getElementById('v245NewPin')?.value||'',b=document.getElementById('v245NewPin2')?.value||'';if(!/^\\d{6}$/.test(a)){toast('O PIN deve ter exatamente 6 números.');return}if(a!==b){toast('Os dois PINs não conferem.');return}try{const r=await rpc('leader_set_employee_pin_v3',{p_token:leaderToken,p_employee:id,p_pin:a});if(!r?.ok){toast('Não foi possível alterar o PIN.');return}closeModal();toast('PIN protegido atualizado ✓');await loadManagement()}catch(e){console.error(e);toast('Erro ao atualizar o PIN.')}};
 
   const baseRenderManagers=renderManagers;
-  renderManagers=function(){baseRenderManagers();const el=document.getElementById('tab-managers');if(!el)return;const code=String(teamAccessInfo?.access_code||''),link=/^[0-9a-f]{64}$/.test(code)?`${location.origin}${location.pathname}?team=${code}`:'';const panel=document.createElement('div');panel.className='team-access-panel';panel.innerHTML=`<div class="section-head" style="margin-bottom:0"><div><div class="section-kicker">Equipe</div><h4><i data-lucide="link-2" class="ico"></i>Link privado da equipe</h4><div class="sub">Este link libera somente a rotina de hoje. Cada colaborador ainda precisa do próprio PIN para executar ações.</div></div></div>${link?`<div class="access-link-row"><input id="v245TeamLink" readonly value="${esc(link)}"><button class="btn mint" onclick="v245CopyTeamLink()"><i data-lucide="copy" class="ico"></i>Copiar link</button></div>`:'<div class="empty-state">Link indisponível.</div>'}${currentManager?.is_primary?`<div class="actions"><button class="btn danger" onclick="v245RotateTeamLink()"><i data-lucide="refresh-cw" class="ico"></i>Trocar link da equipe</button></div><div class="security-note">Trocar o link encerra todas as sessões atuais da equipe. Use somente se o endereço tiver sido compartilhado indevidamente.</div>`:''}`;el.prepend(panel);refreshIcons()};
-  window.v245CopyTeamLink=function(){const el=document.getElementById('v245TeamLink');if(!el?.value)return;navigator.clipboard?.writeText(el.value).then(()=>toast('Link privado da equipe copiado ✓')).catch(()=>{el.select();document.execCommand('copy');toast('Link copiado ✓')})};
-  window.v245RotateTeamLink=async function(){const ok=typeof v2440Confirm==='function'?await v2440Confirm('Trocar o link da equipe','O link atual deixará de funcionar e todas as sessões dos colaboradores serão encerradas.','Trocar link',true):confirm('Trocar o link da equipe?');if(!ok)return;try{const r=await rpc('leader_rotate_team_access_v1',{p_token:leaderToken});if(!r?.ok){toast('Não foi possível trocar o link.');return}teamAccessInfo=r;renderManagers();toast('Novo link da equipe gerado ✓')}catch(e){console.error(e);toast('Erro ao trocar o link.')}};
+  renderManagers=function(){baseRenderManagers();document.querySelectorAll('#tab-managers .team-access-panel').forEach(x=>x.remove());refreshIcons()};
 
-  // Align manager password UI with backend policy (12+ chars).
   const baseOpenManagerModal=openManagerModal;openManagerModal=function(){baseOpenManagerModal();const p=document.getElementById('mgrPass');if(p){p.minLength=12;p.placeholder='Mínimo 12 caracteres'}document.querySelectorAll('#modalBox .sub').forEach(x=>{if(/mínimo 6|6 caracteres/i.test(x.textContent))x.textContent='Use no mínimo 12 caracteres.'})};
   const baseOpenEditManagerModal=openEditManagerModal;openEditManagerModal=function(id){baseOpenEditManagerModal(id);const p=document.getElementById('mgrEditPass');if(p){p.minLength=12;p.placeholder='Deixe vazio para manter; para trocar, mínimo 12'}document.querySelectorAll('#modalBox .sub').forEach(x=>{if(/6 caracteres/i.test(x.textContent))x.textContent='Para trocar, use no mínimo 12 caracteres.'})};
   const baseCreateManager=createManager;createManager=async function(btn){const p=document.getElementById('mgrPass')?.value||'';if(p.length<12){toast('A senha precisa ter no mínimo 12 caracteres.');return}return baseCreateManager(btn)};
@@ -3052,7 +3139,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
   window.addEventListener('pageshow',()=>{if(!document.getElementById('pageGestao')?.classList.contains('hidden')&&leaderToken)checkLeader()});
   window.addEventListener('storage',e=>{if(e.key==='leaderToken')localStorage.removeItem('leaderToken')});
-  const initial=window.__V245_PENDING_PAGE__||'rotina';showPage(initial==='gestao'?'gestao':(initial==='sugestoes'&&teamCode?'sugestoes':'rotina'));
+  const initial=window.__V245_PENDING_PAGE__||'rotina';showPage(initial==='gestao'?'gestao':(initial==='sugestoes'?'sugestoes':'rotina'));
   console.info('Gestão do Estoque',V245,'proteções ativas');
 })();
 </script>
