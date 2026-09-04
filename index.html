@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.02-v24.5.4-sessao-dashboard" />
+<meta name="app-version" content="2026.09.04-v24.5.5-sem-bloqueio-fechamento" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -591,7 +591,7 @@ function operationState(dateStr=routineDate){
  if(!schedule.workingDay)return {open:false,isToday:target===now.date,reason:'sunday',schedule,now};
  if(target!==now.date)return {open:false,isToday:false,reason:'other_date',schedule,now};
  if(now.minutes<schedule.start)return {open:false,isToday:true,reason:'before_open',schedule,now};
- if(now.minutes>=schedule.end)return {open:false,isToday:true,reason:'after_close',schedule,now};
+ if(now.minutes>=schedule.end)return {open:true,isToday:true,reason:'extended',schedule,now};
  return {open:true,isToday:true,reason:'open',schedule,now};
 }
 function operationHoursText(schedule){if(!schedule?.workingDay)return 'Domingo sem operação';return schedule.start===9*60?'09:00 às 19:00':'08:00 às 20:00'}
@@ -600,7 +600,7 @@ function operationBlockedMessage(dateStr=routineDate){
  if(st.reason==='sunday')return 'Aos domingos não há atividades programadas.';
  if(st.reason==='other_date')return 'As atividades só podem ser executadas na data de hoje.';
  if(st.reason==='before_open')return `A operação começa às ${st.schedule.start===9*60?'09:00':'08:00'}.`;
- if(st.reason==='after_close')return `A operação de hoje encerrou às ${st.schedule.end===19*60?'19:00':'20:00'}.`;
+ if(st.reason==='after_close')return 'As atividades pendentes de hoje continuam disponíveis até o fim do dia.';
  return 'Atividade fora do horário de operação.';
 }
 function canExecuteRoutineAction(){return operationState(routineDate).open}
@@ -2837,7 +2837,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.4';
+  const V245='V24.5.5';
   const TEAM_KEY='v245TeamAccess';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
