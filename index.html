@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.06-v24.5.10-feriados-preparacao-estavel" />
+<meta name="app-version" content="2026.09.06-v24.5.11-sem-semana-selecionada" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -527,7 +527,7 @@ html.tv-only .live-update-box{background:#effaf6!important;border-color:#a9dfd1!
 </aside>
 <main class="main">
 <section id="pageRotina">
-  <div class="hero"><div><div style="font-weight:900;letter-spacing:.08em">ROTINA PERSONALIZADA</div><h2>Suas atividades de hoje</h2><p>O sistema divide e alterna as atividades para que todos aprendam e façam tudo.</p></div><div class="week"><small>Semana selecionada</small><div id="weekText" style="font-size:18px;font-weight:900;margin-top:5px"></div></div></div>
+  <div class="hero"><div><div style="font-weight:900;letter-spacing:.08em">ROTINA PERSONALIZADA</div><h2>Suas atividades de hoje</h2><p>O sistema divide e alterna as atividades para que todos aprendam e façam tudo.</p></div><div id="weekText" hidden aria-hidden="true"></div></div>
   <div class="panel"><div id="routineSelectHeader" style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><h3>1 &nbsp; Toque no seu nome</h3><div class="sub">Só depois serão mostradas sua atividade de hoje e o botão para iniciar.</div></div><div class="status" id="todayText"></div></div><div class="team" id="teamCards"></div><div id="selectedActivity"></div></div>
   <div class="panel day-information-panel">
     <div class="section-head">
@@ -2847,7 +2847,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.10';
+  const V245='V24.5.11';
   const TEAM_KEY='v245TeamAccess';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
