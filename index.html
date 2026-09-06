@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.05-v24.5.8-redistribuicao-automatica" />
+<meta name="app-version" content="2026.09.06-v24.5.10-feriados-preparacao-estavel" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -1854,7 +1854,7 @@ openManagementMore=function(){const items=[['records','history','Histórico'],['
 
 loadManagement=async function(){
  if(!leaderToken)return;if(managementLoading){managementQueued=true;return}managementLoading=true;const d=document.getElementById('manageDate').value||isoLocal(),dt=new Date(d+'T12:00:00'),from=new Date(dt),to=new Date(dt),histFrom=new Date(dt);from.setDate(1);to.setMonth(to.getMonth()+1,0);histFrom.setDate(histFrom.getDate()-35);
- try{const calls=[rpc('leader_records_v2',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_employees',{p_token:leaderToken}),rpc('leader_activities',{p_token:leaderToken}),rpc('leader_proofs',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_suggestions',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_list_managers',{p_token:leaderToken}),rpc('leader_current_manager',{p_token:leaderToken}),rpc('leader_storage_stats',{p_token:leaderToken}),rpc('leader_cleanup_history',{p_token:leaderToken}),rpc('leader_day_roster_v2',{p_token:leaderToken,p_date:d}),rpc('leader_day_setup_v2',{p_token:leaderToken,p_date:d}),rpc('leader_pending_actions_v2',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_records_v2',{p_token:leaderToken,p_from:isoLocal(histFrom),p_to:d})];const r=await Promise.allSettled(calls),val=i=>r[i].status==='fulfilled'?r[i].value:null;if(val(0)!=null)records=val(0)||[];if(val(1)!=null)employeesAdmin=val(1)||[];if(val(2)!=null)activitiesAdmin=val(2)||[];if(val(3)!=null)proofsAdmin=val(3)||[];if(val(4)!=null)suggestionsAdmin=val(4)||[];if(val(5)!=null)managersAdmin=val(5)||[];if(val(6)!=null)currentManager=val(6)||currentManager;if(val(7)!=null&&val(7)?.ok!==false)storageStats=val(7)||storageStats;if(val(8)!=null)cleanupHistory=val(8)||[];dayRoster=Array.isArray(val(9))?val(9):[];daySetup=val(10)||{operation:{},employees:[]};pendingActions=Array.isArray(val(11))?val(11):[];weeklyHistory=Array.isArray(val(12))?val(12):[];window.ov={};renderManagementTabs(true);refreshIcons();const fail=r.filter(x=>x.status==='rejected');if(fail.length)console.warn('Gestão carregada parcialmente',fail.map(x=>x.reason))}catch(e){console.error(e);toast('Não foi possível atualizar toda a Gestão.')}finally{managementLoading=false;if(managementQueued){managementQueued=false;setTimeout(()=>loadManagement(),250)}}
+ try{const calls=[rpc('leader_records_v2',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_employees',{p_token:leaderToken}),rpc('leader_activities',{p_token:leaderToken}),rpc('leader_proofs',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_suggestions',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_list_managers',{p_token:leaderToken}),rpc('leader_current_manager',{p_token:leaderToken}),rpc('leader_storage_stats',{p_token:leaderToken}),rpc('leader_cleanup_history',{p_token:leaderToken}),rpc('leader_day_roster_v2',{p_token:leaderToken,p_date:d}),rpc('leader_day_setup_v2',{p_token:leaderToken,p_date:d}),rpc('leader_pending_actions_v2',{p_token:leaderToken,p_from:isoLocal(from),p_to:isoLocal(to)}),rpc('leader_records_v2',{p_token:leaderToken,p_from:isoLocal(histFrom),p_to:d})];const r=await Promise.allSettled(calls),val=i=>r[i].status==='fulfilled'?r[i].value:null;if(val(0)!=null)records=val(0)||[];if(val(1)!=null)employeesAdmin=val(1)||[];if(val(2)!=null)activitiesAdmin=val(2)||[];if(val(3)!=null)proofsAdmin=val(3)||[];if(val(4)!=null)suggestionsAdmin=val(4)||[];if(val(5)!=null)managersAdmin=val(5)||[];if(val(6)!=null)currentManager=val(6)||currentManager;if(val(7)!=null&&val(7)?.ok!==false)storageStats=val(7)||storageStats;if(val(8)!=null)cleanupHistory=val(8)||[];dayRoster=Array.isArray(val(9))?val(9):[];daySetup=val(10)||{operation:{},employees:[]};pendingActions=Array.isArray(val(11))?val(11):[];weeklyHistory=Array.isArray(val(12))?val(12):[];window.ov={};renderManagementTabs(false);refreshIcons();const fail=r.filter(x=>x.status==='rejected');if(fail.length)console.warn('Gestão carregada parcialmente',fail.map(x=>x.reason))}catch(e){console.error(e);toast('Não foi possível atualizar toda a Gestão.')}finally{managementLoading=false;if(managementQueued){managementQueued=false;setTimeout(()=>loadManagement(),250)}}
 };
 
 function v24PresenceOptions(value){return Object.entries(V24_PRESENCE_LABELS).map(([v,l])=>`<option value="${v}" ${value===v?'selected':''}>${l}</option>`).join('')}
@@ -2847,7 +2847,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.8';
+  const V245='V24.5.10';
   const TEAM_KEY='v245TeamAccess';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
@@ -3422,6 +3422,278 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     try{loadPublicDailyInformation(isoLocal())}catch(e){}
     if(leaderToken&&activeTab==='dayprep')setTimeout(appendDailyInfoManager,80);
   },250);
+})();
+</script>
+
+
+<script id="v2459-daily-panel-stability">
+(function(){
+  if(window.__TV_STANDALONE_ACTIVE__)return;
+
+  const baseRenderDayPrepV2459 = renderDayPrep;
+
+  renderDayPrep = function(){
+    const host = document.getElementById('tab-dayprep');
+    if(!host) return baseRenderDayPrepV2459();
+
+    const existingPanel = host.querySelector('#dailyInfoManager');
+
+    // Na primeira renderização deixa o fluxo normal criar o painel.
+    if(!existingPanel){
+      return baseRenderDayPrepV2459();
+    }
+
+    // Preserva o mesmo nó do Painel do Dia durante a atualização da parte superior.
+    // Assim horário, campo em digitação e lista não "piscam" a cada sincronização.
+    const active = document.activeElement;
+    const activeId = active && existingPanel.contains(active) ? active.id : null;
+    const selection = activeId && typeof active.selectionStart === 'number'
+      ? {start:active.selectionStart,end:active.selectionEnd}
+      : null;
+
+    existingPanel.remove();
+
+    // O render antigo recria temporariamente um novo painel.
+    // Ele é removido no mesmo ciclo de JavaScript antes da próxima pintura da tela.
+    const result = baseRenderDayPrepV2459();
+    const temporaryPanel = host.querySelector('#dailyInfoManager');
+    if(temporaryPanel) temporaryPanel.remove();
+
+    host.appendChild(existingPanel);
+
+    if(activeId){
+      const target = document.getElementById(activeId);
+      if(target){
+        target.focus({preventScroll:true});
+        if(selection && typeof target.setSelectionRange === 'function'){
+          try{target.setSelectionRange(selection.start,selection.end)}catch(e){}
+        }
+      }
+    }
+
+    try{refreshIcons()}catch(e){}
+    return result;
+  };
+})();
+</script>
+
+
+<style id="v24510-holiday-stability-style">
+.holiday-day-card{border:1px solid #cfe2e9;background:linear-gradient(145deg,#f7fbfc,#eef8f6);border-radius:20px;padding:24px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start}
+.holiday-day-icon{width:54px;height:54px;border-radius:17px;background:rgba(43,199,164,.14);display:grid;place-items:center;color:#148b72}
+.holiday-day-icon .ico{width:28px;height:28px}
+.holiday-day-card h3{margin:3px 0 7px;font-size:22px;color:var(--text)}
+.holiday-day-card .holiday-date{font-weight:900;color:#0b4a78;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+.holiday-day-card .holiday-note{margin-top:12px;border-top:1px solid #d7e7e9;padding-top:12px;color:var(--muted);line-height:1.5}
+.week-plan-strip button.is-holiday{border-color:#b9ddd5;background:#f0faf7}
+.week-plan-strip button.is-holiday small{color:#13866f}
+.week-plan-strip button .holiday-mini{display:block;margin-top:3px;font-size:9px;font-weight:900;line-height:1.1;color:#13866f;text-transform:uppercase;letter-spacing:.03em}
+.routine-holiday-card{grid-column:1/-1;text-align:center;padding:32px 20px}
+.routine-holiday-card .holiday-day-icon{margin:0 auto 12px}
+@media(max-width:700px){
+  .holiday-day-card{grid-template-columns:1fr;padding:18px}
+  .holiday-day-icon{width:48px;height:48px}
+  .holiday-day-card h3{font-size:20px}
+}
+</style>
+
+
+<script id="v24510-holidays-and-stable-prep">
+(function(){
+  if(window.__TV_STANDALONE_ACTIVE__)return;
+
+  function isoFromDateV24510(d){
+    const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function easterV24510(year){
+    // Meeus/Jones/Butcher — calendário gregoriano.
+    const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4;
+    const f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3);
+    const h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4;
+    const l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451);
+    const month=Math.floor((h+l-7*m+114)/31);
+    const day=((h+l-7*m+114)%31)+1;
+    return new Date(year,month-1,day,12,0,0);
+  }
+
+  function holidayInfoBRV24510(dateStr){
+    const s=String(dateStr||'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;
+    const year=Number(s.slice(0,4));
+    const fixed={
+      '01-01':'Confraternização Universal',
+      '04-21':'Tiradentes',
+      '05-01':'Dia do Trabalho',
+      '09-07':'Independência do Brasil',
+      '10-12':'Nossa Senhora Aparecida',
+      '11-02':'Finados',
+      '11-15':'Proclamação da República',
+      '11-20':'Dia Nacional de Zumbi e da Consciência Negra',
+      '12-25':'Natal'
+    };
+    const md=s.slice(5);
+    if(fixed[md] && !(md==='11-20' && year<2024)){
+      return {date:s,name:fixed[md],kind:'national',blocksOperation:true};
+    }
+    const easter=easterV24510(year);
+    const goodFriday=new Date(easter);goodFriday.setDate(easter.getDate()-2);
+    if(isoFromDateV24510(goodFriday)===s){
+      return {date:s,name:'Paixão de Cristo',kind:'national',blocksOperation:true};
+    }
+    return null;
+  }
+
+  window.holidayInfoBRV24510=holidayInfoBRV24510;
+
+  function nextOperationDateV24510(base=isoLocal()){
+    const d=new Date(String(base||isoLocal())+'T12:00:00');
+    do{
+      d.setDate(d.getDate()+1);
+    }while(d.getDay()===0 || holidayInfoBRV24510(isoFromDateV24510(d)));
+    return isoFromDateV24510(d);
+  }
+
+  // Próxima data de operação ignora domingo e feriados nacionais.
+  v242NextWorkDate=nextOperationDateV24510;
+
+  // A prévia da Gestão também não aponta automaticamente para feriado.
+  v242LeaderPreviewDate=function(){
+    const md=document.getElementById('manageDate')?.value;
+    if(md){
+      const dt=new Date(md+'T12:00:00');
+      if(dt.getDay()!==0 && !holidayInfoBRV24510(md))return md;
+    }
+    const today=isoLocal();
+    const td=new Date(today+'T12:00:00');
+    return (td.getDay()===0 || holidayInfoBRV24510(today))?nextOperationDateV24510(today):today;
+  };
+
+  // Catálogo/planejamento: feriado nunca é considerado dia devido para atividades.
+  const baseActivityDueV24510=v242ActivityDue;
+  v242ActivityDue=function(a,date){
+    if(holidayInfoBRV24510(date))return false;
+    return baseActivityDueV24510(a,date);
+  };
+
+  // Faixa semanal mostra o feriado claramente, mas permite tocar para ver a mensagem de fechamento.
+  v242WeekButtons=function(base){
+    return `<div class="week-plan-strip">${v242WeekDates(base).map(x=>{
+      const dt=new Date(x+'T12:00:00'),h=holidayInfoBRV24510(x);
+      return `<button type="button" class="${document.getElementById('manageDate')?.value===x?'active ':''}${h?'is-holiday':''}" onclick="v242ChooseManageDate('${x}')" title="${h?esc(h.name):''}">
+        <small>${dt.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</small>
+        <b>${pad(dt.getDate())}/${pad(dt.getMonth()+1)}</b>
+        ${h?`<span class="holiday-mini">Feriado</span>`:''}
+      </button>`;
+    }).join('')}</div>`;
+  };
+
+  // A rotina não consulta/gera atividades em feriado.
+  const baseOperationStateV24510=operationState;
+  operationState=function(dateStr=routineDate){
+    const target=String(dateStr||isoLocal());
+    const h=holidayInfoBRV24510(target);
+    if(h){
+      const now=operationNow(),schedule=operationSchedule(target);
+      return {open:false,isToday:target===now.date,reason:'holiday',holiday:h,schedule,now};
+    }
+    return baseOperationStateV24510(dateStr);
+  };
+
+  const baseRenderClosedRoutineV24510=renderClosedRoutine;
+  renderClosedRoutine=function(st=operationState(routineDate)){
+    if(st?.reason!=='holiday')return baseRenderClosedRoutineV24510(st);
+    lastRoutineRenderSignature='closed:'+routineDate+':holiday';
+    const teamHost=document.getElementById('teamCards'),selectedHost=document.getElementById('selectedActivity');
+    if(teamHost)teamHost.innerHTML=`<div class="activitybox routine-holiday-card">
+      <div class="holiday-day-icon"><i data-lucide="calendar-off" class="ico"></i></div>
+      <div class="section-kicker">Feriado nacional</div>
+      <h3 style="margin:4px 0 8px">${esc(st.holiday?.name||'Feriado')}</h3>
+      <div class="sub" style="max-width:650px;margin:0 auto">Não há rotina, rodízio ou atividades obrigatórias programadas para esta data. O dia não precisa ser preparado pela Gestão.</div>
+    </div>`;
+    if(selectedHost)selectedHost.innerHTML='';
+    try{refreshIcons()}catch(e){}
+  };
+
+  // Impede publicação/salvamento acidental caso algum botão antigo permaneça na tela.
+  const baseSaveDayPrepV24510=saveDayPrep;
+  saveDayPrep=async function(publish){
+    const d=document.getElementById('manageDate')?.value||isoLocal(),h=holidayInfoBRV24510(d);
+    if(h){toast(`${h.name}: esta data não precisa ser preparada.`);return}
+    return baseSaveDayPrepV24510(publish);
+  };
+
+  function prepSignatureV24510(){
+    const d=document.getElementById('manageDate')?.value||isoLocal();
+    const op=daySetup?.operation||{};
+    const emps=(daySetup?.employees||[]).map(e=>[
+      e.employee_id,e.presence_status,e.presence_note,v24Bool(e.active_today),
+      v24Bool(e.scheduled_today),e.entry_time,e.exit_time,e.redistributable_count
+    ]);
+    return JSON.stringify([d,op?.prepared_at||'',op?.published_at||'',v24Bool(op?.prepared),v24Bool(op?.published),emps]);
+  }
+
+  // Corrige o "piscar": só re-renderiza Preparar o dia quando os dados realmente mudarem.
+  const baseRenderDayPrepV24510=renderDayPrep;
+  renderDayPrep=function(force=false){
+    const host=document.getElementById('tab-dayprep');
+    if(!host)return baseRenderDayPrepV24510();
+    const d=document.getElementById('manageDate')?.value||isoLocal();
+    const h=holidayInfoBRV24510(d);
+
+    if(h){
+      const sig='holiday|'+d+'|'+h.name;
+      if(!force && host.dataset.v24510Signature===sig && host.children.length)return;
+      host.dataset.v24510Signature=sig;
+      host.innerHTML=`<div class="section-head">
+        <div><div class="section-kicker">Calendário operacional</div><h3 class="icon-title"><i data-lucide="calendar-off" class="ico"></i>Dia sem preparação</h3>
+        <div class="sub">O calendário identificou esta data como feriado nacional.</div></div>
+        <span class="status-pill done">Feriado</span>
+      </div>
+      <div class="holiday-day-card">
+        <div class="holiday-day-icon"><i data-lucide="calendar-heart" class="ico"></i></div>
+        <div>
+          <div class="holiday-date">${esc(brDate(d))}</div>
+          <h3>${esc(h.name)}</h3>
+          <div class="sub">Nenhuma atividade fixa ou de rodízio é distribuída automaticamente neste dia e você não precisa preparar/publicar a operação.</div>
+          <div class="holiday-note"><b>Se alguém trabalhar excepcionalmente:</b> o sistema não transforma essa pessoa na responsável por todas as atividades do dia. O feriado continua fora da rotina operacional normal.</div>
+        </div>
+      </div>`;
+      try{refreshIcons()}catch(e){}
+      return;
+    }
+
+    const sig=prepSignatureV24510();
+    if(!force && host.dataset.v24510Signature===sig && host.children.length)return;
+    const result=baseRenderDayPrepV24510();
+    host.dataset.v24510Signature=sig;
+    return result;
+  };
+
+  // Ao selecionar feriado em "Preparar o dia", não chama as rotinas diárias do backend.
+  // Isso evita criar distribuição apenas por visualizar a data.
+  const baseLoadManagementV24510=loadManagement;
+  loadManagement=async function(){
+    const d=document.getElementById('manageDate')?.value||isoLocal();
+    const h=holidayInfoBRV24510(d);
+    if(leaderToken && activeTab==='dayprep' && h){
+      dayRoster=[];
+      daySetup={operation:{prepared:false,published:false,holiday:true,holiday_name:h.name},employees:[]};
+      renderDayPrep(true);
+      try{refreshIcons()}catch(e){}
+      return;
+    }
+    return baseLoadManagementV24510();
+  };
+
+  // Reaplica a identificação visual ao voltar para a aba.
+  const baseSetTabV24510=setTab;
+  setTab=function(t,btn){
+    const r=baseSetTabV24510(t,btn);
+    if(t==='dayprep')renderDayPrep();
+    return r;
+  };
 })();
 </script>
 
