@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.16-excluir-observacoes" />
+<meta name="app-version" content="2026.09.10-v24.5.17-rodizio-equilibrado" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -3913,3 +3913,4 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
 <!-- V24.5.16: edição de atividades publicadas liberada; pendências automáticas de hoje são reconciliadas sem alterar execuções já iniciadas. -->
+<!-- V24.5.17: rodízio considera a carga total do dia (fixas/grupo/protegidas) e o histórico semanal para manter distribuição estável e equilibrada. -->
