@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.15-excluir-observacoes" />
+<meta name="app-version" content="2026.09.10-v24.5.16-excluir-observacoes" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -520,7 +520,7 @@ html.tv-only .live-update-box{background:#effaf6!important;border-color:#a9dfd1!
 
 <style>
 /* V24.5.14 — programação completa da pessoa */
-/* V24.5.15 — exclusão controlada de Observações citadas */
+/* V24.5.16 — exclusão controlada de Observações citadas */
 .daily-plan-v24514{margin:14px 0 16px;border:1px solid #d7e5eb;border-radius:20px;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(22,70,94,.05)}
 .daily-plan-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px 14px;background:linear-gradient(180deg,#f8fbfc,#fff);border-bottom:1px solid #e4edf1}
 .daily-plan-head h3{margin:3px 0 4px;font-size:21px;color:var(--text)}
@@ -2538,7 +2538,7 @@ v24ErrorMessage=function(code){return ({
   invalid_proof_path:'A comprovação enviada não corresponde a esta atividade.',
   proof_limit_reached:'O limite de fotos desta etapa já foi atingido.',
   observation_too_long:'A observação ultrapassou o limite permitido.',
-  published_day_activity_change_blocked:'A operação de hoje já foi publicada. Alterações de agenda, ativação ou fotos obrigatórias desta atividade ficam bloqueadas até o encerramento do dia.'
+  published_day_activity_change_blocked:'Atualize a página e tente novamente. A edição de atividades publicadas já está liberada nesta versão.'
 })[code]||V2440_BASE_ERROR_MESSAGE(code)};
 
 editEmployee=function(id){
@@ -3895,7 +3895,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       pendingActivityPhotoFile=null;activityDemandTabV24513=mode;localStorage.setItem('activityDemandTabV24513',mode);closeModal();toast(`${modeLabel(mode)} salva ✓`);await loadManagement();if(activeTab==='activities')renderActivitiesAdmin();
     }catch(e){
       console.error(e);const raw=String(e?.message||e?.details||'');
-      if(raw.includes('published_day_activity_change_blocked'))toast('Esta atividade já faz parte da operação publicada de hoje. Altere a configuração estrutural após o encerramento do dia.');
+      if(raw.includes('published_day_activity_change_blocked'))toast('Atualize a página e tente novamente. A edição de atividades publicadas já está liberada nesta versão.');
       else if(raw.includes('group_requires_two_employees'))toast('A demanda em grupo precisa de pelo menos 2 participantes.');
       else if(raw.includes('fixed_employee'))toast('Confira o responsável da demanda fixa.');
       else if(raw.includes('unauthorized'))toast('Sua sessão expirou. Entre novamente na Gestão.');
@@ -3912,3 +3912,4 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
+<!-- V24.5.16: edição de atividades publicadas liberada; pendências automáticas de hoje são reconciliadas sem alterar execuções já iniciadas. -->
