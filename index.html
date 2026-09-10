@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.13.1-horarios-multiplos" />
+<meta name="app-version" content="2026.09.10-v24.5.14-programacao-completa" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -516,6 +516,24 @@ html.tv-only .live-update-box{background:#effaf6!important;border-color:#a9dfd1!
 .tv-pause-main{display:flex;align-items:center;gap:12px;border:1px solid #edc36f;background:#fff7e4;border-radius:16px;padding:14px 16px;margin-bottom:14px;color:#805b0a}.tv-pause-main .ico{margin:0}.tv-pause-main b,.tv-pause-main span{display:block}.tv-pause-main span{font-size:12px;margin-top:2px;color:#8d6c26}
 @media(max-width:760px){.operation-pause-control{width:100%;min-height:44px}.manage-head>.actions{grid-template-columns:1fr auto!important}.manage-head>.actions .operation-pause-control{grid-column:1/-1}.operation-pause-banner{align-items:flex-start}}
 
+</style>
+
+<style>
+/* V24.5.14 — programação completa da pessoa */
+.daily-plan-v24514{margin:14px 0 16px;border:1px solid #d7e5eb;border-radius:20px;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(22,70,94,.05)}
+.daily-plan-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 20px 14px;background:linear-gradient(180deg,#f8fbfc,#fff);border-bottom:1px solid #e4edf1}
+.daily-plan-head h3{margin:3px 0 4px;font-size:21px;color:var(--text)}
+.daily-plan-head p{margin:0;color:var(--muted);font-size:12px;line-height:1.45;max-width:720px}
+.daily-plan-progress{min-width:86px;text-align:center;border:1px solid #dbe8ed;border-radius:14px;padding:9px 12px;background:#fff}
+.daily-plan-progress b,.daily-plan-progress span{display:block}.daily-plan-progress b{font-size:18px;color:var(--nav)}.daily-plan-progress span{font-size:9px;text-transform:uppercase;letter-spacing:.04em;font-weight:900;color:var(--muted);margin-top:2px}
+.daily-plan-list{display:grid;padding:8px 12px 12px}
+.daily-plan-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 8px;border-bottom:1px solid #edf2f4}
+.daily-plan-row:last-child{border-bottom:0}.daily-plan-row.is-current{background:#f2fbf7;border:1px solid #b9dfd3;border-radius:14px;margin:4px 0;padding:11px 8px}
+.daily-plan-number{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;background:#edf4f7;color:var(--nav);font-size:12px;font-weight:950}
+.daily-plan-row.done .daily-plan-number{background:#e9f8f2;color:#177650}.daily-plan-row.run .daily-plan-number,.daily-plan-row.next .daily-plan-number{background:#e8f5fb;color:#0c6b9a}
+.daily-plan-main{min-width:0}.daily-plan-main>b{display:block;color:var(--text);font-size:14px;line-height:1.3;margin-bottom:5px}.daily-plan-main>small{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:10px;font-weight:750}.daily-plan-main>small>span{display:inline-flex;align-items:center;gap:4px}.daily-plan-main .ico{width:13px;height:13px}
+.daily-plan-status{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 9px;font-size:9px;font-weight:950;letter-spacing:.02em;white-space:nowrap;border:1px solid #dce8ed;background:#f5f8fa;color:#60727d}.daily-plan-status .ico{width:13px;height:13px}.daily-plan-status.done{background:#e9f8f2;border-color:#cde9de;color:#177650}.daily-plan-status.run{background:#e8f5fb;border-color:#c6e2ef;color:#0c6b9a}.daily-plan-status.next{background:#eef8f4;border-color:#c7e7da;color:#16704d}
+@media(max-width:760px){.daily-plan-head{flex-direction:column}.daily-plan-progress{min-width:0;width:auto;text-align:left;display:flex;align-items:baseline;gap:5px}.daily-plan-progress b,.daily-plan-progress span{display:inline}.daily-plan-row{grid-template-columns:32px minmax(0,1fr)}.daily-plan-status{grid-column:2;justify-self:start}.daily-plan-main>small{gap:7px}}
 </style>
 </head>
 <body>
@@ -2271,6 +2289,33 @@ function v2438PersonBar(){const p=v2438SelectedPerson();if(!p)return '';return `
 function v2438ApplyPersonMode(active=!!selectedEmployeeId){const page=document.getElementById('pageRotina');if(page)page.classList.toggle('routine-person-mode',!!active)}
 function changeRoutinePerson(){selectedEmployeeId=null;selected=null;coverageExecutorId=null;coverageAssignmentId=null;lastSelectedRenderSignature='';v2438ApplyPersonMode(false);const sel=document.getElementById('selectedActivity');if(sel)sel.innerHTML='';const st=operationState(routineDate);if(st.reason==='sunday')renderClosedRoutine(st);else renderRoutine(true);document.getElementById('routineSelectHeader')?.scrollIntoView({behavior:'smooth',block:'nearest'});refreshIcons()}
 
+// V24.5.14 — programação completa visível antes do início
+function v24514TaskStatus(r,current){
+  if(r.status==='completed')return {label:'CONCLUÍDA',cls:'done',icon:'circle-check-big'};
+  if(r.status==='in_progress')return {label:'EM ANDAMENTO',cls:'run',icon:'play-circle'};
+  if(current&&String(r.assignment_id)===String(current.assignment_id))return {label:'PRÓXIMA',cls:'next',icon:'play'};
+  return {label:'AGUARDANDO',cls:'waiting',icon:'clock-3'};
+}
+function v24514DailyPlan(list,current){
+  if(!Array.isArray(list)||!list.length)return '';
+  const ordered=[...list].sort((a,b)=>Number(a.slot_index||999)-Number(b.slot_index||999)||String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR'));
+  const done=ordered.filter(r=>r.status==='completed').length;
+  const rows=ordered.map((r,i)=>{
+    const st=v24514TaskStatus(r,current);
+    const timing=r.scheduled_time?`Horário ${v24Time(r.scheduled_time)}`:dayPartLabel(r.activity_day_part);
+    const proof=v24PhotoLabel(r.activity_photo_requirement||'before_after');
+    return `<div class="daily-plan-row ${st.cls} ${current&&String(r.assignment_id)===String(current.assignment_id)?'is-current':''}">
+      <div class="daily-plan-number">${i+1}</div>
+      <div class="daily-plan-main"><b>${esc(r.activity_name||'Atividade')}</b><small><span><i data-lucide="clock-3" class="ico"></i>${esc(timing)}</span><span><i data-lucide="${(r.activity_photo_requirement||'before_after')==='none'?'camera-off':'camera'}" class="ico"></i>${esc(proof)}</span></small></div>
+      <span class="daily-plan-status ${st.cls}"><i data-lucide="${st.icon}" class="ico"></i>${st.label}</span>
+    </div>`;
+  }).join('');
+  return `<section class="daily-plan-v24514">
+    <div class="daily-plan-head"><div><div class="section-kicker">PROGRAMAÇÃO DO DIA</div><h3>Minhas atividades</h3><p>Confira toda a sua programação antes de iniciar. A execução continua seguindo a sequência definida.</p></div><div class="daily-plan-progress"><b>${done}/${ordered.length}</b><span>concluídas</span></div></div>
+    <div class="daily-plan-list">${rows}</div>
+  </section>`;
+}
+
 // V24.3.8: após confirmar a identidade, esconder a seleção da equipe e mostrar apenas a rotina da pessoa.
 const v2438RenderSelectedBase=renderSelected;
 renderSelected=function(force=false){
@@ -2279,10 +2324,11 @@ renderSelected=function(force=false){
  v2438ApplyPersonMode(true);
  let list;if(coverageAssignmentId){list=(routine||[]).filter(x=>String(x.assignment_id)===String(coverageAssignmentId))}else{list=v24TasksForPerson(selectedEmployeeId)};
  const bar=v2438PersonBar();
- if(!list.length){el.innerHTML=bar+`<div class="activitybox"><div class="empty-state"><i data-lucide="circle-check-big" class="ico"></i>Sem atividade aberta no momento.</div></div>`;refreshIcons();return}
- const current=list.find(x=>x.status==='in_progress')||list.find(x=>x.status==='pending');const pending=list.filter(x=>x.status==='pending'&&(!current||x.assignment_id!==current.assignment_id));const completed=list.filter(x=>x.status==='completed').length;selected=current||list[0];
- if(!current){el.innerHTML=bar+`<div class="activitybox"><div class="empty-state"><i data-lucide="circle-check-big" class="ico"></i>Todas as atividades foram concluídas.${completed?` ${completed} concluída(s) hoje.`:''}</div></div>`;refreshIcons();return}
- el.innerHTML=bar+activityPanel(current)+(pending[0]?v24NextPreview(pending[0]):'')+(pending.length>1?`<div class="sub queue-note">+ ${pending.length-1} atividade(s) aguardando na sequência.</div>`:'');refreshIcons();
+ if(!list.length){el.innerHTML=bar+`<div class="activitybox"><div class="empty-state"><i data-lucide="circle-check-big" class="ico"></i>Sem atividade cadastrada para hoje.</div></div>`;refreshIcons();return}
+ const current=list.find(x=>x.status==='in_progress')||list.find(x=>x.status==='pending');const completed=list.filter(x=>x.status==='completed').length;selected=current||list[0];
+ const fullPlan=v24514DailyPlan(list,current);
+ if(!current){el.innerHTML=bar+fullPlan+`<div class="activitybox"><div class="empty-state"><i data-lucide="circle-check-big" class="ico"></i>Todas as atividades foram concluídas.${completed?` ${completed} concluída(s) hoje.`:''}</div></div>`;refreshIcons();return}
+ el.innerHTML=bar+fullPlan+activityPanel(current);refreshIcons();
 };
 
 const v2438ConfirmPersonSelectionBase=confirmPersonSelection;
