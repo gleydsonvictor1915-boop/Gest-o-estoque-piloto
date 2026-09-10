@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.24-mobile-bottom-nav-standard" />
+<meta name="app-version" content="2026.09.10-v24.5.28-sincronizacao-segura" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -2140,7 +2140,7 @@ async function confirmDayPrepV2436(){
   pendingDayPrepAction=null;
   try{
     const r=await rpc('leader_prepare_day_v3',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_publish:true,p_redistribute:true,p_reason:p.reason||null});
-    const state=await rpc('get_operation_day_state_v2',{p_date:p.d});
+    const state=await rpc('leader_get_operation_day_state_v1',{p_token:leaderToken,p_date:p.d});
     if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
     closeModal();
     await loadManagement();
@@ -2497,7 +2497,7 @@ loadRoutine=async function(date=isoLocal()){
       const keepSelected=selectedEmployeeId;routine=[];dayPeople=await v2432LoadSundayTeam();selected=null;coverageExecutorId=null;coverageAssignmentId=null;selectedEmployeeId=keepSelected&&dayPeople.some(x=>String(x.employee_id)===String(keepSelected))?keepSelected:null;renderClosedRoutine(clockState);return;
     }
     if(clockState.isToday&&!clockState.open){routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderClosedRoutine(clockState);return}
-    const [state,people,fresh]=await Promise.all([rpc('get_operation_day_state_v2',{p_date:routineDate}),rpc('get_day_people_v2',{p_date:routineDate}),rpc('get_day_routine_v5',{p_date:routineDate})]);
+    const [state,people,fresh]=await Promise.all([rpc('leader_get_operation_day_state_v1',{p_token:leaderToken,p_date:routineDate}),rpc('leader_get_day_people_v1',{p_token:leaderToken,p_date:routineDate}),rpc('leader_get_day_routine_v1',{p_token:leaderToken,p_date:routineDate})]);
     if(routineDate>=isoLocal()&&!v24Bool(state?.published)){
       routine=[];dayPeople=Array.isArray(people)?people:[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderRoutineWaitingForLeader(state);return;
     }
@@ -2893,7 +2893,7 @@ confirmDayPrepV2436=async function(){
   try{
     const reason=p.reason||(p.published?'Alteração aplicada na preparação do dia':null);
     const r=await rpc('leader_prepare_day_v3',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_publish:true,p_redistribute:true,p_reason:reason});
-    const state=await rpc('get_operation_day_state_v2',{p_date:p.d});if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
+    const state=await rpc('leader_get_operation_day_state_v1',{p_token:leaderToken,p_date:p.d});if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
     closeModal();await loadManagement();if(p.d===isoLocal())await loadRoutine(p.d);const moved=Number(r?.redistributed||0);
     openModal(`<div style="text-align:center;padding:12px 4px 4px"><div style="width:64px;height:64px;border-radius:22px;margin:0 auto 14px;display:grid;place-items:center;background:rgba(45,199,168,.14);color:#169b80"><i data-lucide="badge-check" style="width:38px;height:38px"></i></div><div class="section-kicker">Tudo certo</div><h3 style="margin:6px 0 8px;font-size:24px">${p.published?'Alterações aplicadas com sucesso':'Operação publicada com sucesso'}</h3><div class="sub">${brDate(p.d)} foi ${p.published?'atualizado':'liberado para a operação'}.${moved?` ${moved} atividade(s) pendente(s) foram redistribuída(s).`:''}</div><div class="actions" style="justify-content:center;margin-top:20px"><button class="btn mint" onclick="closeModal()"><i data-lucide="check" class="ico"></i>Entendi</button></div></div>`);toast(p.published?'Alterações aplicadas com sucesso ✓':'Operação publicada com sucesso ✓');
   }catch(e){console.error(e);closeModal();toast(String(e?.message||'').includes('publish_not_confirmed')?'A publicação não foi confirmada pelo banco. Tente novamente.':'Não foi possível concluir a ação.')}
@@ -2907,8 +2907,12 @@ window.addEventListener('load',()=>setTimeout(v2446EnhanceManageDate,60));
 let globalPauseStateV24411={paused:false,message:null,updated_at:null};
 
 async function loadGlobalPauseStateV24411(){
-  try{const s=await rpc('get_operation_pause_state_v1',{});globalPauseStateV24411=s||{paused:false};}
-  catch(e){console.warn('Estado de pausa indisponível',e)}
+  try{
+    let s=null;const code=window.v24527GetTeamCode?.()||'';
+    if(leaderToken)s=await rpc('leader_operation_pause_state_v1',{p_token:leaderToken});
+    else if(code)s=await rpc('team_operation_pause_state_v1',{p_team_code:code});
+    globalPauseStateV24411=(s?.ok===false?{paused:false}:s)||{paused:false};
+  }catch(e){console.warn('Estado de pausa indisponível',e);globalPauseStateV24411={paused:false}}
   return globalPauseStateV24411;
 }
 function isOperationPausedV24411(){return !!globalPauseStateV24411?.paused}
@@ -3162,7 +3166,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.12';
+  const V245='V24.5.28';
   const TEAM_KEY='v245TeamAccess';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
@@ -3173,17 +3177,62 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   const signedCache=new Map();
   let v2452CoverageOptions=[];
 
+  function normalizeTeamCode(v){const x=String(v||'').trim().toLowerCase();return /^[0-9a-f]{64}$/.test(x)?x:''}
+  function saveTeamCode(code){
+    const c=normalizeTeamCode(code);if(!c)return false;teamCode=c;
+    try{localStorage.setItem(TEAM_KEY,JSON.stringify({code:c,saved_at:Date.now()}))}catch(e){try{sessionStorage.setItem(TEAM_KEY,c)}catch(_e){}}
+    return true;
+  }
+  function clearTeamCode(){teamCode='';try{localStorage.removeItem(TEAM_KEY);sessionStorage.removeItem(TEAM_KEY)}catch(e){}}
   function loadSecrets(){
     try{
       localStorage.removeItem('leaderToken');
-      try{sessionStorage.removeItem(TEAM_KEY)}catch(_e){}
-      teamCode='';
+      let urlCode='';
+      try{
+        const u=new URL(location.href);urlCode=normalizeTeamCode(u.searchParams.get('team')||u.searchParams.get('access'));
+        if(urlCode){u.searchParams.delete('team');u.searchParams.delete('access');history.replaceState(null,'',u.pathname+(u.search?u.search:'')+(u.hash||''))}
+      }catch(_e){}
+      let saved='';
+      try{const raw=localStorage.getItem(TEAM_KEY);if(raw){try{saved=normalizeTeamCode(JSON.parse(raw)?.code)}catch(_e){saved=normalizeTeamCode(raw)}}}catch(_e){}
+      if(!saved){try{saved=normalizeTeamCode(sessionStorage.getItem(TEAM_KEY)||'')}catch(_e){}}
+      teamCode=urlCode||saved||'';if(urlCode)saveTeamCode(urlCode);
       const raw=JSON.parse(sessionStorage.getItem(EMP_KEY)||'null');
-      if(raw&&/^[0-9a-f]{64}$/.test(String(raw.token||''))&&raw.employee?.id&&Number(raw.client_expires_at||0)>Date.now())employeeAuth=raw;
+      if(teamCode&&raw&&/^[0-9a-f]{64}$/.test(String(raw.token||''))&&raw.employee?.id&&Number(raw.client_expires_at||0)>Date.now())employeeAuth=raw;
       else{employeeAuth=null;sessionStorage.removeItem(EMP_KEY)}
     }catch(e){teamCode='';employeeAuth=null}
   }
   loadSecrets();
+  window.v24527GetTeamCode=()=>teamCode;
+
+  let pendingTeamAccessCallback=null;
+  function teamAccessLink(code=teamAccessInfo?.access_code||teamCode){
+    const c=normalizeTeamCode(code);if(!c)return '';
+    try{return `${location.origin}${location.pathname}?team=${encodeURIComponent(c)}`}catch(e){return ''}
+  }
+  function renderTeamAccessGate(){
+    routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;
+    const host=document.getElementById('teamCards'),sel=document.getElementById('selectedActivity'),exec=document.getElementById('coverExecutor'),abs=document.getElementById('coverAbsent'),btn=document.getElementById('coverActionBtn');
+    if(host)host.innerHTML=`<div class="security-gate" style="grid-column:1/-1"><div class="security-mark"><i data-lucide="shield-keyhole" class="ico"></i></div><h3>Acesso da equipe</h3><p>Este aparelho ainda não está liberado para visualizar a rotina. Abra o link compartilhado pela Gestão ou informe o código interno da equipe.</p><button class="btn mint" onclick="v24527OpenTeamAccess()"><i data-lucide="key-round" class="ico"></i>Liberar este aparelho</button><div class="security-note"><b>Proteção adicional:</b> o acesso pode ser renovado pela Gestão a qualquer momento.</div></div>`;
+    if(sel)sel.innerHTML='';if(exec){exec.disabled=true;exec.innerHTML='<option>Acesso da equipe necessário</option>'}if(abs){abs.disabled=true;abs.innerHTML='<option>Acesso da equipe necessário</option>'}if(btn)btn.disabled=true;refreshIcons();
+  }
+  function openTeamAccess(callback=null){
+    pendingTeamAccessCallback=callback;
+    openModal(`<div class="section-head"><div><div class="section-kicker">Acesso protegido</div><h3>Liberação da equipe</h3><div class="sub">Cole o código recebido da Gestão. Se você abriu o link da equipe, essa etapa é automática.</div></div></div><div class="field"><label>Código da equipe</label><input id="v24527TeamCodeInput" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Cole o código de acesso"></div><div class="actions"><button class="btn mint" onclick="v24527SubmitTeamAccess()"><i data-lucide="shield-check" class="ico"></i>Liberar</button><button class="btn light" onclick="pendingTeamAccessCallback=null;closeModal()">Cancelar</button></div>`);refreshIcons();setTimeout(()=>document.getElementById('v24527TeamCodeInput')?.focus(),80);
+  }
+  window.v24527OpenTeamAccess=()=>openTeamAccess(null);
+  window.v24527SubmitTeamAccess=async function(){
+    const code=normalizeTeamCode(document.getElementById('v24527TeamCodeInput')?.value||'');if(!code){toast('Código da equipe inválido.');return}
+    try{const state=await rpc('team_get_operation_day_state_v1',{p_team_code:code,p_date:isoLocal()});if(!state?.ok){toast('Acesso da equipe inválido ou renovado.');return}saveTeamCode(code);const cb=pendingTeamAccessCallback;pendingTeamAccessCallback=null;closeModal();toast('Aparelho liberado para a equipe ✓');if(typeof cb==='function')await cb();await Promise.allSettled([loadRoutine(isoLocal()),window.loadPublicDailyInformation?.(isoLocal())])}catch(e){console.error(e);toast('Não foi possível validar o acesso agora.')}
+  };
+  window.v24527CopyTeamLink=async function(){
+    const link=teamAccessLink();if(!link){toast('Acesso da equipe indisponível. Atualize a Gestão.');return}
+    try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(link);else{const el=document.getElementById('v24527TeamLink');el?.select();document.execCommand('copy')}toast('Link da equipe copiado ✓')}catch(e){const el=document.getElementById('v24527TeamLink');if(el){el.select();document.execCommand('copy');toast('Link da equipe copiado ✓')}else toast('Não foi possível copiar o link.')}
+  };
+  window.v24527RotateTeamAccess=async function(){
+    if(currentManager?.is_primary!==true){toast('Somente o Gestor principal pode renovar o acesso da equipe.');return}
+    if(!confirm('Renovar o acesso da equipe?\n\nOs celulares da equipe precisarão abrir o novo link. Sessões atuais dos colaboradores serão encerradas.'))return;
+    try{const r=await rpc('leader_rotate_team_access_v1',{p_token:leaderToken});if(!r?.ok||!normalizeTeamCode(r.access_code)){toast('Não foi possível renovar o acesso.');return}teamAccessInfo=r;saveTeamCode(r.access_code);await clearEmployeeAuth(false);renderManagers();toast('Novo acesso da equipe criado ✓')}catch(e){console.error(e);toast('Erro ao renovar o acesso da equipe.')}
+  };
 
   function saveEmployeeAuth(data){
     employeeAuth={token:String(data.token||''),employee:data.employee||null,client_expires_at:Date.now()+CLIENT_EMPLOYEE_TTL};
@@ -3195,6 +3244,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     if(remote&&token){try{await rpc('employee_logout_v1',{p_token:token})}catch(e){}}
   }
   async function validEmployeeToken(employeeId){
+    if(!teamCode){await clearEmployeeAuth(false);return ''}
     if(!employeeAuth?.token||Number(employeeAuth.client_expires_at||0)<=Date.now()){await clearEmployeeAuth();return ''}
     if(employeeId&&String(employeeAuth.employee?.id)!==String(employeeId))return '';
     try{
@@ -3206,9 +3256,11 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   }
   function employeeName(id){return (dayPeople||[]).find(x=>String(x.employee_id)===String(id))?.employee_name||(routine||[]).find(x=>String(x.employee_id)===String(id))?.employee_name||'colaborador'}
   async function openEmployeeSession(employeeId,callback){
+    if(!teamCode){openTeamAccess(()=>openEmployeeSession(employeeId,callback));return null}
     try{
-      const r=await rpc('employee_open_session_v1',{p_employee:employeeId});
+      const r=await rpc('employee_open_session_v2',{p_team_code:teamCode,p_employee:employeeId});
       if(!r?.ok){
+        if(r?.error==='invalid_team_access'){clearTeamCode();await clearEmployeeAuth(false);renderTeamAccessGate();toast('O acesso da equipe foi renovado. Peça o novo link à Gestão.');return null}
         const msg={
           employee_not_present:'Somente quem está presente pode abrir atividades.',
           operation_not_published:'A operação de hoje ainda não foi publicada.',
@@ -3274,6 +3326,44 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   };
 
   const baseLoadRoutine=loadRoutine;
+  function emptyCardFromPersonV24528(p){
+    return {...p,assignment_count:0,action_count:0,reminder_count:0,open_count:0,in_progress_count:0,completed_count:0,critical_count:0};
+  }
+  function cardsFromLeaderRoutineV24528(people,rows){
+    const map=new Map((Array.isArray(people)?people:[]).map(p=>[String(p.employee_id),emptyCardFromPersonV24528(p)]));
+    for(const r of (Array.isArray(rows)?rows:[])){
+      const id=String(r.employee_id||'');if(!id)continue;
+      if(!map.has(id))map.set(id,emptyCardFromPersonV24528({employee_id:r.employee_id,employee_name:r.employee_name||'Colaborador',employee_role:r.employee_role||'Equipe',active_today:r.active_today,presence_status:r.presence_status||'off'}));
+      const c=map.get(id);c.assignment_count++;
+      const fixed=String(r.activity_mode||'rotating')==='fixed';
+      if(fixed)c.reminder_count++;else{
+        c.action_count++;
+        if(r.status==='in_progress')c.in_progress_count++;
+        if(r.status==='completed')c.completed_count++;else c.open_count++;
+        const urg=String(r.activity_urgency||'').toLowerCase();if(['critical','critica','crítica','urgent','urgente'].includes(urg)&&r.status!=='completed')c.critical_count++;
+      }
+    }
+    return [...map.values()];
+  }
+  async function leaderRoutineSnapshotV24528(target){
+    if(!leaderToken)return null;
+    try{
+      const [state,people,rows]=await Promise.all([
+        rpc('leader_get_operation_day_state_v1',{p_token:leaderToken,p_date:target}),
+        rpc('leader_get_day_people_v1',{p_token:leaderToken,p_date:target}),
+        rpc('leader_get_day_routine_v1',{p_token:leaderToken,p_date:target})
+      ]);
+      if(!state||state?.error==='unauthorized')return null;
+      return {state,people:Array.isArray(people)?people:[],rows:Array.isArray(rows)?rows:[]};
+    }catch(e){console.warn('Resumo da Rotina pela Gestão indisponível',e);return null}
+  }
+  async function ensureTeamCodeFromLeaderV24528(){
+    if(teamCode||!leaderToken)return teamCode;
+    try{const info=await rpc('leader_team_access_info_v1',{p_token:leaderToken});if(info?.ok&&normalizeTeamCode(info.access_code)){teamAccessInfo=info;saveTeamCode(info.access_code)}}catch(e){console.warn('Acesso da equipe não pôde ser carregado pela Gestão',e)}
+    return teamCode;
+  }
+  window.v24528RetryRoutine=()=>loadRoutine(isoLocal());
+
   loadRoutine=async function(date=isoLocal()){
     if(typeof v242IsLeaderPreview==='function'&&v242IsLeaderPreview())return baseLoadRoutine(date);
     const target=isoLocal();
@@ -3287,11 +3377,46 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       if(localOp.reason==='sunday'||(localOp.isToday&&!localOp.open)){
         routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderClosedRoutine(localOp);return;
       }
-      const [state,cards]=await Promise.all([
-        rpc('public_operation_state_v3',{p_date:target}),
-        rpc('public_routine_cards_v2',{p_date:target})
-      ]);
-      if(!state?.ok)throw new Error('state_unavailable');
+
+      // No PC do líder, a própria sessão da Gestão é a autorização da tela.
+      const leaderSnapshot=await leaderRoutineSnapshotV24528(target);
+      if(leaderSnapshot){
+        ensureTeamCodeFromLeaderV24528();
+        const state=leaderSnapshot.state||{};
+        dayPeople=cardsFromLeaderRoutineV24528(leaderSnapshot.people,leaderSnapshot.rows);
+        followupUnreadCounts=new Map();
+        if(!v24Bool(state.published)){
+          routine=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderRoutineWaitingForLeader();return;
+        }
+        if(employeeAuth?.employee?.id){
+          const token=await validEmployeeToken(employeeAuth.employee.id);
+          if(token){const own=await rpc('employee_day_routine_secure_v3',{p_employee_token:token,p_date:target});routine=Array.isArray(own)?own:[]}
+          else routine=[];
+        }else routine=[];
+        if(selectedEmployeeId&&String(selectedEmployeeId)!==String(employeeAuth?.employee?.id||'')){selectedEmployeeId=null;selected=null}
+        else if(selectedEmployeeId)selected=routine.find(x=>String(x.employee_id)===String(selectedEmployeeId)||String(x.executor_id)===String(selectedEmployeeId))||null;
+        renderRoutine(true);return;
+      }
+
+      if(!teamCode){renderTeamAccessGate();return}
+      let state=null,cards=null;
+      try{
+        [state,cards]=await Promise.all([
+          rpc('team_get_operation_day_state_v1',{p_team_code:teamCode,p_date:target}),
+          rpc('team_routine_cards_v1',{p_team_code:teamCode,p_date:target})
+        ]);
+      }catch(primaryError){
+        console.warn('Cards protegidos indisponíveis; usando lista segura da equipe',primaryError);
+        try{
+          state=await rpc('team_get_operation_day_state_v1',{p_team_code:teamCode,p_date:target});
+          const people=await rpc('team_get_day_people_v1',{p_team_code:teamCode,p_date:target});
+          cards=(Array.isArray(people)?people:[]).map(emptyCardFromPersonV24528);
+        }catch(fallbackError){throw fallbackError}
+      }
+      if(!state?.ok){
+        if(['invalid_access','invalid_team_access'].includes(String(state?.error||''))){clearTeamCode();await clearEmployeeAuth(false);renderTeamAccessGate();return}
+        throw new Error(String(state?.error||'state_unavailable'));
+      }
       dayPeople=Array.isArray(cards)?cards:[];
       followupUnreadCounts=new Map();
       if(!v24Bool(state.published)){
@@ -3308,10 +3433,12 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       }else{routine=[];selectedEmployeeId=null;selected=null}
       renderRoutine(true);
     }catch(e){
-      console.error(e);
+      console.error('Falha ao sincronizar Rotina V24.5.28',e);
       const h=document.getElementById('teamCards');
-      if(h)h.innerHTML='<div class="activitybox" style="grid-column:1/-1"><b>Não foi possível carregar a operação.</b><div class="sub">Verifique a conexão e tente novamente.</div></div>';
-      toast('Erro ao sincronizar rotina');
+      const msg=String(e?.message||e?.details||'');
+      const schemaIssue=/PGRST|schema cache|Could not find the function/i.test(msg);
+      if(h)h.innerHTML=`<div class="security-gate" style="grid-column:1/-1"><div class="security-mark"><i data-lucide="refresh-cw" class="ico"></i></div><h3>Não foi possível atualizar a rotina</h3><p>${schemaIssue?'A conexão com o banco foi atualizada. Toque abaixo para tentar novamente.':'A conexão não respondeu como esperado. Seus dados continuam preservados.'}</p><button class="btn mint" onclick="v24528RetryRoutine()"><i data-lucide="refresh-cw" class="ico"></i>Tentar novamente</button>${!leaderToken&&!teamCode?'<button class="btn light" onclick="v24527OpenTeamAccess()"><i data-lucide="key-round" class="ico"></i>Autorizar este aparelho</button>':''}</div>`;
+      refreshIcons();toast('Não foi possível atualizar a rotina');
     }finally{
       syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(isoLocal()),180)}
     }
@@ -3483,10 +3610,12 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   };
 
   loadSuggestionNames=async function(){
+    if(!teamCode){communicationPeople=[];return []}
     try{
-      const rows=await rpc('public_routine_cards_v2',{p_date:isoLocal()});
+      const rows=await rpc('team_get_day_people_v1',{p_team_code:teamCode,p_date:isoLocal()});
       communicationPeople=Array.isArray(rows)?rows.filter(x=>v24Bool(x.active_today)):[];
-    }catch(e){communicationPeople=[]}
+      return communicationPeople;
+    }catch(e){communicationPeople=[];return []}
   };
   function promptEmployeeChoice(callback,title='Confirmar acesso'){
     pendingEmployeeCallback=callback;
@@ -3498,8 +3627,9 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const id=document.getElementById('v245EmployeeChoice')?.value||'';
     if(!id){toast('Selecione seu nome.');return}
     try{
-      const r=await rpc('employee_open_session_v1',{p_employee:id});
-      if(!r?.ok){toast('Não foi possível continuar agora.');return}
+      if(!teamCode){closeModal();openTeamAccess(()=>{loadSuggestionNames().then(()=>promptEmployeeChoice(pendingEmployeeCallback,'Confirmar acesso'))});return}
+      const r=await rpc('employee_open_session_v2',{p_team_code:teamCode,p_employee:id});
+      if(!r?.ok){if(r?.error==='invalid_team_access'){clearTeamCode();await clearEmployeeAuth(false);closeModal();openTeamAccess();return}toast('Não foi possível continuar agora.');return}
       saveEmployeeAuth(r);
       const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();
       if(typeof cb==='function')await cb(r.token,r.employee);
@@ -3507,13 +3637,14 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   };
   sendSuggestion=async function(){
     const msg=(document.getElementById('suggestMessage')?.value||'').trim();if(msg.length<3){toast('Escreva sua ideia.');return}if(msg.length>2000){toast('A ideia está muito longa.');return}
+    if(!teamCode){openTeamAccess(()=>sendSuggestion());return}
     const submit=async token=>{try{const r=await rpc('submit_anonymous_suggestion_secure_v1',{p_employee_token:token,p_message:msg});if(!r?.ok){toast('Não foi possível enviar.');return}document.getElementById('suggestMessage').value='';toast('Ideia anônima enviada ✓')}catch(e){console.error(e);toast('Erro ao enviar a ideia.')}};
     const token=employeeAuth?.employee?.id?await validEmployeeToken(employeeAuth.employee.id):'';if(token)return submit(token);await loadSuggestionNames();promptEmployeeChoice(submit,'Enviar ideia anônima');
   };
 
   // Management security: short-lived media URLs and protected management sessions.
   const baseLoadManagement=loadManagement;
-  loadManagement=async function(){await baseLoadManagement();if(!leaderToken)return;try{teamAccessInfo=await rpc('leader_team_access_info_v1',{p_token:leaderToken})||teamAccessInfo}catch(e){teamAccessInfo={ok:false,access_code:''}}try{await hydrateManagerMedia()}catch(e){console.warn('Mídia protegida indisponível',e)}if(activeTab==='team')renderTeamAdmin();else if(activeTab==='managers')renderManagers();else if(activeTab==='photos')renderPhotos();else if(activeTab==='overview')renderOverviewV24();else if(activeTab==='dayprep')renderDayPrep();else if(activeTab==='deviations'&&typeof renderDevRows==='function')renderDevRows();refreshIcons()};
+  loadManagement=async function(){await baseLoadManagement();if(!leaderToken)return;try{teamAccessInfo=await rpc('leader_team_access_info_v1',{p_token:leaderToken})||teamAccessInfo;if(teamAccessInfo?.ok&&normalizeTeamCode(teamAccessInfo.access_code))saveTeamCode(teamAccessInfo.access_code)}catch(e){teamAccessInfo={ok:false,access_code:''}}try{await hydrateManagerMedia()}catch(e){console.warn('Mídia protegida indisponível',e)}if(activeTab==='team')renderTeamAdmin();else if(activeTab==='managers')renderManagers();else if(activeTab==='photos')renderPhotos();else if(activeTab==='overview')renderOverviewV24();else if(activeTab==='dayprep')renderDayPrep();else if(activeTab==='deviations'&&typeof renderDevRows==='function')renderDevRows();refreshIcons()};
 
   const baseEditEmployee=editEmployee;
   editEmployee=function(id){baseEditEmployee(id);if(id){const e=(employeesAdmin||[]).find(x=>String(x.id)===String(id));const hidden=document.getElementById('empPhoto');if(hidden&&e?._photo_storage_ref)hidden.value=e._photo_storage_ref;const img=document.getElementById('empPhotoPreview');if(img&&e?._secure_photo_url){img.src=e._secure_photo_url;img.style.display='block'}}refreshIcons()};
@@ -3524,7 +3655,13 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   renderTeamAdmin=function(){baseRenderTeamAdmin();refreshIcons()};
 
   const baseRenderManagers=renderManagers;
-  renderManagers=function(){baseRenderManagers();document.querySelectorAll('#tab-managers .team-access-panel').forEach(x=>x.remove());refreshIcons()};
+  renderManagers=function(){
+    baseRenderManagers();const host=document.getElementById('tab-managers');if(!host)return;
+    document.querySelectorAll('#tab-managers .team-access-panel').forEach(x=>x.remove());
+    const link=teamAccessLink();const anchor=host.querySelector('.primary-manager-note')||host.querySelector('.section-head');
+    if(anchor)anchor.insertAdjacentHTML('afterend',`<div class="team-access-panel"><div class="section-kicker">Acesso dos celulares</div><h4><i data-lucide="smartphone" class="ico"></i>Link protegido da equipe</h4><div class="sub">Abra este link uma vez em cada celular Android/iPhone autorizado. Depois o aparelho fica pareado até você renovar o acesso.</div>${link?`<div class="access-link-row"><input id="v24527TeamLink" value="${esc(link)}" readonly aria-label="Link protegido da equipe"><button class="btn mint" onclick="v24527CopyTeamLink()"><i data-lucide="copy" class="ico"></i>Copiar link</button></div>`:`<div class="security-note">Não foi possível carregar o acesso da equipe. Atualize a Gestão.</div>`}<div class="actions" style="margin-top:10px">${currentManager?.is_primary===true?`<button class="btn light" onclick="v24527RotateTeamAccess()"><i data-lucide="refresh-cw" class="ico"></i>Renovar acesso</button>`:''}</div><div class="security-note"><b>Se um celular for perdido ou não fizer mais parte da operação:</b> use “Renovar acesso”. O link antigo deixa de funcionar e as sessões atuais da equipe são encerradas.</div></div>`);
+    refreshIcons();
+  };
 
   const baseOpenManagerModal=openManagerModal;openManagerModal=function(){baseOpenManagerModal();const p=document.getElementById('mgrPass');if(p){p.minLength=12;p.placeholder='Mínimo 12 caracteres'}document.querySelectorAll('#modalBox .sub').forEach(x=>{if(/mínimo 6|6 caracteres/i.test(x.textContent))x.textContent='Use no mínimo 12 caracteres.'})};
   const baseOpenEditManagerModal=openEditManagerModal;openEditManagerModal=function(id){baseOpenEditManagerModal(id);const p=document.getElementById('mgrEditPass');if(p){p.minLength=12;p.placeholder='Deixe vazio para manter; para trocar, mínimo 12'}document.querySelectorAll('#modalBox .sub').forEach(x=>{if(/6 caracteres/i.test(x.textContent))x.textContent='Para trocar, use no mínimo 12 caracteres.'})};
@@ -3664,7 +3801,12 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
   async function loadPublicDailyInformation(date=isoLocal()){
     try{
-      const rows=await rpc('public_daily_information_board_v1',{p_date:date});
+      let rows=[];
+      if(leaderToken)rows=await rpc('leader_daily_information_board_v1',{p_token:leaderToken,p_date:date});
+      else{
+        const code=window.v24527GetTeamCode?.()||'';if(!code){publicDailyInformation=[];renderPublicDailyInformation();return}
+        rows=await rpc('team_daily_information_board_v1',{p_team_code:code,p_date:date});
+      }
       publicDailyInformation=Array.isArray(rows)?rows:[];
     }catch(e){
       console.warn('Painel do Dia indisponível',e);
@@ -4289,7 +4431,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     try{
       const reason=p.reason||(p.published?'Alteração aplicada na preparação do dia':null);
       const r=await rpc('leader_prepare_day_v4',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_groups:p.groups||[],p_publish:true,p_redistribute:true,p_reason:reason});
-      const state=await rpc('get_operation_day_state_v2',{p_date:p.d});if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
+      const state=await rpc('leader_get_operation_day_state_v1',{p_token:leaderToken,p_date:p.d});if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
       closeModal();await loadManagement();if(p.d===isoLocal())await loadRoutine(p.d);const moved=Number(r?.redistributed||0),gc=Number(r?.group_demands||0);
       openModal(`<div style="text-align:center;padding:12px 4px 4px"><div style="width:64px;height:64px;border-radius:22px;margin:0 auto 14px;display:grid;place-items:center;background:rgba(45,199,168,.14);color:#169b80"><i data-lucide="badge-check" style="width:38px;height:38px"></i></div><div class="section-kicker">Tudo certo</div><h3 style="margin:6px 0 8px;font-size:24px">${p.published?'Alterações aplicadas com sucesso':'Operação publicada com sucesso'}</h3><div class="sub">${brDate(p.d)} foi ${p.published?'atualizado':'liberado para a operação'}.${gc?` ${gc} demanda(s) em grupo configurada(s) para o dia.`:''}${moved?` ${moved} atividade(s) pendente(s) foram redistribuída(s).`:''}</div><div class="actions" style="justify-content:center;margin-top:20px"><button class="btn mint" onclick="closeModal()"><i data-lucide="check" class="ico"></i>Entendi</button></div></div>`);toast(p.published?'Alterações aplicadas com sucesso ✓':'Operação publicada com sucesso ✓');
     }catch(e){console.error(e);closeModal();const raw=String(e?.message||'');toast(raw.includes('group_requires_two_employees')?'Cada demanda em grupo precisa de pelo menos 2 participantes presentes.':raw.includes('publish_not_confirmed')?'A publicação não foi confirmada pelo banco. Tente novamente.':'Não foi possível concluir a ação.')}
@@ -4519,6 +4661,88 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 })();
 </script>
 
+
+<!-- V24.5.26: galeria estável, revalidação de fotos e preservação dos painéis da Visão Geral. -->
+<style id="v24526-photo-stability-style">
+.photo-placeholder-v24526{aspect-ratio:1/1;border:1px dashed #c9dbe2;border-radius:10px;background:#f5f9fa;color:var(--muted);display:grid;place-items:center;text-align:center;padding:8px;font-size:10px;font-weight:850;line-height:1.25}
+.photo-loading-v24526{min-height:190px;display:grid;place-items:center;text-align:center;color:var(--muted);gap:10px}.photo-loading-v24526 .spinner-v24526{width:34px;height:34px;border:3px solid #dce8ed;border-top-color:var(--mint);border-radius:50%;animation:v24526spin .8s linear infinite}@keyframes v24526spin{to{transform:rotate(360deg)}}
+.photo-error-v24526{min-height:150px;display:grid;place-items:center;text-align:center;border:1px dashed #e0c9cc;border-radius:14px;background:#fff8f8;color:#8d3d47;padding:18px}.overview-fold[open]>summary{background:#fbfdfe}.compact-photo-grid button{min-width:0}.compact-photo-grid button:focus-visible{outline:3px solid rgba(43,199,164,.28);outline-offset:2px;border-radius:10px}
+
+@media(max-width:900px){
+  .side{width:100%!important;max-width:100%!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;-webkit-transform:none!important}
+  .main{margin-left:0!important;width:100%!important;max-width:100%!important;min-width:0!important}
+}
+</style>
+<script id="v24526-photo-stability-script">
+(function(){
+  if(window.__V24526_PHOTO_STABILITY__)return;window.__V24526_PHOTO_STABILITY__=true;
+  const foldState=window.__V24526_OVERVIEW_FOLDS__||(window.__V24526_OVERVIEW_FOLDS__={history:true,photos:false});
+  function foldTypeV24526(el){const t=(el?.querySelector('summary')?.textContent||'').toLowerCase();return t.includes('foto')?'photos':t.includes('execu')?'history':''}
+  function captureFoldsV24526(){document.querySelectorAll('#tab-overview details.overview-fold').forEach(el=>{const k=foldTypeV24526(el);if(k)foldState[k]=!!el.open})}
+  function restoreFoldsV24526(){document.querySelectorAll('#tab-overview details.overview-fold').forEach(el=>{const k=foldTypeV24526(el);if(!k)return;el.dataset.v24526Fold=k;el.open=!!foldState[k];el.ontoggle=()=>{foldState[k]=!!el.open}})}
+  const baseOverviewV24526=window.renderOverviewV24;
+  if(typeof baseOverviewV24526==='function')window.renderOverviewV24=function(){captureFoldsV24526();const r=baseOverviewV24526.apply(this,arguments);restoreFoldsV24526();return r};
+
+  async function signProofV24526(path){
+    if(!path)throw new Error('photo_path_missing');
+    const res=await fetch(`${SUPA_URL}/functions/v1/secure-media`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`},body:JSON.stringify({action:'sign',leader_token:leaderToken,bucket:'proofs',paths:[String(path)]})});
+    const data=await res.json().catch(()=>({ok:false,error:'invalid_response'}));
+    if(!res.ok||!data?.ok)throw new Error(data?.error||'photo_sign_failed');
+    const url=String(data?.urls?.[String(path)]||'');if(!url)throw new Error('photo_url_missing');return url;
+  }
+  window.openProofPhotoV24526=async function(id){
+    const p=(Array.isArray(proofsAdmin)?proofsAdmin:[]).find(x=>String(x.id)===String(id));
+    if(!p){toast('Foto não encontrada. Atualize a Gestão.');return}
+    openModal(`<div class="photo-loading-v24526"><div class="spinner-v24526"></div><div><b>Abrindo foto...</b><div class="sub">Validando o acesso à imagem.</div></div></div>`);
+    try{
+      let url='';
+      if(p.storage_path)url=await signProofV24526(p.storage_path);
+      else url=String(p._secure_url||'');
+      if(!url)throw new Error('photo_url_missing');
+      p._secure_url=url;
+      openPhotoViewer(url);
+      const img=document.getElementById('photoViewerImage');
+      if(img){
+        img.onerror=()=>{img.onerror=null;const box=document.getElementById('modalBox');if(box)box.innerHTML='<div class="photo-error-v24526"><div><b>Não foi possível carregar esta imagem.</b><div class="sub" style="margin-top:6px">Feche e tente novamente. O arquivo continua preservado.</div><div class="actions" style="justify-content:center"><button class="btn light" onclick="closeModal()">Fechar</button></div></div></div>';try{refreshIcons()}catch(_e){}};
+      }
+    }catch(e){
+      console.error('Falha ao abrir foto',e);
+      const box=document.getElementById('modalBox');if(box)box.innerHTML='<div class="photo-error-v24526"><div><b>Não foi possível abrir a foto agora.</b><div class="sub" style="margin-top:6px">O link protegido será renovado na próxima tentativa.</div><div class="actions" style="justify-content:center"><button class="btn light" onclick="closeModal()">Fechar</button></div></div></div>';
+      try{refreshIcons()}catch(_e){}
+    }
+  };
+
+  window.v242PhotosHtml=function(d){
+    const rows=(Array.isArray(proofsAdmin)?proofsAdmin:[]).filter(p=>p.work_date===d&&!p.hidden_in_gallery).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    if(!rows.length)return '<div class="empty-state">Nenhuma foto registrada nesta data.</div>';
+    return `<div class="compact-photo-grid">${rows.slice(0,12).map(p=>{const src=String(p._secure_url||'');return `<button type="button" data-proof-id="${esc(String(p.id))}" onclick="openProofPhotoV24526('${String(p.id)}')" aria-label="Abrir foto ${p.phase==='before'?'antes':'depois'} de ${esc(p.activity_name||'atividade')}">${src?`<img src="${esc(src)}" loading="lazy" decoding="async" alt="Comprovação ${p.phase==='before'?'antes':'depois'}">`:`<div class="photo-placeholder-v24526">Foto protegida<br>toque para abrir</div>`}<span>${p.phase==='before'?'ANTES':'DEPOIS'} · ${esc(p.employee_name||'Equipe')}</span></button>`}).join('')}</div>${rows.length>12?`<div class="sub" style="margin-top:8px">+ ${rows.length-12} foto(s) nesta data.</div>`:''}`;
+  };
+
+  const basePhotoGroupsV24526=window.renderPhotoGroups;
+  if(typeof basePhotoGroupsV24526==='function')window.renderPhotoGroups=function(){
+    const r=basePhotoGroupsV24526.apply(this,arguments);
+    document.querySelectorAll('#photoGroups .proof-thumb').forEach(card=>{
+      const id=card.querySelector('.proofCheck')?.value||'';const img=card.querySelector('img');if(!id||!img)return;
+      img.dataset.proofId=String(id);img.onclick=(ev)=>{ev.preventDefault();ev.stopPropagation();openProofPhotoV24526(id)};
+      img.onerror=()=>{img.onerror=null;img.style.visibility='hidden';card.classList.add('v24526-photo-load-error')};
+    });
+    return r;
+  };
+
+  document.addEventListener('click',e=>{const s=e.target?.closest?.('#tab-overview details.overview-fold > summary');if(!s)return;const d=s.parentElement,k=foldTypeV24526(d);if(k)setTimeout(()=>{foldState[k]=!!d.open},0)},true);
+  window.V24526='V24.5.26';
+})();
+</script>
+
+
+<script id="v24527-version-marker">window.V24527='V24.5.27';</script>
+<!-- V24.5.27: auditoria de segurança, acesso protegido da equipe, RLS/EXECUTE de menor privilégio e índices de FK. -->
+<style id="v24528-sync-style">
+.security-gate .btn+.btn{margin-left:8px}@media(max-width:760px){.security-gate .btn+.btn{margin-left:0;margin-top:8px}}
+</style>
+<script id="v24528-version-marker">window.V24528='V24.5.28';</script>
+<!-- V24.5.28: sincronização segura resiliente; PC da Gestão usa sessão do líder e equipe tem fallback protegido. -->
+
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
@@ -4534,3 +4758,5 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <!-- V24.5.23: Rotina / Gestão / Ideias voltam fixas na parte inferior, com safe-area e espaço de conteúdo ajustados para iPhone 12 mini. -->
 
 <!-- V24.5.24: navegação inferior fixa padronizada para Android e iOS, com safe-area e reserva de conteúdo. -->
+
+<!-- V24.5.26: galeria de fotos estabilizada; links protegidos renovados ao abrir e painéis da Visão Geral preservam o estado. -->
