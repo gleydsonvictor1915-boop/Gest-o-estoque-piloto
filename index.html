@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.19-lembretes-fixos-retomada-imediata" />
+<meta name="app-version" content="2026.09.10-v24.5.20-orientacao-visual-rotativas-fixas" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -3091,7 +3091,17 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   const baseRenderSelected=renderSelected;
   renderSelected=function(force=false){baseRenderSelected(force);const el=document.getElementById('selectedActivity');if(el&&selectedEmployeeId&&String(employeeAuth?.employee?.id)===String(selectedEmployeeId)){const first=el.firstElementChild;if(first&&!el.querySelector('.employee-auth-pill'))first.insertAdjacentHTML('beforebegin',`<div class="employee-auth-pill"><i data-lucide="shield-check" class="ico"></i>Sessão protegida · ${esc(employeeAuth.employee?.name||'colaborador')}</div>`);refreshIcons()}};
 
-  startAssignment=async function(a,e){if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}return requireEmployee(e,async token=>{const key='start:'+a;if(!beginAction(key))return;try{const r=await rpc('start_assignment_secure_v1',{p_employee_token:token,p_assignment:a});if(!r?.ok){toast(v24ErrorMessage(r?.error));return}await loadRoutine(isoLocal());toast('Atividade iniciada ✓')}catch(err){console.error(err);toast('Não foi possível iniciar.')}finally{endAction(key)}},'Confirmar início da atividade')};
+  startAssignment=async function(a,e){
+    if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}
+    return requireEmployee(e,async token=>{
+      const row=(routine||[]).find(x=>String(x.assignment_id)===String(a));
+      if(String(row?.activity_mode||'rotating')==='rotating'){
+        await v24520OpenRotatingGuide(row,token,e);
+        return;
+      }
+      return v24520PerformStart(a,e,token);
+    },'Confirmar início da atividade');
+  };
   startCoverage=async function(a,e){if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}return requireEmployee(e,async token=>{const key='cover:'+a;if(!beginAction(key))return;try{const r=await rpc('claim_coverage_secure_v1',{p_employee_token:token,p_assignment:a});if(!r?.ok){toast(v24ErrorMessage(r?.error));return}coverageExecutorId=null;coverageAssignmentId=null;selectedEmployeeId=e;await loadRoutine(isoLocal());toast('Cobertura iniciada ✓')}catch(err){console.error(err);toast('Não foi possível iniciar a cobertura.')}finally{endAction(key)}},'Confirmar cobertura')};
   window.v2452PrepareCoverage=async function(employeeId){
     const absent=document.getElementById('coverAbsent'),btn=document.getElementById('coverActionBtn');
@@ -3134,6 +3144,60 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const res=await fetch(`${SUPA_URL}/functions/v1/secure-media`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`},body:JSON.stringify({action,...payload})});
     const data=await res.json().catch(()=>({ok:false,error:'invalid_response'}));if(!res.ok||!data?.ok){const e=new Error(data?.error||'secure_media_failed');e.code=data?.error;throw e}return data;
   }
+
+  function v24520CleanGuideInstruction(value){
+    return String(value||'').replace(/^MOMENTO:\s*[^—]+—\s*/i,'').trim();
+  }
+  async function v24520ReferenceUrl(row,token){
+    if(!row?.activity_reference_photo)return '';
+    try{
+      const signed=await secureMedia('sign_employee_reference',{employee_token:token,assignment_id:row.assignment_id});
+      return String(signed?.url||'');
+    }catch(e){
+      console.warn('Foto de referência indisponível',e);return '';
+    }
+  }
+  function v24520GuideMarkup(row,url,mode,employeeId){
+    const instruction=v24520CleanGuideInstruction(row?.activity_instruction);
+    const rotating=mode==='rotating';
+    return `<div class="activity-guide-v24520">
+      <div class="activity-guide-kicker-v24520"><i data-lucide="image-check" class="ico"></i>COMO DEVE SER FEITO</div>
+      <h3>${esc(row?.activity_name||'Atividade')}</h3>
+      ${url?`<img class="activity-guide-image-v24520" src="${esc(url)}" alt="Foto de referência da atividade">`:`<div class="activity-guide-noimage-v24520"><i data-lucide="image" class="ico"></i><span>Sem foto de referência cadastrada.</span></div>`}
+      ${instruction?`<p class="activity-guide-text-v24520">${esc(instruction)}</p>`:''}
+      <div class="activity-guide-actions-v24520">
+        ${rotating?`<button class="btn mint" onclick="v24520ConfirmRotatingStart('${row.assignment_id}','${employeeId}')"><i data-lucide="play" class="ico"></i>Entendi, iniciar</button>`:''}
+        <button class="btn light" onclick="closeModal()">${rotating?'Voltar':'Fechar'}</button>
+      </div>
+    </div>`;
+  }
+  async function v24520OpenRotatingGuide(row,token,employeeId){
+    if(!row)return;
+    const url=await v24520ReferenceUrl(row,token);
+    openModal(v24520GuideMarkup(row,url,'rotating',employeeId));
+    refreshIcons();
+  }
+  async function v24520PerformStart(a,e,token){
+    const key='start:'+a;if(!beginAction(key))return;
+    try{
+      const r=await rpc('start_assignment_secure_v1',{p_employee_token:token,p_assignment:a});
+      if(!r?.ok){toast(v24ErrorMessage(r?.error));return}
+      closeModal();await loadRoutine(isoLocal());toast('Atividade iniciada ✓');
+    }catch(err){console.error(err);toast('Não foi possível iniciar.')}finally{endAction(key)}
+  }
+  window.v24520ConfirmRotatingStart=async function(a,e){
+    if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}
+    closeModal();
+    return requireEmployee(e,async token=>v24520PerformStart(a,e,token),'Confirmar início da atividade');
+  };
+  window.v24520OpenFixedGuide=async function(a,e){
+    const row=(routine||[]).find(x=>String(x.assignment_id)===String(a));
+    if(!row)return;
+    return requireEmployee(e,async token=>{
+      const url=await v24520ReferenceUrl(row,token);
+      openModal(v24520GuideMarkup(row,url,'fixed',e));refreshIcons();
+    },'Ver como fazer');
+  };
   function mediaPath(value,bucket,rawAllowed=false){
     const v=String(value||'').trim();if(!v)return'';const prefix=bucket==='avatars'?'avatar:':'proof:';if(v.startsWith(prefix))return v.slice(prefix.length);
     const markers=[`/storage/v1/object/public/${bucket}/`,`/storage/v1/object/sign/${bucket}/`];for(const m of markers){const i=v.indexOf(m);if(i>=0)return decodeURIComponent(v.slice(i+m.length).split('?')[0])}
@@ -4049,10 +4113,10 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const ordered=[...list].sort((a,b)=>String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||(Number(a.slot_index||999)-Number(b.slot_index||999))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR'));
     return `<section class="fixed-reminders-v24519">
       <div class="fixed-reminders-head-v24519"><div><div class="section-kicker">LEMBRETES FIXOS DO DIA</div><h3>Demandas fixas</h3><p>Apenas consulte e realize no horário indicado. Não precisa iniciar nem finalizar no sistema.</p></div><span class="fixed-reminders-count-v24519">${ordered.length} ${pluralV24519(ordered.length,'lembrete','lembretes')}</span></div>
-      <div class="fixed-reminders-list-v24519">${ordered.map(r=>`<div class="fixed-reminder-row-v24519">
+      <div class="fixed-reminders-list-v24519">${ordered.map(r=>`<div class="fixed-reminder-row-v24519 fixed-reminder-click-v24520" role="button" tabindex="0" onclick="v24520OpenFixedGuide('${r.assignment_id}','${r.employee_id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();v24520OpenFixedGuide('${r.assignment_id}','${r.employee_id}')}" title="Ver como deve ser feito">
         <div class="fixed-reminder-time-v24519">${esc(fixedTimingV24519(r))}</div>
-        <div class="fixed-reminder-main-v24519"><b>${esc(r.activity_name||'Demanda fixa')}</b>${cleanInstructionV24519(r.activity_instruction)?`<small>${esc(cleanInstructionV24519(r.activity_instruction))}</small>`:''}</div>
-        <span class="fixed-reminder-badge-v24519"><i data-lucide="bell" class="ico"></i>LEMBRETE FIXO</span>
+        <div class="fixed-reminder-main-v24519"><b>${esc(r.activity_name||'Demanda fixa')}</b><small>Toque para ver como deve ser feito.</small></div>
+        <span class="fixed-reminder-badge-v24519"><i data-lucide="eye" class="ico"></i>VER COMO FAZER</span>
       </div>`).join('')}</div>
     </section>`;
   }
@@ -4155,6 +4219,27 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 })();
 </script>
 
+
+<!-- V24.5.20: orientação visual antes de iniciar rotativas; fixas abrem orientação ao tocar. -->
+<style id="v24520-activity-guide-style">
+.activity-guide-v24520{max-width:620px;margin:0 auto}.activity-guide-kicker-v24520{display:flex;align-items:center;gap:7px;color:#1a7965;font-weight:950;font-size:11px;letter-spacing:.07em;margin-bottom:6px}.activity-guide-kicker-v24520 .ico{width:16px;height:16px}.activity-guide-v24520 h3{margin:0 0 12px;color:var(--nav);font-size:22px;line-height:1.15}.activity-guide-image-v24520{display:block;width:100%;max-height:390px;object-fit:contain;border:1px solid var(--line);border-radius:15px;background:#f6fafb;margin:8px 0 12px}.activity-guide-noimage-v24520{display:flex;align-items:center;justify-content:center;gap:8px;min-height:90px;border:1px dashed #ccdfe5;border-radius:14px;background:#f8fbfc;color:var(--muted);font-size:12px;margin:8px 0 12px}.activity-guide-noimage-v24520 .ico{width:20px;height:20px}.activity-guide-text-v24520{margin:0;padding:11px 12px;border-radius:12px;background:#f3f8fa;color:var(--text);font-size:13px;line-height:1.5}.activity-guide-actions-v24520{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.fixed-reminder-click-v24520{cursor:pointer;border-radius:12px;transition:background .15s ease,transform .15s ease}.fixed-reminder-click-v24520:hover{background:#f0f8f6}.fixed-reminder-click-v24520:focus{outline:2px solid rgba(43,199,164,.45);outline-offset:2px}.fixed-reminder-click-v24520:active{transform:scale(.995)}
+@media(max-width:680px){.activity-guide-v24520 h3{font-size:19px}.activity-guide-image-v24520{max-height:320px}.activity-guide-actions-v24520 .btn{flex:1 1 150px}}
+</style>
+<script id="v24520-activity-guide-script">
+(function(){
+  if(window.__V24520_ACTIVITY_GUIDE__)return;window.__V24520_ACTIVITY_GUIDE__=true;
+  const baseActivityPanelV24520=window.activityPanel;
+  if(typeof baseActivityPanelV24520==='function')window.activityPanel=function(r){
+    const html=baseActivityPanelV24520(r);
+    if(String(r?.activity_mode||'rotating')!=='rotating')return html;
+    const box=document.createElement('div');box.innerHTML=html;
+    box.querySelectorAll('.routine-reference').forEach(el=>el.remove());
+    return box.innerHTML;
+  };
+  window.V24520='V24.5.20';
+})();
+</script>
+
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
@@ -4162,3 +4247,4 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <!-- V24.5.17: rodízio considera a carga total do dia (fixas/grupo/protegidas) e o histórico semanal para manter distribuição estável e equilibrada. -->
 <!-- V24.5.18: demandas em grupo são modelos; participantes, horários e prioridade são definidos por data no Preparar o dia. -->
 <!-- V24.5.19: demandas fixas aparecem como lembretes sem execução; retomada operacional limpa o aviso de pausa imediatamente. -->
+<!-- V24.5.20: rotativas exibem orientação visual antes do início; lembretes fixos abrem a referência ao toque. -->
