@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.17-rodizio-equilibrado" />
+<meta name="app-version" content="2026.09.10-v24.5.18-grupos-configurados-no-dia" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -3805,7 +3805,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const tabInfo={
       fixed:{title:'Demandas fixas',sub:'Atividades de responsabilidade definida. Não entram no rodízio e ficam sem comprovação por foto.',button:'Nova demanda fixa'},
       rotating:{title:'Demandas rotativas',sub:'Atividades distribuídas automaticamente entre todos os colaboradores presentes, equilibrando a carga durante a semana.',button:'Nova demanda rotativa'},
-      group:{title:'Demandas em grupo',sub:'Atividades executadas por duas ou mais pessoas selecionadas por você.',button:'Nova demanda em grupo'}
+      group:{title:'Demandas em grupo',sub:'Cadastre aqui somente os modelos. Participantes, horários e prioridade são definidos no Preparar o dia.',button:'Nova demanda em grupo'}
     }[activityDemandTabV24513];
     const q=esc(managementFilters.activities||'');
     host.innerHTML=`
@@ -3821,7 +3821,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
         const mode=modeOf(a),names=groupNames(a);
         const owner=mode==='fixed'?`<span><i data-lucide="user-round" class="ico"></i>${esc(a.fixed_employee_name||personName(a.fixed_employee_id))}</span>`:'';
         const rotation=mode==='rotating'?`<span><i data-lucide="shuffle" class="ico"></i>Todos os presentes</span>`:'';
-        const group=mode==='group'?`<span><i data-lucide="users" class="ico"></i>${esc(names.length?names.join(' + '):'Sem participantes')}</span>`:'';
+        const group=mode==='group'?`<span><i data-lucide="calendar-cog" class="ico"></i>Configurar no Preparar o dia</span>`:'';
         const photo=mode==='fixed'?'<span><i data-lucide="camera-off" class="ico"></i>Sem foto</span>':`<span><i data-lucide="camera" class="ico"></i>${v24PhotoLabel(a.photo_requirement)}</span>`;
         return `<article class="activity-admin-card v24513-activity-card" data-search="${esc((a.name+' '+(a.instruction||'')+' '+(a.fixed_employee_name||'')+' '+names.join(' ')).toLowerCase())}">
           ${a.reference_photo_url?`<img class="activity-reference-thumb" src="${a.reference_photo_url}" loading="lazy" decoding="async" alt="Padrão esperado">`:''}
@@ -3909,8 +3909,111 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
 </script>
 
+
+<style>
+/* ===== V24.5.18 — demandas em grupo configuradas por dia ===== */
+.group-day-section-v24518{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:16px;background:linear-gradient(145deg,#fbfefd,#f5fbf9)}
+.group-day-head-v24518{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.group-day-head-v24518 h4{margin:2px 0 4px;font-size:18px;color:var(--nav);display:flex;align-items:center;gap:7px}.group-day-head-v24518 .sub{max-width:760px}
+.group-day-list-v24518{display:grid;gap:10px}.group-day-card-v24518{border:1px solid var(--line);border-radius:15px;background:#fff;padding:13px}.group-day-card-v24518.is-selected{border-color:rgba(43,199,164,.58);box-shadow:0 0 0 2px rgba(43,199,164,.08)}
+.group-day-toggle-v24518{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.group-day-toggle-v24518 input{width:18px!important;height:18px!important;min-height:auto!important;margin-top:2px}.group-day-toggle-v24518 b{display:block;color:var(--nav)}.group-day-toggle-v24518 small{display:block;color:var(--muted);margin-top:3px;line-height:1.4}
+.group-day-config-v24518{margin-top:12px;padding-top:12px;border-top:1px dashed #d9e6ea}.group-day-config-v24518.hidden{display:none}.group-day-grid-v24518{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(260px,1fr);gap:10px}.group-day-people-v24518{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.group-day-person-v24518{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:11px;padding:8px 10px;background:#fbfdfe;font-weight:850;font-size:12px;cursor:pointer}.group-day-person-v24518 input{width:15px!important;height:15px!important;min-height:auto!important}.group-day-person-v24518.unavailable{opacity:.42;cursor:not-allowed}.group-day-hint-v24518{display:flex;gap:8px;align-items:flex-start;background:#edf8f5;border:1px solid #cfece3;border-radius:12px;padding:10px;margin-top:9px;color:#256756;font-size:11px;line-height:1.4}
+.group-template-note-v24518{display:flex;gap:9px;align-items:flex-start;border:1px solid #d6e7ec;background:#f7fbfc;border-radius:13px;padding:11px;margin:8px 0 13px}.group-template-note-v24518 b{display:block;color:var(--nav);font-size:12px}.group-template-note-v24518 small{display:block;color:var(--muted);line-height:1.4;margin-top:2px}
+@media(max-width:720px){.group-day-grid-v24518{grid-template-columns:1fr}.group-day-people-v24518{grid-template-columns:1fr}.group-day-head-v24518{flex-direction:column}}
+</style>
+<script>
+(function(){
+  const VERSION='V24.5.18';
+
+  function groupTimeTextV24518(v){return Array.isArray(v)?v.map(x=>String(x||'').slice(0,5)).filter(Boolean).join(', '):''}
+  function groupPhotoLabelV24518(v){return v==='before_after'?'Foto antes e depois':v==='after'?'Foto depois':'Sem foto'}
+  function groupUrgencyOptionsV24518(v){return `<option value="critical" ${v==='critical'?'selected':''}>Crítica</option><option value="high" ${v==='high'?'selected':''}>Alta</option><option value="medium" ${v==='medium'?'selected':''}>Média</option><option value="normal" ${!v||v==='normal'?'selected':''}>Normal</option>`}
+
+  window.toggleDayGroupV24518=function(id){
+    const use=document.getElementById('prepGroupUse-'+id),box=document.getElementById('prepGroupConfig-'+id),card=document.getElementById('prepGroupCard-'+id);
+    box?.classList.toggle('hidden',!use?.checked);card?.classList.toggle('is-selected',!!use?.checked);refreshGroupParticipantAvailabilityV24518();
+  };
+
+  window.refreshGroupParticipantAvailabilityV24518=function(){
+    document.querySelectorAll('.group-day-person-v24518').forEach(label=>{
+      const cb=label.querySelector('input[data-group-employee]');if(!cb)return;
+      const status=document.getElementById('prepStatus-'+cb.dataset.groupEmployee)?.value||'off';
+      const ok=status==='present';cb.disabled=!ok;if(!ok)cb.checked=false;label.classList.toggle('unavailable',!ok);
+    });
+  };
+
+  function groupDaySectionV24518(){
+    const groups=Array.isArray(daySetup?.group_demands)?daySetup.group_demands:[];
+    const emps=Array.isArray(daySetup?.employees)?daySetup.employees:[];
+    if(!groups.length)return `<section class="group-day-section-v24518"><div class="group-day-head-v24518"><div><div class="section-kicker">Demandas em grupo do dia</div><h4><i data-lucide="users-round" class="ico"></i>Atividades em grupo</h4><div class="sub">Nenhum modelo em grupo está cadastrado. Cadastre o modelo em <b>Atividades → Demandas em grupo</b>; os participantes, horários e prioridade serão escolhidos aqui.</div></div></div></section>`;
+    return `<section class="group-day-section-v24518"><div class="group-day-head-v24518"><div><div class="section-kicker">Configuração diária</div><h4><i data-lucide="users-round" class="ico"></i>Demandas em grupo do dia</h4><div class="sub">Escolha apenas as demandas que acontecerão em <b>${brDate(document.getElementById('manageDate')?.value||isoLocal())}</b>. O grupo pode ser diferente a cada dia.</div></div><span class="status-pill reviewing">${groups.filter(g=>g.selected_today).length} selecionada(s)</span></div><div class="group-day-list-v24518">${groups.map(g=>{
+      const id=String(g.activity_id),sel=!!g.selected_today,members=(Array.isArray(g.employee_ids)?g.employee_ids:[]).map(String),times=groupTimeTextV24518(g.time_slots);
+      return `<article id="prepGroupCard-${id}" class="group-day-card-v24518 ${sel?'is-selected':''}"><label class="group-day-toggle-v24518"><input id="prepGroupUse-${id}" class="v24518-group-use" data-activity-id="${id}" type="checkbox" ${sel?'checked':''} onchange="toggleDayGroupV24518('${id}')"><span><b>${esc(g.activity_name||'Atividade em grupo')}</b><small>${esc(g.activity_instruction||'Sem instrução cadastrada.')}</small></span></label><div id="prepGroupConfig-${id}" class="group-day-config-v24518 ${sel?'':'hidden'}"><div class="group-day-grid-v24518"><div class="field"><label>Horário(s) do dia</label><input id="prepGroupTimes-${id}" value="${esc(times)}" placeholder="Ex.: 09:00 ou 09:00, 15:00"><div class="sub">Pode informar um ou mais horários. Deixe em branco se ainda não houver horário definido.</div></div><div class="field"><label>Prioridade do dia</label><select id="prepGroupUrgency-${id}">${groupUrgencyOptionsV24518(g.urgency)}</select><div class="sub">A prioridade vale somente para esta data.</div></div></div><div class="field"><label>Participantes de hoje</label><div class="group-day-people-v24518">${emps.map(e=>{const eid=String(e.employee_id),checked=members.includes(eid);return `<label class="group-day-person-v24518"><input type="checkbox" data-group-employee="${eid}" name="prepGroupMember-${id}" value="${eid}" ${checked?'checked':''}><span>${esc(e.employee_name)}</span></label>`}).join('')}</div><div class="sub">Selecione pelo menos 2 pessoas que estejam marcadas como <b>Presente</b>.</div></div><div class="group-day-hint-v24518"><i data-lucide="camera" class="ico"></i><span><b>Comprovação:</b> ${esc(groupPhotoLabelV24518(g.photo_requirement))}. Participantes, horários e prioridade não ficam presos ao cadastro do modelo.</span></div></div></article>`;
+    }).join('')}</div></section>`;
+  }
+
+  const baseRenderDayPrepV24518=window.renderDayPrep;
+  window.renderDayPrep=function(force=false){
+    const r=baseRenderDayPrepV24518(force);const host=document.getElementById('tab-dayprep');if(!host||host.querySelector('.holiday-card-v24510'))return r;
+    host.querySelector('.group-day-section-v24518')?.remove();const grid=host.querySelector('.prep-grid');if(grid)grid.insertAdjacentHTML('afterend',groupDaySectionV24518());
+    host.querySelectorAll('[id^="prepStatus-"]').forEach(el=>{if(el.dataset.groupHookV24518)return;el.dataset.groupHookV24518='1';el.addEventListener('change',refreshGroupParticipantAvailabilityV24518)});
+    refreshGroupParticipantAvailabilityV24518();try{refreshIcons()}catch(e){}return r;
+  };
+
+  window.collectDayGroupsV24518=function(){
+    const groups=[];
+    for(const use of document.querySelectorAll('.v24518-group-use:checked')){
+      const id=use.dataset.activityId,times=parseActivityTimeSlotsV245131('prepGroupTimes-'+id);if(times===null)return {error:'Confira os horários das demandas em grupo. Use HH:MM, por exemplo 09:00, 15:00.'};
+      const employeeIds=[...document.querySelectorAll(`input[name="prepGroupMember-${id}"]:checked`)].filter(cb=>(document.getElementById('prepStatus-'+cb.value)?.value||'off')==='present').map(cb=>cb.value);
+      if(employeeIds.length<2){const name=(daySetup?.group_demands||[]).find(g=>String(g.activity_id)===String(id))?.activity_name||'atividade em grupo';return {error:`Selecione pelo menos 2 participantes presentes para ${name}.`};}
+      groups.push({activity_id:id,urgency:document.getElementById('prepGroupUrgency-'+id)?.value||'normal',time_slots:times,employee_ids:employeeIds});
+    }
+    return {groups};
+  };
+
+  window.saveDayPrep=async function(publish){
+    const d=document.getElementById('manageDate')?.value||isoLocal(),published=v24OperationPublished(),reason=published?'Alteração aplicada na preparação do dia':null,statuses=collectDayPrepStatuses(),g=collectDayGroupsV24518();
+    if(g.error){toast(g.error);return}
+    if(publish){openDayPrepConfirmV2436({d,published,statuses,groups:g.groups,redistribute:true,reason});return}
+    try{await rpc('leader_prepare_day_v4',{p_token:leaderToken,p_date:d,p_statuses:statuses,p_groups:g.groups,p_publish:false,p_redistribute:true,p_reason:reason});toast('Preparação salva ✓');await loadManagement();}catch(e){console.error(e);const raw=String(e?.message||'');toast(raw.includes('group_requires_two_employees')?'Cada demanda em grupo precisa de pelo menos 2 participantes.':'Não foi possível salvar a preparação.')}
+  };
+
+  window.confirmDayPrepV2436=async function(){
+    const p=pendingDayPrepAction;if(!p)return;const btn=document.getElementById('confirmDayPublishBtn');if(btn)btn.disabled=true;pendingDayPrepAction=null;
+    try{
+      const reason=p.reason||(p.published?'Alteração aplicada na preparação do dia':null);
+      const r=await rpc('leader_prepare_day_v4',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_groups:p.groups||[],p_publish:true,p_redistribute:true,p_reason:reason});
+      const state=await rpc('get_operation_day_state_v2',{p_date:p.d});if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
+      closeModal();await loadManagement();if(p.d===isoLocal())await loadRoutine(p.d);const moved=Number(r?.redistributed||0),gc=Number(r?.group_demands||0);
+      openModal(`<div style="text-align:center;padding:12px 4px 4px"><div style="width:64px;height:64px;border-radius:22px;margin:0 auto 14px;display:grid;place-items:center;background:rgba(45,199,168,.14);color:#169b80"><i data-lucide="badge-check" style="width:38px;height:38px"></i></div><div class="section-kicker">Tudo certo</div><h3 style="margin:6px 0 8px;font-size:24px">${p.published?'Alterações aplicadas com sucesso':'Operação publicada com sucesso'}</h3><div class="sub">${brDate(p.d)} foi ${p.published?'atualizado':'liberado para a operação'}.${gc?` ${gc} demanda(s) em grupo configurada(s) para o dia.`:''}${moved?` ${moved} atividade(s) pendente(s) foram redistribuída(s).`:''}</div><div class="actions" style="justify-content:center;margin-top:20px"><button class="btn mint" onclick="closeModal()"><i data-lucide="check" class="ico"></i>Entendi</button></div></div>`);toast(p.published?'Alterações aplicadas com sucesso ✓':'Operação publicada com sucesso ✓');
+    }catch(e){console.error(e);closeModal();const raw=String(e?.message||'');toast(raw.includes('group_requires_two_employees')?'Cada demanda em grupo precisa de pelo menos 2 participantes presentes.':raw.includes('publish_not_confirmed')?'A publicação não foi confirmada pelo banco. Tente novamente.':'Não foi possível concluir a ação.')}
+  };
+
+  const baseEditActivityV24518=window.editActivity;
+  window.editActivity=function(id,forcedMode){
+    const found=(activitiesAdmin||[]).find(x=>String(x.id)===String(id)),mode=forcedMode||(found?.activity_mode||'rotating');if(mode!=='group')return baseEditActivityV24518(id,forcedMode);
+    const a=found||{name:'',instruction:'',active:true,sort_order:(activitiesAdmin||[]).length+1,reference_photo_url:'',photo_requirement:'none',activity_mode:'group'};pendingActivityPhotoFile=null;
+    const refValue=a._reference_storage_ref||a.reference_photo_url||'',preview=a._secure_reference_url||a.reference_photo_url||'';
+    openModal(`<div class="section-head"><div><div class="section-kicker">Demanda em grupo</div><h3>${id?'Editar':'Cadastrar'} modelo de atividade</h3><div class="sub">Cadastre somente o que é permanente. A composição do grupo é definida no Preparar o dia.</div></div></div><input id="actDemandMode" type="hidden" value="group"><input id="actSort" type="hidden" value="${Number(a.sort_order||0)}"><div class="field"><label>Nome</label><input id="actName" value="${esc(a.name||'')}" placeholder="Ex.: Recebimento de mercadorias"></div><div class="field"><label>Instrução</label><textarea id="actInstr" placeholder="Descreva o processo que o grupo deve executar">${esc(a.instruction||'')}</textarea></div><div class="group-template-note-v24518"><i data-lucide="calendar-cog" class="ico"></i><div><b>Definido somente no Preparar o dia</b><small>Participantes, horário(s) e prioridade serão escolhidos para cada data. Nada disso fica fixo neste cadastro.</small></div></div><div class="field"><label>Comprovação por foto</label><select id="actPhotoRequirement"><option value="none" ${a.photo_requirement==='none'?'selected':''}>Sem foto</option><option value="after" ${a.photo_requirement==='after'?'selected':''}>Foto depois</option><option value="before_after" ${a.photo_requirement==='before_after'?'selected':''}>Foto antes e depois</option></select></div><div class="field"><label>Foto de referência do padrão (opcional)</label>${preview?`<img id="actRefPreview" class="reference-preview" src="${preview}">`:`<img id="actRefPreview" class="reference-preview hidden">`}<input id="actRefFile" type="file" accept="image/*" onchange="previewActivityReference(this)"><input id="actRefExisting" type="hidden" value="${esc(refValue)}"><div class="sub">Mostra o padrão esperado da atividade; não é a comprovação da execução.</div></div><label class="toggle-line"><input id="actActive" type="checkbox" ${a.active?'checked':''}> Atividade ativa</label><div class="actions"><button class="btn" onclick="saveActivity('${id||''}')"><i data-lucide="save" class="ico"></i>Salvar modelo</button><button class="btn light" onclick="pendingActivityPhotoFile=null;closeModal()">Cancelar</button></div>`);refreshIcons();
+  };
+
+  const baseSaveActivityV24518=window.saveActivity;
+  window.saveActivity=async function(id){
+    const mode=document.getElementById('actDemandMode')?.value||'rotating';if(mode!=='group')return baseSaveActivityV24518(id);
+    const name=document.getElementById('actName')?.value.trim()||'',instruction=document.getElementById('actInstr')?.value.trim()||'',active=!!document.getElementById('actActive')?.checked,sort=Number(document.getElementById('actSort')?.value||0),existing=document.getElementById('actRefExisting')?.value||'',photoReq=document.getElementById('actPhotoRequirement')?.value||'none';if(!name){toast('Informe o nome da atividade.');return}
+    const payload=ref=>({p_token:leaderToken,p_id:id||null,p_name:name,p_instruction:instruction,p_active:active,p_sort:sort,p_reference:ref,p_urgency:'normal',p_day_part:'any',p_schedule_type:'on_demand',p_schedule_weekdays:[],p_specific_dates:[],p_time_slots:[],p_photo_requirement:photoReq,p_activity_mode:'group',p_fixed_employee:null,p_group_employees:[]});
+    try{let rid=await rpc('leader_save_activity_v5',payload(existing));if(pendingActivityPhotoFile){toast('Enviando foto de referência...');const url=await uploadActivityReference(rid,pendingActivityPhotoFile);rid=await rpc('leader_save_activity_v5',{...payload(url),p_id:rid})}pendingActivityPhotoFile=null;closeModal();toast('Modelo de demanda em grupo salvo ✓');await loadManagement();if(activeTab==='activities')renderActivitiesAdmin();}catch(e){console.error(e);toast(String(e?.message||'').includes('unauthorized')?'Sua sessão expirou. Entre novamente na Gestão.':'Não foi possível salvar a demanda em grupo.')}
+  };
+
+  const baseRenderActivitiesV24518=window.renderActivitiesAdmin;
+  window.renderActivitiesAdmin=function(){const r=baseRenderActivitiesV24518();const host=document.getElementById('tab-activities');if(host){host.querySelectorAll('.v24513-activity-card').forEach(card=>{const first=card.querySelector('.demand-kind-v24513');if(!first||!first.textContent.includes('Demanda em grupo'))return;card.querySelectorAll('.activity-config-pills span').forEach(span=>{const tx=span.textContent.trim();if(tx==='Sob demanda'||tx.includes('horário específico')||tx==='Qualquer momento')span.remove()})});}try{refreshIcons()}catch(e){}return r};
+
+  setTimeout(()=>{if(activeTab==='dayprep')renderDayPrep(true);if(activeTab==='activities')renderActivitiesAdmin();},0);
+})();
+</script>
+
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
 <!-- V24.5.16: edição de atividades publicadas liberada; pendências automáticas de hoje são reconciliadas sem alterar execuções já iniciadas. -->
 <!-- V24.5.17: rodízio considera a carga total do dia (fixas/grupo/protegidas) e o histórico semanal para manter distribuição estável e equilibrada. -->
+<!-- V24.5.18: demandas em grupo são modelos; participantes, horários e prioridade são definidos por data no Preparar o dia. -->
