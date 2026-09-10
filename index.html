@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.18-grupos-configurados-no-dia" />
+<meta name="app-version" content="2026.09.10-v24.5.19-lembretes-fixos-retomada-imediata" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -3046,7 +3046,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       }
       const [state,cards]=await Promise.all([
         rpc('public_operation_state_v3',{p_date:target}),
-        rpc('public_routine_cards_v1',{p_date:target})
+        rpc('public_routine_cards_v2',{p_date:target})
       ]);
       if(!state?.ok)throw new Error('state_unavailable');
       dayPeople=Array.isArray(cards)?cards:[];
@@ -3057,7 +3057,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       if(employeeAuth?.employee?.id){
         const token=await validEmployeeToken(employeeAuth.employee.id);
         if(token){
-          const own=await rpc('employee_day_routine_secure_v2',{p_employee_token:token,p_date:target});
+          const own=await rpc('employee_day_routine_secure_v3',{p_employee_token:token,p_date:target});
           routine=Array.isArray(own)?own:[];
           if(selectedEmployeeId&&String(selectedEmployeeId)!==String(employeeAuth.employee.id)){selectedEmployeeId=null;selected=null}
           else if(selectedEmployeeId)selected=routine.find(x=>String(x.employee_id)===String(selectedEmployeeId)||String(x.executor_id)===String(selectedEmployeeId))||null;
@@ -3075,7 +3075,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   };
 
   async function selectAuthenticatedEmployee(employeeId,token){
-    const rows=await rpc('employee_day_routine_secure_v2',{p_employee_token:token,p_date:isoLocal()});
+    const rows=await rpc('employee_day_routine_secure_v3',{p_employee_token:token,p_date:isoLocal()});
     routine=Array.isArray(rows)?rows:[];
     selectedEmployeeId=employeeId;coverageExecutorId=null;coverageAssignmentId=null;followupsExpandedEmployeeId=null;lastSelectedRenderSignature='';
     selected=routine.find(x=>String(x.employee_id)===String(employeeId)||String(x.executor_id)===String(employeeId))||null;
@@ -3177,7 +3177,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
   loadSuggestionNames=async function(){
     try{
-      const rows=await rpc('public_routine_cards_v1',{p_date:isoLocal()});
+      const rows=await rpc('public_routine_cards_v2',{p_date:isoLocal()});
       communicationPeople=Array.isArray(rows)?rows.filter(x=>v24Bool(x.active_today)):[];
     }catch(e){communicationPeople=[]}
   };
@@ -4011,9 +4011,154 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 })();
 </script>
 
+
+
+<!-- V24.5.19: demandas fixas viram lembretes sem iniciar/finalizar; retomada remove o estado visual de pausa imediatamente. -->
+<style id="v24519-fixed-reminders-style">
+.fixed-reminders-v24519{border:1px solid #d7e7ec;background:linear-gradient(145deg,#f8fcfd,#f3faf8);border-radius:18px;margin:14px 0 16px;overflow:hidden}
+.fixed-reminders-head-v24519{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:15px 16px;border-bottom:1px solid #deeaee}
+.fixed-reminders-head-v24519 h3{margin:2px 0 3px;font-size:18px;color:var(--nav)}
+.fixed-reminders-head-v24519 p{margin:0;color:var(--muted);font-size:12px;line-height:1.4}
+.fixed-reminders-count-v24519{background:#e7f7f2;color:#16745f;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap}
+.fixed-reminders-list-v24519{display:grid;gap:0;padding:0 14px}
+.fixed-reminder-row-v24519{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:11px;align-items:center;padding:12px 2px;border-bottom:1px solid #e5eef1}
+.fixed-reminder-row-v24519:last-child{border-bottom:0}
+.fixed-reminder-time-v24519{width:54px;min-height:42px;border-radius:12px;background:#eaf4f8;color:var(--nav);display:grid;place-items:center;font-weight:950;font-size:12px}
+.fixed-reminder-main-v24519{min-width:0}.fixed-reminder-main-v24519 b{display:block;color:var(--text);font-size:14px}.fixed-reminder-main-v24519 small{display:block;color:var(--muted);font-size:11px;line-height:1.35;margin-top:3px;white-space:normal}
+.fixed-reminder-badge-v24519{display:inline-flex;align-items:center;gap:5px;border:1px solid #bfe6d9;background:#effaf6;color:#166d59;border-radius:999px;padding:7px 9px;font-size:10px;font-weight:950;white-space:nowrap}
+.fixed-reminder-badge-v24519 .ico{width:14px;height:14px;margin:0}
+.operational-plan-v24519 .daily-plan-head p{max-width:720px}
+.person .role.v24519-count{white-space:normal;line-height:1.3}
+@media(max-width:680px){.fixed-reminder-row-v24519{grid-template-columns:48px minmax(0,1fr)}.fixed-reminder-time-v24519{width:48px}.fixed-reminder-badge-v24519{grid-column:2;justify-self:start}.fixed-reminders-head-v24519{align-items:flex-start}.fixed-reminders-count-v24519{font-size:10px}}
+</style>
+<script id="v24519-fixed-reminders-script">
+(function(){
+  if(window.__V24519_FIXED_REMINDERS__)return;window.__V24519_FIXED_REMINDERS__=true;
+
+  function isFixedV24519(r){return String(r?.activity_mode||'rotating')==='fixed'}
+  function pluralV24519(n,one,many){return Number(n)===1?one:many}
+  function cleanInstructionV24519(v){
+    let s=String(v||'').trim();
+    s=s.replace(/^MOMENTO:\s*[^—]+—\s*/i,'').trim();
+    return s;
+  }
+  function fixedTimingV24519(r){return r?.scheduled_time?v24Time(r.scheduled_time):'DIA'}
+
+  function fixedRemindersHtmlV24519(list){
+    if(!Array.isArray(list)||!list.length)return '';
+    const ordered=[...list].sort((a,b)=>String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||(Number(a.slot_index||999)-Number(b.slot_index||999))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR'));
+    return `<section class="fixed-reminders-v24519">
+      <div class="fixed-reminders-head-v24519"><div><div class="section-kicker">LEMBRETES FIXOS DO DIA</div><h3>Demandas fixas</h3><p>Apenas consulte e realize no horário indicado. Não precisa iniciar nem finalizar no sistema.</p></div><span class="fixed-reminders-count-v24519">${ordered.length} ${pluralV24519(ordered.length,'lembrete','lembretes')}</span></div>
+      <div class="fixed-reminders-list-v24519">${ordered.map(r=>`<div class="fixed-reminder-row-v24519">
+        <div class="fixed-reminder-time-v24519">${esc(fixedTimingV24519(r))}</div>
+        <div class="fixed-reminder-main-v24519"><b>${esc(r.activity_name||'Demanda fixa')}</b>${cleanInstructionV24519(r.activity_instruction)?`<small>${esc(cleanInstructionV24519(r.activity_instruction))}</small>`:''}</div>
+        <span class="fixed-reminder-badge-v24519"><i data-lucide="bell" class="ico"></i>LEMBRETE FIXO</span>
+      </div>`).join('')}</div>
+    </section>`;
+  }
+
+  function actionStatusV24519(r,current){
+    if(r.status==='completed')return {label:'CONCLUÍDA',cls:'done',icon:'circle-check-big'};
+    if(r.status==='in_progress')return {label:'EM ANDAMENTO',cls:'run',icon:'play-circle'};
+    if(current&&String(r.assignment_id)===String(current.assignment_id))return {label:'PRÓXIMA',cls:'next',icon:'play'};
+    return {label:'AGUARDANDO',cls:'waiting',icon:'clock-3'};
+  }
+
+  function actionPlanHtmlV24519(list,current){
+    if(!Array.isArray(list)||!list.length)return '';
+    const ordered=[...list].sort((a,b)=>Number(a.slot_index||999)-Number(b.slot_index||999)||String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR'));
+    const done=ordered.filter(r=>r.status==='completed').length;
+    const rows=ordered.map((r,i)=>{
+      const st=actionStatusV24519(r,current),timing=r.scheduled_time?`Horário ${v24Time(r.scheduled_time)}`:dayPartLabel(r.activity_day_part),proof=v24PhotoLabel(r.activity_photo_requirement||'before_after');
+      return `<div class="daily-plan-row ${st.cls} ${current&&String(r.assignment_id)===String(current.assignment_id)?'is-current':''}">
+        <div class="daily-plan-number">${i+1}</div><div class="daily-plan-main"><b>${esc(r.activity_name||'Atividade')}</b><small><span><i data-lucide="clock-3" class="ico"></i>${esc(timing)}</span><span><i data-lucide="${(r.activity_photo_requirement||'before_after')==='none'?'camera-off':'camera'}" class="ico"></i>${esc(proof)}</span></small></div><span class="daily-plan-status ${st.cls}"><i data-lucide="${st.icon}" class="ico"></i>${st.label}</span>
+      </div>`;
+    }).join('');
+    return `<section class="daily-plan-v24514 operational-plan-v24519"><div class="daily-plan-head"><div><div class="section-kicker">PROGRAMAÇÃO DO DIA</div><h3>Minhas atividades</h3><p>Estas são as atividades operacionais. Somente elas usam Iniciar e Finalizar.</p></div><div class="daily-plan-progress"><b>${done}/${ordered.length}</b><span>concluídas</span></div></div><div class="daily-plan-list">${rows}</div></section>`;
+  }
+
+  const baseRenderSelectedV24519=window.renderSelected;
+  window.renderSelected=function(force=false){
+    baseRenderSelectedV24519(force);
+    const el=document.getElementById('selectedActivity');
+    if(!el||!selectedEmployeeId||coverageAssignmentId)return;
+    const list=typeof v24TasksForPerson==='function'?v24TasksForPerson(selectedEmployeeId):[];
+    const reminders=list.filter(isFixedV24519),actions=list.filter(r=>!isFixedV24519(r));
+    if(!reminders.length)return;
+
+    const authPill=el.querySelector('.employee-auth-pill')?.outerHTML||'';
+    const bar=typeof v2438PersonBar==='function'?v2438PersonBar():'';
+    const current=actions.find(x=>x.status==='in_progress')||actions.find(x=>x.status==='pending')||null;
+    const completed=actions.filter(x=>x.status==='completed').length;
+    selected=current||actions[0]||reminders[0]||null;
+
+    let html=authPill+bar+fixedRemindersHtmlV24519(reminders);
+    if(actions.length){
+      html+=actionPlanHtmlV24519(actions,current);
+      if(current)html+=activityPanel(current);
+      else html+=`<div class="activitybox"><div class="empty-state"><i data-lucide="circle-check-big" class="ico"></i>Todas as atividades operacionais foram concluídas.${completed?` ${completed} concluída(s) hoje.`:''}</div></div>`;
+    }else{
+      html+=`<div class="activitybox"><div class="empty-state"><i data-lucide="bell-ring" class="ico"></i>Hoje você tem apenas lembretes fixos. Consulte os horários acima.</div></div>`;
+    }
+    el.innerHTML=html;refreshIcons();
+    if(typeof applyPausedActivityControlsV24411==='function')applyPausedActivityControlsV24411();
+  };
+
+  const baseRenderRoutineV24519=window.renderRoutine;
+  window.renderRoutine=function(force=false){
+    baseRenderRoutineV24519(force);
+    const cards=[...document.querySelectorAll('#teamCards .person')];
+    const rows=Array.isArray(dayPeople)?dayPeople:[];
+    cards.forEach((card,i)=>{
+      const p=rows[i];if(!p)return;
+      const reminders=Number(p.reminder_count||0),actions=Number(p.action_count ?? Math.max(0,Number(p.assignment_count||0)-reminders)),done=Number(p.completed_count||0),running=Number(p.in_progress_count||0);
+      const small=[...card.querySelectorAll('small.role')].pop();
+      if(small){
+        small.classList.add('v24519-count');
+        if(actions&&reminders)small.textContent=`${actions} ${pluralV24519(actions,'atividade','atividades')} · ${reminders} ${pluralV24519(reminders,'lembrete','lembretes')}`;
+        else if(reminders)small.textContent=`${reminders} ${pluralV24519(reminders,'lembrete fixo','lembretes fixos')}`;
+        else small.textContent=`${actions} ${pluralV24519(actions,'atividade','atividades')}`;
+      }
+      const status=card.querySelector('.status');if(status){status.className='status';
+        if(!v24Bool(p.active_today)){status.classList.add('absent');status.textContent='Ausente'}
+        else if(actions===0&&reminders>0){status.textContent='Lembretes'}
+        else if(actions>0&&done>=actions){status.classList.add('done');status.textContent='Concluída'}
+        else if(running>0){status.classList.add('run');status.textContent='Em andamento'}
+        else status.textContent='Pendente';
+      }
+    });
+    if(typeof renderRoutinePauseBannerV24411==='function')renderRoutinePauseBannerV24411();
+    if(typeof applyPausedActivityControlsV24411==='function')applyPausedActivityControlsV24411();
+  };
+
+  const baseSetPauseV24519=window.setOperationPauseV24411;
+  window.setOperationPauseV24411=async function(paused){
+    await baseSetPauseV24519(paused);
+    try{await loadGlobalPauseStateV24411()}catch(e){}
+    if(!isOperationPausedV24411()){
+      document.querySelectorAll('.operation-pause-banner,.tv-pause-main').forEach(x=>x.remove());
+    }
+    if(typeof renderPauseControlV24411==='function')renderPauseControlV24411();
+    if(typeof renderRoutinePauseBannerV24411==='function')renderRoutinePauseBannerV24411();
+    if(selectedEmployeeId&&typeof renderSelected==='function')renderSelected(true);
+    try{refreshIcons()}catch(e){}
+  };
+
+  const oldErrorV24519=window.v24ErrorMessage;
+  if(typeof oldErrorV24519==='function')window.v24ErrorMessage=function(code){
+    if(code==='fixed_reminder_no_execution')return 'Esta é uma demanda fixa de consulta. Ela não precisa ser iniciada nem finalizada.';
+    if(code==='fixed_reminder_no_coverage')return 'Demandas fixas não entram em cobertura.';
+    return oldErrorV24519(code);
+  };
+
+  window.V24519='V24.5.19';
+})();
+</script>
+
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
 <!-- V24.5.16: edição de atividades publicadas liberada; pendências automáticas de hoje são reconciliadas sem alterar execuções já iniciadas. -->
 <!-- V24.5.17: rodízio considera a carga total do dia (fixas/grupo/protegidas) e o histórico semanal para manter distribuição estável e equilibrada. -->
 <!-- V24.5.18: demandas em grupo são modelos; participantes, horários e prioridade são definidos por data no Preparar o dia. -->
+<!-- V24.5.19: demandas fixas aparecem como lembretes sem execução; retomada operacional limpa o aviso de pausa imediatamente. -->
