@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.28-sincronizacao-segura" />
+<meta name="app-version" content="2026.09.10-v24.5.29-sem-validacao-aparelho" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -2908,9 +2908,12 @@ let globalPauseStateV24411={paused:false,message:null,updated_at:null};
 
 async function loadGlobalPauseStateV24411(){
   try{
-    let s=null;const code=window.v24527GetTeamCode?.()||'';
+    let s=null;
     if(leaderToken)s=await rpc('leader_operation_pause_state_v1',{p_token:leaderToken});
-    else if(code)s=await rpc('team_operation_pause_state_v1',{p_team_code:code});
+    else{
+      const state=await rpc('public_operation_state_v3',{p_date:isoLocal()});
+      s={paused:!!state?.paused,message:state?.pause_message||null,updated_at:null};
+    }
     globalPauseStateV24411=(s?.ok===false?{paused:false}:s)||{paused:false};
   }catch(e){console.warn('Estado de pausa indisponível',e);globalPauseStateV24411={paused:false}}
   return globalPauseStateV24411;
@@ -3166,73 +3169,26 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.28';
-  const TEAM_KEY='v245TeamAccess';
+  const V245='V24.5.29';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
-  let teamCode='';
   let employeeAuth=null;
-  let teamAccessInfo={ok:false,access_code:''};
   let pendingEmployeeCallback=null;
   const signedCache=new Map();
   let v2452CoverageOptions=[];
 
-  function normalizeTeamCode(v){const x=String(v||'').trim().toLowerCase();return /^[0-9a-f]{64}$/.test(x)?x:''}
-  function saveTeamCode(code){
-    const c=normalizeTeamCode(code);if(!c)return false;teamCode=c;
-    try{localStorage.setItem(TEAM_KEY,JSON.stringify({code:c,saved_at:Date.now()}))}catch(e){try{sessionStorage.setItem(TEAM_KEY,c)}catch(_e){}}
-    return true;
-  }
-  function clearTeamCode(){teamCode='';try{localStorage.removeItem(TEAM_KEY);sessionStorage.removeItem(TEAM_KEY)}catch(e){}}
   function loadSecrets(){
     try{
       localStorage.removeItem('leaderToken');
-      let urlCode='';
-      try{
-        const u=new URL(location.href);urlCode=normalizeTeamCode(u.searchParams.get('team')||u.searchParams.get('access'));
-        if(urlCode){u.searchParams.delete('team');u.searchParams.delete('access');history.replaceState(null,'',u.pathname+(u.search?u.search:'')+(u.hash||''))}
-      }catch(_e){}
-      let saved='';
-      try{const raw=localStorage.getItem(TEAM_KEY);if(raw){try{saved=normalizeTeamCode(JSON.parse(raw)?.code)}catch(_e){saved=normalizeTeamCode(raw)}}}catch(_e){}
-      if(!saved){try{saved=normalizeTeamCode(sessionStorage.getItem(TEAM_KEY)||'')}catch(_e){}}
-      teamCode=urlCode||saved||'';if(urlCode)saveTeamCode(urlCode);
+      localStorage.removeItem('v245TeamAccess');
+      sessionStorage.removeItem('v245TeamAccess');
       const raw=JSON.parse(sessionStorage.getItem(EMP_KEY)||'null');
-      if(teamCode&&raw&&/^[0-9a-f]{64}$/.test(String(raw.token||''))&&raw.employee?.id&&Number(raw.client_expires_at||0)>Date.now())employeeAuth=raw;
+      if(raw&&/^[0-9a-f]{64}$/.test(String(raw.token||''))&&raw.employee?.id&&Number(raw.client_expires_at||0)>Date.now())employeeAuth=raw;
       else{employeeAuth=null;sessionStorage.removeItem(EMP_KEY)}
-    }catch(e){teamCode='';employeeAuth=null}
+    }catch(e){employeeAuth=null}
   }
   loadSecrets();
-  window.v24527GetTeamCode=()=>teamCode;
-
-  let pendingTeamAccessCallback=null;
-  function teamAccessLink(code=teamAccessInfo?.access_code||teamCode){
-    const c=normalizeTeamCode(code);if(!c)return '';
-    try{return `${location.origin}${location.pathname}?team=${encodeURIComponent(c)}`}catch(e){return ''}
-  }
-  function renderTeamAccessGate(){
-    routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;
-    const host=document.getElementById('teamCards'),sel=document.getElementById('selectedActivity'),exec=document.getElementById('coverExecutor'),abs=document.getElementById('coverAbsent'),btn=document.getElementById('coverActionBtn');
-    if(host)host.innerHTML=`<div class="security-gate" style="grid-column:1/-1"><div class="security-mark"><i data-lucide="shield-keyhole" class="ico"></i></div><h3>Acesso da equipe</h3><p>Este aparelho ainda não está liberado para visualizar a rotina. Abra o link compartilhado pela Gestão ou informe o código interno da equipe.</p><button class="btn mint" onclick="v24527OpenTeamAccess()"><i data-lucide="key-round" class="ico"></i>Liberar este aparelho</button><div class="security-note"><b>Proteção adicional:</b> o acesso pode ser renovado pela Gestão a qualquer momento.</div></div>`;
-    if(sel)sel.innerHTML='';if(exec){exec.disabled=true;exec.innerHTML='<option>Acesso da equipe necessário</option>'}if(abs){abs.disabled=true;abs.innerHTML='<option>Acesso da equipe necessário</option>'}if(btn)btn.disabled=true;refreshIcons();
-  }
-  function openTeamAccess(callback=null){
-    pendingTeamAccessCallback=callback;
-    openModal(`<div class="section-head"><div><div class="section-kicker">Acesso protegido</div><h3>Liberação da equipe</h3><div class="sub">Cole o código recebido da Gestão. Se você abriu o link da equipe, essa etapa é automática.</div></div></div><div class="field"><label>Código da equipe</label><input id="v24527TeamCodeInput" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Cole o código de acesso"></div><div class="actions"><button class="btn mint" onclick="v24527SubmitTeamAccess()"><i data-lucide="shield-check" class="ico"></i>Liberar</button><button class="btn light" onclick="pendingTeamAccessCallback=null;closeModal()">Cancelar</button></div>`);refreshIcons();setTimeout(()=>document.getElementById('v24527TeamCodeInput')?.focus(),80);
-  }
-  window.v24527OpenTeamAccess=()=>openTeamAccess(null);
-  window.v24527SubmitTeamAccess=async function(){
-    const code=normalizeTeamCode(document.getElementById('v24527TeamCodeInput')?.value||'');if(!code){toast('Código da equipe inválido.');return}
-    try{const state=await rpc('team_get_operation_day_state_v1',{p_team_code:code,p_date:isoLocal()});if(!state?.ok){toast('Acesso da equipe inválido ou renovado.');return}saveTeamCode(code);const cb=pendingTeamAccessCallback;pendingTeamAccessCallback=null;closeModal();toast('Aparelho liberado para a equipe ✓');if(typeof cb==='function')await cb();await Promise.allSettled([loadRoutine(isoLocal()),window.loadPublicDailyInformation?.(isoLocal())])}catch(e){console.error(e);toast('Não foi possível validar o acesso agora.')}
-  };
-  window.v24527CopyTeamLink=async function(){
-    const link=teamAccessLink();if(!link){toast('Acesso da equipe indisponível. Atualize a Gestão.');return}
-    try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(link);else{const el=document.getElementById('v24527TeamLink');el?.select();document.execCommand('copy')}toast('Link da equipe copiado ✓')}catch(e){const el=document.getElementById('v24527TeamLink');if(el){el.select();document.execCommand('copy');toast('Link da equipe copiado ✓')}else toast('Não foi possível copiar o link.')}
-  };
-  window.v24527RotateTeamAccess=async function(){
-    if(currentManager?.is_primary!==true){toast('Somente o Gestor principal pode renovar o acesso da equipe.');return}
-    if(!confirm('Renovar o acesso da equipe?\n\nOs celulares da equipe precisarão abrir o novo link. Sessões atuais dos colaboradores serão encerradas.'))return;
-    try{const r=await rpc('leader_rotate_team_access_v1',{p_token:leaderToken});if(!r?.ok||!normalizeTeamCode(r.access_code)){toast('Não foi possível renovar o acesso.');return}teamAccessInfo=r;saveTeamCode(r.access_code);await clearEmployeeAuth(false);renderManagers();toast('Novo acesso da equipe criado ✓')}catch(e){console.error(e);toast('Erro ao renovar o acesso da equipe.')}
-  };
+  window.v24527GetTeamCode=()=>'';
 
   function saveEmployeeAuth(data){
     employeeAuth={token:String(data.token||''),employee:data.employee||null,client_expires_at:Date.now()+CLIENT_EMPLOYEE_TTL};
@@ -3244,7 +3200,6 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     if(remote&&token){try{await rpc('employee_logout_v1',{p_token:token})}catch(e){}}
   }
   async function validEmployeeToken(employeeId){
-    if(!teamCode){await clearEmployeeAuth(false);return ''}
     if(!employeeAuth?.token||Number(employeeAuth.client_expires_at||0)<=Date.now()){await clearEmployeeAuth();return ''}
     if(employeeId&&String(employeeAuth.employee?.id)!==String(employeeId))return '';
     try{
@@ -3256,14 +3211,13 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   }
   function employeeName(id){return (dayPeople||[]).find(x=>String(x.employee_id)===String(id))?.employee_name||(routine||[]).find(x=>String(x.employee_id)===String(id))?.employee_name||'colaborador'}
   async function openEmployeeSession(employeeId,callback){
-    if(!teamCode){openTeamAccess(()=>openEmployeeSession(employeeId,callback));return null}
     try{
-      const r=await rpc('employee_open_session_v2',{p_team_code:teamCode,p_employee:employeeId});
+      const r=await rpc('employee_open_session_v3',{p_employee:employeeId});
       if(!r?.ok){
-        if(r?.error==='invalid_team_access'){clearTeamCode();await clearEmployeeAuth(false);renderTeamAccessGate();toast('O acesso da equipe foi renovado. Peça o novo link à Gestão.');return null}
         const msg={
           employee_not_present:'Somente quem está presente pode abrir atividades.',
           operation_not_published:'A operação de hoje ainda não foi publicada.',
+          employee_not_found:'Colaborador não encontrado.',
           try_again_later:'Muitas tentativas seguidas. Aguarde um pouco e tente novamente.'
         }[r?.error]||'Não foi possível abrir as atividades agora.';
         toast(msg);return null;
@@ -3357,16 +3311,10 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       return {state,people:Array.isArray(people)?people:[],rows:Array.isArray(rows)?rows:[]};
     }catch(e){console.warn('Resumo da Rotina pela Gestão indisponível',e);return null}
   }
-  async function ensureTeamCodeFromLeaderV24528(){
-    if(teamCode||!leaderToken)return teamCode;
-    try{const info=await rpc('leader_team_access_info_v1',{p_token:leaderToken});if(info?.ok&&normalizeTeamCode(info.access_code)){teamAccessInfo=info;saveTeamCode(info.access_code)}}catch(e){console.warn('Acesso da equipe não pôde ser carregado pela Gestão',e)}
-    return teamCode;
-  }
   window.v24528RetryRoutine=()=>loadRoutine(isoLocal());
 
   loadRoutine=async function(date=isoLocal()){
-    if(typeof v242IsLeaderPreview==='function'&&v242IsLeaderPreview())return baseLoadRoutine(date);
-    const target=isoLocal();
+    const target=(typeof v242IsLeaderPreview==='function'&&v242IsLeaderPreview()&&leaderToken)?String(date||isoLocal()):isoLocal();
     if(syncBusy){routineQueued=true;return}syncBusy=true;
     try{
       routineDate=target;
@@ -3378,45 +3326,22 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
         routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderClosedRoutine(localOp);return;
       }
 
-      // No PC do líder, a própria sessão da Gestão é a autorização da tela.
-      const leaderSnapshot=await leaderRoutineSnapshotV24528(target);
-      if(leaderSnapshot){
-        ensureTeamCodeFromLeaderV24528();
-        const state=leaderSnapshot.state||{};
-        dayPeople=cardsFromLeaderRoutineV24528(leaderSnapshot.people,leaderSnapshot.rows);
-        followupUnreadCounts=new Map();
-        if(!v24Bool(state.published)){
-          routine=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderRoutineWaitingForLeader();return;
+      // Prévia da Gestão pode consultar a data selecionada usando a sessão do líder.
+      if(typeof v242IsLeaderPreview==='function'&&v242IsLeaderPreview()&&leaderToken){
+        const leaderSnapshot=await leaderRoutineSnapshotV24528(target);
+        if(leaderSnapshot){
+          dayPeople=cardsFromLeaderRoutineV24528(leaderSnapshot.people,leaderSnapshot.rows);
+          routine=leaderSnapshot.rows;followupUnreadCounts=new Map();
+          if(!v24Bool(leaderSnapshot.state?.published)){selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;renderRoutineWaitingForLeader();return}
+          renderRoutine(true);return;
         }
-        if(employeeAuth?.employee?.id){
-          const token=await validEmployeeToken(employeeAuth.employee.id);
-          if(token){const own=await rpc('employee_day_routine_secure_v3',{p_employee_token:token,p_date:target});routine=Array.isArray(own)?own:[]}
-          else routine=[];
-        }else routine=[];
-        if(selectedEmployeeId&&String(selectedEmployeeId)!==String(employeeAuth?.employee?.id||'')){selectedEmployeeId=null;selected=null}
-        else if(selectedEmployeeId)selected=routine.find(x=>String(x.employee_id)===String(selectedEmployeeId)||String(x.executor_id)===String(selectedEmployeeId))||null;
-        renderRoutine(true);return;
       }
 
-      if(!teamCode){renderTeamAccessGate();return}
-      let state=null,cards=null;
-      try{
-        [state,cards]=await Promise.all([
-          rpc('team_get_operation_day_state_v1',{p_team_code:teamCode,p_date:target}),
-          rpc('team_routine_cards_v1',{p_team_code:teamCode,p_date:target})
-        ]);
-      }catch(primaryError){
-        console.warn('Cards protegidos indisponíveis; usando lista segura da equipe',primaryError);
-        try{
-          state=await rpc('team_get_operation_day_state_v1',{p_team_code:teamCode,p_date:target});
-          const people=await rpc('team_get_day_people_v1',{p_team_code:teamCode,p_date:target});
-          cards=(Array.isArray(people)?people:[]).map(emptyCardFromPersonV24528);
-        }catch(fallbackError){throw fallbackError}
-      }
-      if(!state?.ok){
-        if(['invalid_access','invalid_team_access'].includes(String(state?.error||''))){clearTeamCode();await clearEmployeeAuth(false);renderTeamAccessGate();return}
-        throw new Error(String(state?.error||'state_unavailable'));
-      }
+      const [state,cards]=await Promise.all([
+        rpc('public_operation_state_v3',{p_date:target}),
+        rpc('public_routine_cards_v2',{p_date:target})
+      ]);
+      if(!state?.ok)throw new Error(String(state?.error||'state_unavailable'));
       dayPeople=Array.isArray(cards)?cards:[];
       followupUnreadCounts=new Map();
       if(!v24Bool(state.published)){
@@ -3433,11 +3358,9 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       }else{routine=[];selectedEmployeeId=null;selected=null}
       renderRoutine(true);
     }catch(e){
-      console.error('Falha ao sincronizar Rotina V24.5.28',e);
+      console.error('Falha ao sincronizar Rotina V24.5.29',e);
       const h=document.getElementById('teamCards');
-      const msg=String(e?.message||e?.details||'');
-      const schemaIssue=/PGRST|schema cache|Could not find the function/i.test(msg);
-      if(h)h.innerHTML=`<div class="security-gate" style="grid-column:1/-1"><div class="security-mark"><i data-lucide="refresh-cw" class="ico"></i></div><h3>Não foi possível atualizar a rotina</h3><p>${schemaIssue?'A conexão com o banco foi atualizada. Toque abaixo para tentar novamente.':'A conexão não respondeu como esperado. Seus dados continuam preservados.'}</p><button class="btn mint" onclick="v24528RetryRoutine()"><i data-lucide="refresh-cw" class="ico"></i>Tentar novamente</button>${!leaderToken&&!teamCode?'<button class="btn light" onclick="v24527OpenTeamAccess()"><i data-lucide="key-round" class="ico"></i>Autorizar este aparelho</button>':''}</div>`;
+      if(h)h.innerHTML=`<div class="security-gate" style="grid-column:1/-1"><div class="security-mark"><i data-lucide="refresh-cw" class="ico"></i></div><h3>Não foi possível atualizar a rotina</h3><p>A conexão não respondeu como esperado. Toque abaixo para tentar novamente.</p><button class="btn mint" onclick="v24528RetryRoutine()"><i data-lucide="refresh-cw" class="ico"></i>Tentar novamente</button></div>`;
       refreshIcons();toast('Não foi possível atualizar a rotina');
     }finally{
       syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(isoLocal()),180)}
@@ -3610,9 +3533,8 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   };
 
   loadSuggestionNames=async function(){
-    if(!teamCode){communicationPeople=[];return []}
     try{
-      const rows=await rpc('team_get_day_people_v1',{p_team_code:teamCode,p_date:isoLocal()});
+      const rows=await rpc('public_routine_cards_v2',{p_date:isoLocal()});
       communicationPeople=Array.isArray(rows)?rows.filter(x=>v24Bool(x.active_today)):[];
       return communicationPeople;
     }catch(e){communicationPeople=[];return []}
@@ -3627,9 +3549,8 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const id=document.getElementById('v245EmployeeChoice')?.value||'';
     if(!id){toast('Selecione seu nome.');return}
     try{
-      if(!teamCode){closeModal();openTeamAccess(()=>{loadSuggestionNames().then(()=>promptEmployeeChoice(pendingEmployeeCallback,'Confirmar acesso'))});return}
-      const r=await rpc('employee_open_session_v2',{p_team_code:teamCode,p_employee:id});
-      if(!r?.ok){if(r?.error==='invalid_team_access'){clearTeamCode();await clearEmployeeAuth(false);closeModal();openTeamAccess();return}toast('Não foi possível continuar agora.');return}
+      const r=await rpc('employee_open_session_v3',{p_employee:id});
+      if(!r?.ok){toast('Não foi possível continuar agora.');return}
       saveEmployeeAuth(r);
       const cb=pendingEmployeeCallback;pendingEmployeeCallback=null;closeModal();
       if(typeof cb==='function')await cb(r.token,r.employee);
@@ -3637,14 +3558,13 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   };
   sendSuggestion=async function(){
     const msg=(document.getElementById('suggestMessage')?.value||'').trim();if(msg.length<3){toast('Escreva sua ideia.');return}if(msg.length>2000){toast('A ideia está muito longa.');return}
-    if(!teamCode){openTeamAccess(()=>sendSuggestion());return}
     const submit=async token=>{try{const r=await rpc('submit_anonymous_suggestion_secure_v1',{p_employee_token:token,p_message:msg});if(!r?.ok){toast('Não foi possível enviar.');return}document.getElementById('suggestMessage').value='';toast('Ideia anônima enviada ✓')}catch(e){console.error(e);toast('Erro ao enviar a ideia.')}};
     const token=employeeAuth?.employee?.id?await validEmployeeToken(employeeAuth.employee.id):'';if(token)return submit(token);await loadSuggestionNames();promptEmployeeChoice(submit,'Enviar ideia anônima');
   };
 
   // Management security: short-lived media URLs and protected management sessions.
   const baseLoadManagement=loadManagement;
-  loadManagement=async function(){await baseLoadManagement();if(!leaderToken)return;try{teamAccessInfo=await rpc('leader_team_access_info_v1',{p_token:leaderToken})||teamAccessInfo;if(teamAccessInfo?.ok&&normalizeTeamCode(teamAccessInfo.access_code))saveTeamCode(teamAccessInfo.access_code)}catch(e){teamAccessInfo={ok:false,access_code:''}}try{await hydrateManagerMedia()}catch(e){console.warn('Mídia protegida indisponível',e)}if(activeTab==='team')renderTeamAdmin();else if(activeTab==='managers')renderManagers();else if(activeTab==='photos')renderPhotos();else if(activeTab==='overview')renderOverviewV24();else if(activeTab==='dayprep')renderDayPrep();else if(activeTab==='deviations'&&typeof renderDevRows==='function')renderDevRows();refreshIcons()};
+  loadManagement=async function(){await baseLoadManagement();if(!leaderToken)return;try{await hydrateManagerMedia()}catch(e){console.warn('Mídia protegida indisponível',e)}if(activeTab==='team')renderTeamAdmin();else if(activeTab==='managers')renderManagers();else if(activeTab==='photos')renderPhotos();else if(activeTab==='overview')renderOverviewV24();else if(activeTab==='dayprep')renderDayPrep();else if(activeTab==='deviations'&&typeof renderDevRows==='function')renderDevRows();refreshIcons()};
 
   const baseEditEmployee=editEmployee;
   editEmployee=function(id){baseEditEmployee(id);if(id){const e=(employeesAdmin||[]).find(x=>String(x.id)===String(id));const hidden=document.getElementById('empPhoto');if(hidden&&e?._photo_storage_ref)hidden.value=e._photo_storage_ref;const img=document.getElementById('empPhotoPreview');if(img&&e?._secure_photo_url){img.src=e._secure_photo_url;img.style.display='block'}}refreshIcons()};
@@ -3656,10 +3576,8 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
   const baseRenderManagers=renderManagers;
   renderManagers=function(){
-    baseRenderManagers();const host=document.getElementById('tab-managers');if(!host)return;
+    baseRenderManagers();
     document.querySelectorAll('#tab-managers .team-access-panel').forEach(x=>x.remove());
-    const link=teamAccessLink();const anchor=host.querySelector('.primary-manager-note')||host.querySelector('.section-head');
-    if(anchor)anchor.insertAdjacentHTML('afterend',`<div class="team-access-panel"><div class="section-kicker">Acesso dos celulares</div><h4><i data-lucide="smartphone" class="ico"></i>Link protegido da equipe</h4><div class="sub">Abra este link uma vez em cada celular Android/iPhone autorizado. Depois o aparelho fica pareado até você renovar o acesso.</div>${link?`<div class="access-link-row"><input id="v24527TeamLink" value="${esc(link)}" readonly aria-label="Link protegido da equipe"><button class="btn mint" onclick="v24527CopyTeamLink()"><i data-lucide="copy" class="ico"></i>Copiar link</button></div>`:`<div class="security-note">Não foi possível carregar o acesso da equipe. Atualize a Gestão.</div>`}<div class="actions" style="margin-top:10px">${currentManager?.is_primary===true?`<button class="btn light" onclick="v24527RotateTeamAccess()"><i data-lucide="refresh-cw" class="ico"></i>Renovar acesso</button>`:''}</div><div class="security-note"><b>Se um celular for perdido ou não fizer mais parte da operação:</b> use “Renovar acesso”. O link antigo deixa de funcionar e as sessões atuais da equipe são encerradas.</div></div>`);
     refreshIcons();
   };
 
@@ -3679,7 +3597,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   window.addEventListener('pageshow',()=>{if(!document.getElementById('pageGestao')?.classList.contains('hidden')&&leaderToken)checkLeader()});
   window.addEventListener('storage',e=>{if(e.key==='leaderToken')localStorage.removeItem('leaderToken')});
   const initial=window.__V245_PENDING_PAGE__||'rotina';showPage(initial==='gestao'?'gestao':(initial==='sugestoes'?'sugestoes':'rotina'));
-  console.info('Gestão do Estoque',V245,'proteções ativas');
+  console.info('Gestão do Estoque',V245,'sessões curtas sem pareamento de aparelho');
 })();
 </script>
 
@@ -3803,10 +3721,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     try{
       let rows=[];
       if(leaderToken)rows=await rpc('leader_daily_information_board_v1',{p_token:leaderToken,p_date:date});
-      else{
-        const code=window.v24527GetTeamCode?.()||'';if(!code){publicDailyInformation=[];renderPublicDailyInformation();return}
-        rows=await rpc('team_daily_information_board_v1',{p_team_code:code,p_date:date});
-      }
+      else rows=await rpc('public_daily_information_board_v1',{p_date:date});
       publicDailyInformation=Array.isArray(rows)?rows:[];
     }catch(e){
       console.warn('Painel do Dia indisponível',e);
@@ -4743,6 +4658,10 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v24528-version-marker">window.V24528='V24.5.28';</script>
 <!-- V24.5.28: sincronização segura resiliente; PC da Gestão usa sessão do líder e equipe tem fallback protegido. -->
 
+
+<style id="v24529-no-device-pair-style">.team-access-panel{display:none!important}</style>
+<script id="v24529-version-marker">window.V24529='V24.5.29';</script>
+<!-- V24.5.29: validação/pareamento de aparelho removidos; Rotina abre diretamente e mantém sessão curta por colaborador. -->
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
