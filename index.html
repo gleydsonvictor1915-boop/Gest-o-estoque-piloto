@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.06-v24.5.11-sem-semana-selecionada" />
+<meta name="app-version" content="2026.09.10-v24.5.13.1-horarios-multiplos" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -1877,7 +1877,7 @@ async function confirmDayPrepV2436(){
   const btn=document.getElementById('confirmDayPublishBtn');if(btn)btn.disabled=true;
   pendingDayPrepAction=null;
   try{
-    const r=await rpc('leader_prepare_day_v2',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_publish:true,p_redistribute:true,p_reason:p.reason||null});
+    const r=await rpc('leader_prepare_day_v3',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_publish:true,p_redistribute:true,p_reason:p.reason||null});
     const state=await rpc('get_operation_day_state_v2',{p_date:p.d});
     if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
     closeModal();
@@ -1897,7 +1897,7 @@ async function saveDayPrep(publish){
   const statuses=collectDayPrepStatuses(),redistribute=true;
   if(publish){openDayPrepConfirmV2436({d,published,statuses,redistribute,reason});return}
   try{
-    await rpc('leader_prepare_day_v2',{p_token:leaderToken,p_date:d,p_statuses:statuses,p_publish:false,p_redistribute:redistribute,p_reason:reason||null});
+    await rpc('leader_prepare_day_v3',{p_token:leaderToken,p_date:d,p_statuses:statuses,p_publish:false,p_redistribute:redistribute,p_reason:reason||null});
     toast('Preparação salva ✓');
     await loadManagement();
     if(d===isoLocal())await loadRoutine(d);
@@ -1927,7 +1927,8 @@ renderActivitiesAdmin=function(){const host=document.getElementById('tab-activit
 function toggleActivityScheduleFields(){const type=document.getElementById('actScheduleType')?.value||'daily';document.getElementById('actSpecificWrap')?.classList.toggle('hidden',type!=='specific_days');document.getElementById('actTimingWrap')?.classList.toggle('hidden',type==='on_demand')}
 editActivity=function(id){const a=activitiesAdmin.find(x=>x.id===id)||{name:'',instruction:'',active:true,sort_order:activitiesAdmin.length+1,reference_photo_url:'',urgency:'normal',day_part:'any',schedule_type:'daily',schedule_weekdays:[1,2,3,4,5,6],specific_dates:[],time_slots:[],photo_requirement:'before_after'};pendingActivityPhotoFile=null;const days=(a.schedule_weekdays||[]).map(Number),dates=(a.specific_dates||[]).join(', '),times=(a.time_slots||[]).map(v24Time).join(', ');openModal(`<h3>${id?'Editar':'Adicionar'} atividade</h3><div class="field"><label>Nome</label><input id="actName" value="${esc(a.name)}"></div><div class="field"><label>Instrução</label><textarea id="actInstr">${esc(a.instruction||'')}</textarea></div><div class="schedule-grid"><div class="field"><label>Tipo</label><select id="actScheduleType" onchange="toggleActivityScheduleFields()"><option value="daily" ${a.schedule_type==='daily'?'selected':''}>Diária</option><option value="specific_days" ${a.schedule_type==='specific_days'?'selected':''}>Em dias específicos</option><option value="on_demand" ${a.schedule_type==='on_demand'?'selected':''}>Sob demanda</option></select></div><div class="field"><label>Comprovação por foto</label><select id="actPhotoRequirement"><option value="none" ${a.photo_requirement==='none'?'selected':''}>Sem foto</option><option value="after" ${a.photo_requirement==='after'?'selected':''}>Somente foto depois</option><option value="before_after" ${!a.photo_requirement||a.photo_requirement==='before_after'?'selected':''}>Foto antes e depois</option></select></div></div><div id="actSpecificWrap" class="activity-schedule-box ${a.schedule_type==='specific_days'?'':'hidden'}"><b>Dias em que acontece</b><div class="weekday-picks">${WORKDAY_ORDER.map(d=>`<label><input id="actDay-${d}" type="checkbox" ${days.includes(d)?'checked':''}>${WORKDAY_LABELS[d]}</label>`).join('')}</div><div class="field"><label>Datas específicas adicionais (opcional)</label><input id="actSpecificDates" value="${esc(dates)}" placeholder="2026-09-15, 2026-10-20"><div class="sub">Use AAAA-MM-DD separadas por vírgula.</div></div></div><div id="actTimingWrap" class="schedule-grid ${a.schedule_type==='on_demand'?'hidden':''}"><div class="field"><label>Horários específicos (opcional)</label><input id="actTimeSlots" value="${esc(times)}" placeholder="10:00, 15:00"><div class="sub">Se informar dois horários, o sistema cria duas execuções no dia.</div></div><div class="field"><label>Momento do expediente</label><select id="actDayPart"><option value="start" ${a.day_part==='start'?'selected':''}>Início</option><option value="middle" ${a.day_part==='middle'?'selected':''}>Meio</option><option value="end" ${a.day_part==='end'?'selected':''}>Final</option><option value="any" ${!a.day_part||a.day_part==='any'?'selected':''}>Qualquer momento</option></select></div></div><div class="schedule-grid"><div class="field"><label>Prioridade</label><select id="actUrgency"><option value="critical" ${a.urgency==='critical'?'selected':''}>Crítica</option><option value="high" ${a.urgency==='high'?'selected':''}>Alta</option><option value="medium" ${a.urgency==='medium'?'selected':''}>Média</option><option value="normal" ${!a.urgency||a.urgency==='normal'?'selected':''}>Normal</option></select></div><div class="field"><label>Ordem</label><input id="actSort" type="number" value="${a.sort_order||0}"></div></div><div class="field"><label>Como deve ficar (foto de referência opcional)</label>${a.reference_photo_url?`<img id="actRefPreview" class="reference-preview" src="${a.reference_photo_url}">`:`<img id="actRefPreview" class="reference-preview hidden">`}<input id="actRefFile" type="file" accept="image/*" onchange="previewActivityReference(this)"><input id="actRefExisting" type="hidden" value="${esc(a.reference_photo_url||'')}"></div><label class="toggle-line"><input id="actActive" type="checkbox" ${a.active?'checked':''}> Ativa</label><div class="actions"><button class="btn" onclick="saveActivity('${id||''}')">Salvar</button><button class="btn light" onclick="pendingActivityPhotoFile=null;closeModal()">Cancelar</button></div>`);toggleActivityScheduleFields();refreshIcons()};
 function parseCsvValues(id,pattern){const raw=(document.getElementById(id)?.value||'').split(',').map(x=>x.trim()).filter(Boolean);if(raw.some(x=>!pattern.test(x)))return null;return [...new Set(raw)]}
-saveActivity=async function(id){const name=document.getElementById('actName').value.trim(),instruction=document.getElementById('actInstr').value.trim(),active=document.getElementById('actActive').checked,sort=Number(document.getElementById('actSort').value||0),existing=document.getElementById('actRefExisting')?.value||'',urgency=document.getElementById('actUrgency').value,dayPart=document.getElementById('actDayPart').value,type=document.getElementById('actScheduleType').value,photoReq=document.getElementById('actPhotoRequirement').value,weekdays=type==='specific_days'?WORKDAY_ORDER.filter(d=>document.getElementById('actDay-'+d)?.checked):(type==='daily'?[1,2,3,4,5,6]:[]),dates=type==='specific_days'?parseCsvValues('actSpecificDates',/^\d{4}-\d{2}-\d{2}$/):[],times=type==='on_demand'?[]:parseCsvValues('actTimeSlots',/^([01]\d|2[0-3]):[0-5]\d$/);if(!name){toast('Informe o nome da atividade.');return}if(dates===null){toast('Confira as datas. Use AAAA-MM-DD.');return}if(times===null){toast('Confira os horários. Use HH:MM.');return}if(type==='specific_days'&&!weekdays.length&&!dates.length){toast('Escolha pelo menos um dia ou uma data específica.');return}const payload=ref=>({p_token:leaderToken,p_id:id||null,p_name:name,p_instruction:instruction,p_active:active,p_sort:sort,p_reference:ref,p_urgency:urgency,p_day_part:dayPart,p_schedule_type:type,p_schedule_weekdays:weekdays,p_specific_dates:dates,p_time_slots:times,p_photo_requirement:photoReq});try{let rid=await rpc('leader_save_activity_v4',payload(existing));if(pendingActivityPhotoFile){toast('Enviando foto de referência...');const url=await uploadActivityReference(rid,pendingActivityPhotoFile);await rpc('leader_save_activity_v4',{...payload(url),p_id:rid})}pendingActivityPhotoFile=null;closeModal();toast('Atividade salva ✓');await loadManagement()}catch(e){console.error(e);toast('Erro ao salvar atividade.')}};
+function parseActivityTimeSlotsV245131(id){const value=document.getElementById(id)?.value||'';const raw=value.split(/[,;\n]+/).map(x=>x.trim().replace(/[.]+$/g,'').trim()).filter(Boolean);const pattern=/^([01]\d|2[0-3]):[0-5]\d$/;if(raw.some(x=>!pattern.test(x)))return null;return [...new Set(raw)]}
+saveActivity=async function(id){const name=document.getElementById('actName').value.trim(),instruction=document.getElementById('actInstr').value.trim(),active=document.getElementById('actActive').checked,sort=Number(document.getElementById('actSort').value||0),existing=document.getElementById('actRefExisting')?.value||'',urgency=document.getElementById('actUrgency').value,dayPart=document.getElementById('actDayPart').value,type=document.getElementById('actScheduleType').value,photoReq=document.getElementById('actPhotoRequirement').value,weekdays=type==='specific_days'?WORKDAY_ORDER.filter(d=>document.getElementById('actDay-'+d)?.checked):(type==='daily'?[1,2,3,4,5,6]:[]),dates=type==='specific_days'?parseCsvValues('actSpecificDates',/^\d{4}-\d{2}-\d{2}$/):[],times=type==='on_demand'?[]:parseActivityTimeSlotsV245131('actTimeSlots');if(!name){toast('Informe o nome da atividade.');return}if(dates===null){toast('Confira as datas. Use AAAA-MM-DD.');return}if(times===null){toast('Confira os horários. Exemplo: 10:00, 15:00.');return}if(type==='specific_days'&&!weekdays.length&&!dates.length){toast('Escolha pelo menos um dia ou uma data específica.');return}const payload=ref=>({p_token:leaderToken,p_id:id||null,p_name:name,p_instruction:instruction,p_active:active,p_sort:sort,p_reference:ref,p_urgency:urgency,p_day_part:dayPart,p_schedule_type:type,p_schedule_weekdays:weekdays,p_specific_dates:dates,p_time_slots:times,p_photo_requirement:photoReq});try{let rid=await rpc('leader_save_activity_v4',payload(existing));if(pendingActivityPhotoFile){toast('Enviando foto de referência...');const url=await uploadActivityReference(rid,pendingActivityPhotoFile);await rpc('leader_save_activity_v4',{...payload(url),p_id:rid})}pendingActivityPhotoFile=null;closeModal();toast('Atividade salva ✓');await loadManagement()}catch(e){console.error(e);toast('Erro ao salvar atividade.')}};
 
 renderTeamAdmin=function(){const host=document.getElementById('tab-team'),active=(employeesAdmin||[]).filter(e=>e.active&&e.deleted_at==null).length;host.innerHTML=`<div class="section-head"><div><div class="section-kicker">Pessoas</div><h3 class="icon-title"><i data-lucide="users" class="ico"></i>Equipe</h3><div class="sub">${active} ativa(s). Horários e escala podem alterar a distribuição; depois da publicação, toda mudança operacional exige confirmação.</div></div><button class="btn" onclick="editEmployee()"><i data-lucide="user-plus" class="ico"></i>Adicionar pessoa</button></div><div class="toolbar"><div class="field"><label>Buscar na equipe</label><input id="teamFilter" value="${esc(managementFilters.team||'')}" oninput="rememberManagementFilter('team',this.value);filterTeam()" placeholder="Nome ou função"></div></div><div id="teamAdminRows" class="admin-card-grid">${(employeesAdmin||[]).map(e=>`<article class="team-admin-card" data-search="${esc((e.name+' '+e.role).toLowerCase())}"><div class="team-card-top"><div class="team-card-person">${e.photo_url?`<img src="${e.photo_url}" loading="lazy">`:`<div class="team-card-avatar">${esc((e.name||'?')[0])}</div>`}<div><div class="admin-card-title">${esc(e.name)}</div><div class="admin-card-sub">${esc(e.role)}</div></div></div><span class="status-pill ${e.active?'done':'open'}">${e.active?'Ativo':'Inativo'}</span></div><div class="admin-card-body"><div>Ordem: <b>${e.sort_order||'—'}</b> · Rodízio: <b>${e.participates_rotation===false?'Não':'Sim'}</b></div><div class="schedule-summary"><b>Escala por dia</b>${weeklyScheduleSummary(e)}</div></div><div class="admin-card-actions"><button class="btn light" onclick="editEmployee('${e.id}')"><i data-lucide="pencil" class="ico"></i>Editar</button><button class="btn light" onclick="openResetPinV24('${e.id}','${esc(e.name).replace(/'/g,'&#39;')}')"><i data-lucide="key-round" class="ico"></i>PIN</button><button class="btn light" onclick="openEmployeeHistory('${e.id}')"><i data-lucide="history" class="ico"></i>Histórico</button><button class="btn danger" onclick="removeEmployee('${e.id}')"><i data-lucide="user-minus" class="ico"></i>Remover</button></div></article>`).join('')||'<div class="empty-state">Nenhuma pessoa cadastrada.</div>'}</div>`;filterTeam();refreshIcons()};
 const V24_BASE_EDIT_EMPLOYEE=editEmployee;
@@ -2103,8 +2104,8 @@ function v243ReactivateEmployee(id){
   setTimeout(()=>{const a=document.getElementById('empActive');if(a){a.checked=true;a.scrollIntoView({behavior:'smooth',block:'center'})}},20);
 }
 renderTeamAdmin=function(){
-  const host=document.getElementById('tab-team'),rows=(employeesAdmin||[]),active=rows.filter(e=>e.active&&e.deleted_at==null).length,inactive=rows.filter(e=>!e.active&&e.deleted_at==null).length;
-  host.innerHTML=`<div class="section-head"><div><div class="section-kicker">Pessoas</div><h3 class="icon-title"><i data-lucide="users" class="ico"></i>Equipe</h3><div class="sub">${active} ativa(s)${inactive?` · ${inactive} inativa(s) disponível(is) para reativação`:''}. Desativar não apaga mais o cadastro.</div></div><button class="btn" onclick="editEmployee()"><i data-lucide="user-plus" class="ico"></i>Adicionar pessoa</button></div><div class="toolbar"><div class="field"><label>Buscar na equipe</label><input id="teamFilter" value="${esc(managementFilters.team||'')}" oninput="rememberManagementFilter('team',this.value);filterTeam()" placeholder="Nome ou função"></div></div><div id="teamAdminRows" class="admin-card-grid">${rows.map(e=>`<article class="team-admin-card ${e.active?'':'inactive-card'}" data-search="${esc((e.name+' '+e.role).toLowerCase())}"><div class="team-card-top"><div class="team-card-person">${e.photo_url?`<img src="${e.photo_url}" loading="lazy">`:`<div class="team-card-avatar">${esc((e.name||'?')[0])}</div>`}<div><div class="admin-card-title">${esc(e.name)}</div><div class="admin-card-sub">${esc(e.role)}</div></div></div><span class="status-pill ${e.active?'done':'open'}">${e.active?'Ativo':'Inativo'}</span></div><div class="admin-card-body"><div>Ordem: <b>${e.sort_order||'—'}</b> · Rodízio: <b>${e.participates_rotation===false?'Não':'Sim'}</b></div><div class="schedule-summary"><b>Escala por dia</b>${weeklyScheduleSummary(e)}</div></div><div class="admin-card-actions">${e.active?`<button class="btn light" onclick="editEmployee('${e.id}')"><i data-lucide="pencil" class="ico"></i>Editar</button>`:`<button class="btn light reactivate-btn" onclick="v243ReactivateEmployee('${e.id}')"><i data-lucide="user-check" class="ico"></i>Reativar</button><button class="btn light" onclick="editEmployee('${e.id}')"><i data-lucide="pencil" class="ico"></i>Editar</button>`}<button class="btn light" onclick="openEmployeeHistory('${e.id}')"><i data-lucide="history" class="ico"></i>Histórico</button><button class="btn danger" onclick="removeEmployee('${e.id}')"><i data-lucide="user-minus" class="ico"></i>Remover</button></div></article>`).join('')||'<div class="empty-state">Nenhuma pessoa cadastrada.</div>'}</div>`;filterTeam();refreshIcons()
+  const host=document.getElementById('tab-team'),rows=(employeesAdmin||[]).filter(e=>e.active&&e.deleted_at==null),active=rows.length;
+  host.innerHTML=`<div class="section-head"><div><div class="section-kicker">Pessoas</div><h3 class="icon-title"><i data-lucide="users" class="ico"></i>Equipe</h3><div class="sub">${active} ativa(s). Pessoas desligadas deixam de aparecer aqui, mas o histórico permanece preservado.</div></div><button class="btn" onclick="editEmployee()"><i data-lucide="user-plus" class="ico"></i>Adicionar pessoa</button></div><div class="toolbar"><div class="field"><label>Buscar na equipe</label><input id="teamFilter" value="${esc(managementFilters.team||'')}" oninput="rememberManagementFilter('team',this.value);filterTeam()" placeholder="Nome ou função"></div></div><div id="teamAdminRows" class="admin-card-grid">${rows.map(e=>`<article class="team-admin-card ${e.active?'':'inactive-card'}" data-search="${esc((e.name+' '+e.role).toLowerCase())}"><div class="team-card-top"><div class="team-card-person">${e.photo_url?`<img src="${e.photo_url}" loading="lazy">`:`<div class="team-card-avatar">${esc((e.name||'?')[0])}</div>`}<div><div class="admin-card-title">${esc(e.name)}</div><div class="admin-card-sub">${esc(e.role)}</div></div></div><span class="status-pill ${e.active?'done':'open'}">${e.active?'Ativo':'Inativo'}</span></div><div class="admin-card-body"><div>Ordem: <b>${e.sort_order||'—'}</b> · Rodízio: <b>${e.participates_rotation===false?'Não':'Sim'}</b></div><div class="schedule-summary"><b>Escala por dia</b>${weeklyScheduleSummary(e)}</div></div><div class="admin-card-actions"><button class="btn light" onclick="editEmployee('${e.id}')"><i data-lucide="pencil" class="ico"></i>Editar</button><button class="btn light" onclick="openEmployeeHistory('${e.id}')"><i data-lucide="history" class="ico"></i>Histórico</button><button class="btn danger" onclick="removeEmployee('${e.id}')"><i data-lucide="user-minus" class="ico"></i>Remover</button></div></article>`).join('')||'<div class="empty-state">Nenhuma pessoa cadastrada.</div>'}</div>`;filterTeam();refreshIcons()
 };
 
 finishModal=function(id){if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}const r=(routine||[]).find(x=>x.assignment_id===id);if(!r)return;const req=r.activity_photo_requirement||'before_after';if(req==='before_after'&&(Number(r.before_count)<1||Number(r.after_count)<1)){toast('Envie as fotos ANTES e DEPOIS.');return}if(req==='after'&&Number(r.after_count)<1){toast('Envie a foto DEPOIS.');return}openModal(`<div class="section-head"><div><div class="section-kicker">Conclusão</div><h3>Finalizar atividade</h3><div class="sub">A observação é opcional. Se ela precisar de acompanhamento da liderança, marque a opção abaixo.</div></div></div><div class="field"><label>Observação (opcional)</label><textarea id="finishObs" maxlength="2000" placeholder="Ex.: encontrei caixas armazenadas fora do endereço correto."></textarea></div><label class="leader-action-toggle"><input id="finishLeaderAction" type="checkbox" onchange="document.getElementById('finishCategoryWrap').classList.toggle('hidden',!this.checked)"><span><b>Esta observação precisa de acompanhamento do líder</b><small>Será listada em Observações citadas.</small></span></label><div id="finishCategoryWrap" class="field hidden"><label>Tipo da observação</label><select id="finishCategory"><option>Organização</option><option>Produto / estoque</option><option>Equipamento</option><option>Segurança</option><option>Processo</option><option>Outro</option></select></div><div class="actions"><button class="btn mint" onclick="finishAssignment('${id}')"><i data-lucide="circle-check-big" class="ico"></i>Confirmar conclusão</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);refreshIcons()};
@@ -2516,8 +2517,8 @@ saveEmployee=async function(id){
 };
 
 saveActivity=async function(id){
-  const name=document.getElementById('actName').value.trim(),instruction=document.getElementById('actInstr').value.trim(),active=document.getElementById('actActive').checked,sort=Number(document.getElementById('actSort').value||0),existing=document.getElementById('actRefExisting')?.value||'',urgency=document.getElementById('actUrgency').value,dayPart=document.getElementById('actDayPart').value,type=document.getElementById('actScheduleType').value,photoReq=document.getElementById('actPhotoRequirement').value,weekdays=type==='specific_days'?WORKDAY_ORDER.filter(d=>document.getElementById('actDay-'+d)?.checked):(type==='daily'?[1,2,3,4,5,6]:[]),dates=type==='specific_days'?parseCsvValues('actSpecificDates',/^\d{4}-\d{2}-\d{2}$/):[],times=type==='on_demand'?[]:parseCsvValues('actTimeSlots',/^([01]\d|2[0-3]):[0-5]\d$/);
-  if(!name){toast('Informe o nome da atividade.');return}if(dates===null){toast('Confira as datas. Use AAAA-MM-DD.');return}if(times===null){toast('Confira os horários. Use HH:MM.');return}if(type==='specific_days'&&!weekdays.length&&!dates.length){toast('Escolha pelo menos um dia ou uma data específica.');return}
+  const name=document.getElementById('actName').value.trim(),instruction=document.getElementById('actInstr').value.trim(),active=document.getElementById('actActive').checked,sort=Number(document.getElementById('actSort').value||0),existing=document.getElementById('actRefExisting')?.value||'',urgency=document.getElementById('actUrgency').value,dayPart=document.getElementById('actDayPart').value,type=document.getElementById('actScheduleType').value,photoReq=document.getElementById('actPhotoRequirement').value,weekdays=type==='specific_days'?WORKDAY_ORDER.filter(d=>document.getElementById('actDay-'+d)?.checked):(type==='daily'?[1,2,3,4,5,6]:[]),dates=type==='specific_days'?parseCsvValues('actSpecificDates',/^\d{4}-\d{2}-\d{2}$/):[],times=type==='on_demand'?[]:parseActivityTimeSlotsV245131('actTimeSlots');
+  if(!name){toast('Informe o nome da atividade.');return}if(dates===null){toast('Confira as datas. Use AAAA-MM-DD.');return}if(times===null){toast('Confira os horários. Exemplo: 10:00, 15:00.');return}if(type==='specific_days'&&!weekdays.length&&!dates.length){toast('Escolha pelo menos um dia ou uma data específica.');return}
   const payload=ref=>({p_token:leaderToken,p_id:id||null,p_name:name,p_instruction:instruction,p_active:active,p_sort:sort,p_reference:ref,p_urgency:urgency,p_day_part:dayPart,p_schedule_type:type,p_schedule_weekdays:weekdays,p_specific_dates:dates,p_time_slots:times,p_photo_requirement:photoReq});
   try{
     let rid=await rpc('leader_save_activity_v4',payload(existing));
@@ -2527,8 +2528,25 @@ saveActivity=async function(id){
 };
 
 removeEmployee=async function(id){
-  const ok=await v2440Confirm('Remover pessoa','O cadastro ficará arquivado e o histórico já realizado será preservado. Deseja continuar?','Remover',true);if(!ok)return;
-  try{const removed=await rpc('leader_delete_employee',{p_token:leaderToken,p_id:id});if(!removed){toast('Não é possível remover uma pessoa enquanto a operação de hoje estiver publicada. Faça a remoção após o encerramento do dia.');return}toast('Pessoa removida ✓');await Promise.all([loadManagement(),loadRoutine(isoLocal())])}catch(e){console.error(e);toast('Não foi possível remover a pessoa.')}
+  const person=(employeesAdmin||[]).find(e=>String(e.id)===String(id));
+  const name=person?.name||'esta pessoa';
+  const ok=await v2440Confirm('Desligar e remover da equipe',` ${name} deixará de aparecer na equipe e no rodízio. O histórico já realizado será preservado e as atividades pendentes de hoje serão redistribuídas entre quem estiver presente. Deseja continuar?`,'Remover da equipe',true);
+  if(!ok)return;
+  try{
+    const r=await rpc('leader_archive_employee_v1',{p_token:leaderToken,p_id:id,p_reason:'Desligamento do colaborador'});
+    if(!r?.ok){
+      const msg={
+        employee_not_found:'Colaborador não encontrado.',
+        in_progress_blocked:'Existe uma atividade em andamento para esta pessoa. Finalize ou interrompa essa atividade antes do desligamento.',
+        no_present_employee:'Não há outra pessoa presente para receber as atividades pendentes.'
+      }[r?.error]||'Não foi possível remover a pessoa da equipe.';
+      toast(msg);return;
+    }
+    toast(Number(r.redistributed||0)?`${name} removido(a) · ${r.redistributed} atividade(s) redistribuída(s) ✓`:`${name} removido(a) da equipe ✓`);
+    selectedEmployeeId=null;selected=null;coverageExecutorId=null;coverageAssignmentId=null;
+    await Promise.all([loadManagement(),loadRoutine(isoLocal())]);
+    await loadSuggestionNames(true);
+  }catch(e){console.error(e);toast('Não foi possível remover a pessoa. Verifique se a atualização do banco V24.5.12 foi aplicada.')}
 };
 removeActivity=async function(id){
   const ok=await v2440Confirm('Remover atividade','A atividade ficará inativa e o histórico já realizado será preservado. Deseja continuar?','Remover',true);if(!ok)return;
@@ -2570,14 +2588,14 @@ saveDayPrep=async function(publish){
   const d=document.getElementById('manageDate')?.value||isoLocal(),published=v24OperationPublished(),reason=published?'Alteração aplicada na preparação do dia':null;
   const statuses=collectDayPrepStatuses(),redistribute=true;
   if(publish){openDayPrepConfirmV2436({d,published,statuses,redistribute,reason});return}
-  try{await rpc('leader_prepare_day_v2',{p_token:leaderToken,p_date:d,p_statuses:statuses,p_publish:false,p_redistribute:redistribute,p_reason:reason});toast('Preparação salva ✓');await loadManagement();if(d===isoLocal())await loadRoutine(d)}catch(e){console.error(e);toast('Não foi possível salvar a preparação.')}
+  try{await rpc('leader_prepare_day_v3',{p_token:leaderToken,p_date:d,p_statuses:statuses,p_publish:false,p_redistribute:redistribute,p_reason:reason});toast('Preparação salva ✓');await loadManagement();if(d===isoLocal())await loadRoutine(d)}catch(e){console.error(e);toast('Não foi possível salvar a preparação.')}
 };
 
 confirmDayPrepV2436=async function(){
   const p=pendingDayPrepAction;if(!p)return;const btn=document.getElementById('confirmDayPublishBtn');if(btn)btn.disabled=true;pendingDayPrepAction=null;
   try{
     const reason=p.reason||(p.published?'Alteração aplicada na preparação do dia':null);
-    const r=await rpc('leader_prepare_day_v2',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_publish:true,p_redistribute:true,p_reason:reason});
+    const r=await rpc('leader_prepare_day_v3',{p_token:leaderToken,p_date:p.d,p_statuses:p.statuses,p_publish:true,p_redistribute:true,p_reason:reason});
     const state=await rpc('get_operation_day_state_v2',{p_date:p.d});if(!v24Bool(state?.published)||!state?.published_at)throw new Error('publish_not_confirmed');
     closeModal();await loadManagement();if(p.d===isoLocal())await loadRoutine(p.d);const moved=Number(r?.redistributed||0);
     openModal(`<div style="text-align:center;padding:12px 4px 4px"><div style="width:64px;height:64px;border-radius:22px;margin:0 auto 14px;display:grid;place-items:center;background:rgba(45,199,168,.14);color:#169b80"><i data-lucide="badge-check" style="width:38px;height:38px"></i></div><div class="section-kicker">Tudo certo</div><h3 style="margin:6px 0 8px;font-size:24px">${p.published?'Alterações aplicadas com sucesso':'Operação publicada com sucesso'}</h3><div class="sub">${brDate(p.d)} foi ${p.published?'atualizado':'liberado para a operação'}.${moved?` ${moved} atividade(s) pendente(s) foram redistribuída(s).`:''}</div><div class="actions" style="justify-content:center;margin-top:20px"><button class="btn mint" onclick="closeModal()"><i data-lucide="check" class="ico"></i>Entendi</button></div></div>`);toast(p.published?'Alterações aplicadas com sucesso ✓':'Operação publicada com sucesso ✓');
@@ -2847,7 +2865,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 <script id="v245-security-hardening">
 (function(){
   if(window.__TV_STANDALONE_ACTIVE__)return;
-  const V245='V24.5.11';
+  const V245='V24.5.12';
   const TEAM_KEY='v245TeamAccess';
   const EMP_KEY='v245EmployeeAuth';
   const CLIENT_EMPLOYEE_TTL=15*60*1000;
@@ -3695,6 +3713,146 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     return r;
   };
 })();
+</script>
+
+
+<!-- V24.5.13: demandas fixas, rotativas e em grupo -->
+<style>
+.activity-demand-tabs-v24513{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}.activity-demand-tab-v24513{border:1px solid var(--line);background:#fff;border-radius:14px;padding:11px 12px;display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:850;cursor:pointer;min-width:0}.activity-demand-tab-v24513 span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.activity-demand-tab-v24513 b{margin-left:auto;min-width:25px;height:25px;border-radius:9px;background:var(--soft);display:grid;place-items:center;font-size:11px}.activity-demand-tab-v24513.active{border-color:rgba(43,199,164,.55);box-shadow:0 0 0 2px rgba(43,199,164,.10);color:var(--nav)}.activity-demand-tab-v24513.active b{background:rgba(43,199,164,.14);color:#167d68}.activity-demand-head-v24513{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 12px}.activity-demand-head-v24513 h3{display:flex;align-items:center;gap:7px;margin:0 0 3px}.demand-kind-v24513{font-weight:900!important}.rotation-info-v24513,.fixed-proof-v24513{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--soft);margin:5px 0 12px}.rotation-info-v24513 b,.fixed-proof-v24513 b{display:block;color:var(--nav);font-size:12px}.rotation-info-v24513 small,.fixed-proof-v24513 small{display:block;color:var(--muted);margin-top:2px;line-height:1.35}.activity-group-picker-v24513{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.activity-group-person-v24513{cursor:pointer}.activity-group-person-v24513>input{position:absolute;opacity:0;pointer-events:none}.activity-group-person-v24513>span{border:1px solid var(--line);border-radius:13px;padding:9px;display:flex;align-items:center;gap:8px;background:#fff;min-width:0}.activity-group-person-v24513 img,.activity-group-person-v24513 b{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:0 0 34px}.activity-group-person-v24513 b{display:grid;place-items:center;background:var(--soft);color:var(--nav)}.activity-group-person-v24513 em{font-style:normal;font-weight:800;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.activity-group-person-v24513>input:checked+span{border-color:rgba(43,199,164,.65);box-shadow:0 0 0 2px rgba(43,199,164,.11);background:rgba(43,199,164,.05)}
+@media(max-width:720px){.activity-demand-tabs-v24513{grid-template-columns:1fr}.activity-demand-tab-v24513{min-height:45px}.activity-demand-head-v24513{align-items:stretch;flex-direction:column}.activity-demand-head-v24513 .btn{width:100%}.activity-group-picker-v24513{grid-template-columns:1fr}}
+
+</style>
+<script>
+(function(){
+  const MODES={fixed:'fixed',rotating:'rotating',group:'group'};
+  let activityDemandTabV24513=localStorage.getItem('activityDemandTabV24513')||MODES.rotating;
+  if(!Object.values(MODES).includes(activityDemandTabV24513))activityDemandTabV24513=MODES.rotating;
+
+  const modeLabel=m=>m==='fixed'?'Demanda fixa':m==='group'?'Demanda em grupo':'Demanda rotativa';
+  const modeIcon=m=>m==='fixed'?'user-round-check':m==='group'?'users-round':'refresh-cw';
+  const activePeople=()=> (employeesAdmin||[]).filter(e=>e.active&&e.deleted_at==null);
+  const personName=id=>((employeesAdmin||[]).find(e=>String(e.id)===String(id))?.name||'Não definido');
+  const groupIds=a=>Array.isArray(a?.group_employee_ids)?a.group_employee_ids.map(String):[];
+  const groupNames=a=>Array.isArray(a?.group_employee_names)?a.group_employee_names:groupIds(a).map(personName);
+  const modeOf=a=>['fixed','group','rotating'].includes(a?.activity_mode)?a.activity_mode:'rotating';
+
+  window.setActivityDemandTabV24513=function(mode){
+    if(!Object.values(MODES).includes(mode))return;
+    activityDemandTabV24513=mode;
+    localStorage.setItem('activityDemandTabV24513',mode);
+    renderActivitiesAdmin();
+  };
+
+  window.renderActivitiesAdmin=function(){
+    const host=document.getElementById('tab-activities');if(!host)return;
+    const all=(activitiesAdmin||[]).filter(a=>a.deleted_at==null);
+    const counts={fixed:0,rotating:0,group:0};all.forEach(a=>counts[modeOf(a)]++);
+    const items=all.filter(a=>modeOf(a)===activityDemandTabV24513);
+    const tabInfo={
+      fixed:{title:'Demandas fixas',sub:'Atividades de responsabilidade definida. Não entram no rodízio e ficam sem comprovação por foto.',button:'Nova demanda fixa'},
+      rotating:{title:'Demandas rotativas',sub:'Atividades distribuídas automaticamente entre todos os colaboradores presentes, equilibrando a carga durante a semana.',button:'Nova demanda rotativa'},
+      group:{title:'Demandas em grupo',sub:'Atividades executadas por duas ou mais pessoas selecionadas por você.',button:'Nova demanda em grupo'}
+    }[activityDemandTabV24513];
+    const q=esc(managementFilters.activities||'');
+    host.innerHTML=`
+      <div class="section-head"><div><div class="section-kicker">Configuração das demandas</div><h3 class="icon-title"><i data-lucide="clipboard-list" class="ico"></i>Atividades</h3><div class="sub">Separe o que é responsabilidade fixa, o que entra no rodízio e o que precisa ser feito em grupo.</div></div></div>
+      <div class="activity-demand-tabs-v24513">
+        <button class="activity-demand-tab-v24513 ${activityDemandTabV24513==='fixed'?'active':''}" onclick="setActivityDemandTabV24513('fixed')"><i data-lucide="user-round-check" class="ico"></i><span>Demandas fixas</span><b>${counts.fixed}</b></button>
+        <button class="activity-demand-tab-v24513 ${activityDemandTabV24513==='rotating'?'active':''}" onclick="setActivityDemandTabV24513('rotating')"><i data-lucide="refresh-cw" class="ico"></i><span>Demandas rotativas</span><b>${counts.rotating}</b></button>
+        <button class="activity-demand-tab-v24513 ${activityDemandTabV24513==='group'?'active':''}" onclick="setActivityDemandTabV24513('group')"><i data-lucide="users-round" class="ico"></i><span>Demandas em grupo</span><b>${counts.group}</b></button>
+      </div>
+      <div class="activity-demand-head-v24513"><div><h3><i data-lucide="${modeIcon(activityDemandTabV24513)}" class="ico"></i>${tabInfo.title}</h3><div class="sub">${tabInfo.sub}</div></div><button class="btn" onclick="editActivity(null,'${activityDemandTabV24513}')"><i data-lucide="plus" class="ico"></i>${tabInfo.button}</button></div>
+      <div class="toolbar"><div class="field"><label>Buscar nesta categoria</label><input id="actFilter" value="${q}" oninput="rememberManagementFilter('activities',this.value);filterActs()" placeholder="Nome ou instrução"></div></div>
+      <div id="actRows" class="admin-card-grid">${items.map(a=>{
+        const mode=modeOf(a),names=groupNames(a);
+        const owner=mode==='fixed'?`<span><i data-lucide="user-round" class="ico"></i>${esc(a.fixed_employee_name||personName(a.fixed_employee_id))}</span>`:'';
+        const rotation=mode==='rotating'?`<span><i data-lucide="shuffle" class="ico"></i>Todos os presentes</span>`:'';
+        const group=mode==='group'?`<span><i data-lucide="users" class="ico"></i>${esc(names.length?names.join(' + '):'Sem participantes')}</span>`:'';
+        const photo=mode==='fixed'?'<span><i data-lucide="camera-off" class="ico"></i>Sem foto</span>':`<span><i data-lucide="camera" class="ico"></i>${v24PhotoLabel(a.photo_requirement)}</span>`;
+        return `<article class="activity-admin-card v24513-activity-card" data-search="${esc((a.name+' '+(a.instruction||'')+' '+(a.fixed_employee_name||'')+' '+names.join(' ')).toLowerCase())}">
+          ${a.reference_photo_url?`<img class="activity-reference-thumb" src="${a.reference_photo_url}" loading="lazy" decoding="async" alt="Padrão esperado">`:''}
+          <div class="activity-card-top"><div><div class="activity-order">ORDEM ${a.sort_order||'—'}</div><div class="admin-card-title">${esc(a.name)}</div></div><span class="status-pill ${a.active?'done':'open'}">${a.active?'Ativa':'Inativa'}</span></div>
+          <div class="activity-config-pills"><span class="demand-kind-v24513"><i data-lucide="${modeIcon(mode)}" class="ico"></i>${modeLabel(mode)}</span>${owner}${rotation}${group}<span><i data-lucide="calendar-days" class="ico"></i>${esc(scheduleDaysText(a))}</span><span><i data-lucide="clock-3" class="ico"></i>${esc(scheduleTimesText(a))}</span>${photo}</div>
+          <div class="admin-card-body">${esc(a.instruction||'Sem instrução cadastrada.')}</div>
+          <div class="admin-card-actions"><button class="btn light" onclick="editActivity('${a.id}')"><i data-lucide="pencil" class="ico"></i>Editar</button><button class="btn danger" onclick="removeActivity('${a.id}')"><i data-lucide="archive" class="ico"></i>${a.active?'Desativar':'Remover'}</button></div>
+        </article>`;
+      }).join('')||`<div class="empty-state"><i data-lucide="${modeIcon(activityDemandTabV24513)}" class="ico"></i>Nenhuma ${tabInfo.title.toLowerCase()} cadastrada.</div>`}</div>`;
+    filterActs();refreshIcons();
+  };
+
+  window.filterActs=function(){
+    const q=(document.getElementById('actFilter')?.value??managementFilters.activities??'').toLowerCase().trim();
+    document.querySelectorAll('#actRows .v24513-activity-card').forEach(el=>el.style.display=(el.dataset.search||'').includes(q)?'':'none');
+  };
+
+  window.toggleActivityScheduleFields=function(){
+    const type=document.getElementById('actScheduleType')?.value||'daily';
+    document.getElementById('actSpecificWrap')?.classList.toggle('hidden',type!=='specific_days');
+    document.getElementById('actTimingWrap')?.classList.toggle('hidden',type==='on_demand');
+  };
+
+  window.editActivity=function(id,forcedMode){
+    const found=(activitiesAdmin||[]).find(x=>String(x.id)===String(id));
+    const mode=forcedMode||modeOf(found||{});
+    const a=found||{name:'',instruction:'',active:true,sort_order:(activitiesAdmin||[]).length+1,reference_photo_url:'',urgency:'normal',day_part:'any',schedule_type:'daily',schedule_weekdays:[1,2,3,4,5,6],specific_dates:[],time_slots:[],photo_requirement:mode==='rotating'?'before_after':'none',activity_mode:mode,fixed_employee_id:null,group_employee_ids:[]};
+    pendingActivityPhotoFile=null;
+    const days=(a.schedule_weekdays||[]).map(Number),dates=(a.specific_dates||[]).join(', '),times=(a.time_slots||[]).map(v24Time).join(', '),selectedGroup=groupIds(a);
+    const people=activePeople();
+    const refValue=a._reference_storage_ref||a.reference_photo_url||'';
+    const preview=a._secure_reference_url||a.reference_photo_url||'';
+    const modeTitle=mode==='fixed'?'demanda fixa':mode==='group'?'demanda em grupo':'demanda rotativa';
+    const fixedBlock=mode==='fixed'?`<div class="field"><label>Responsável pela demanda</label><select id="actFixedEmployee"><option value="">Selecione a pessoa</option>${people.map(e=>`<option value="${e.id}" ${String(a.fixed_employee_id||'')===String(e.id)?'selected':''}>${esc(e.name)}</option>`).join('')}</select><div class="sub">Esta atividade será sempre direcionada a essa pessoa e não entra no rodízio.</div></div>`:'';
+    const groupBlock=mode==='group'?`<div class="field"><label>Participantes da atividade</label><div class="activity-group-picker-v24513">${people.map(e=>`<label class="activity-group-person-v24513"><input type="checkbox" name="actGroupEmployee" value="${e.id}" ${selectedGroup.includes(String(e.id))?'checked':''}><span>${e.photo_url?`<img src="${e.photo_url}" alt="">`:`<b>${esc((e.name||'?')[0])}</b>`}<em>${esc(e.name)}</em></span></label>`).join('')}</div><div class="sub">Selecione pelo menos 2 pessoas. A atividade aparecerá para cada participante presente no dia.</div></div>`:'';
+    const rotationBlock=mode==='rotating'?`<div class="rotation-info-v24513"><i data-lucide="shuffle" class="ico"></i><div><b>Rodízio automático ativado</b><small>O sistema divide estas atividades entre todos os colaboradores presentes e considera a carga já recebida por cada pessoa.</small></div></div>`:'';
+    const proofBlock=mode==='fixed'?`<div class="field"><label>Comprovação</label><div class="fixed-proof-v24513"><i data-lucide="camera-off" class="ico"></i><div><b>Sem comprovação por foto</b><small>Demandas fixas são concluídas sem exigir foto.</small></div></div><input id="actPhotoRequirement" type="hidden" value="none"></div>`:`<div class="field"><label>Comprovação por foto</label><select id="actPhotoRequirement"><option value="none" ${a.photo_requirement==='none'?'selected':''}>Sem foto</option><option value="after" ${a.photo_requirement==='after'?'selected':''}>Foto depois</option><option value="before_after" ${!a.photo_requirement||a.photo_requirement==='before_after'?'selected':''}>Foto antes e depois</option></select><div class="sub">Escolha somente a comprovação necessária para esta atividade.</div></div>`;
+    openModal(`<div class="section-head"><div><div class="section-kicker">${modeLabel(mode)}</div><h3>${id?'Editar':'Adicionar'} ${modeTitle}</h3><div class="sub">Configure a atividade sem alterar a lógica das outras categorias.</div></div></div>
+      <input id="actDemandMode" type="hidden" value="${mode}">
+      <div class="field"><label>Nome</label><input id="actName" value="${esc(a.name||'')}" placeholder="Ex.: Conferir termohigrômetro"></div>
+      <div class="field"><label>Instrução</label><textarea id="actInstr" placeholder="Descreva o que precisa ser feito">${esc(a.instruction||'')}</textarea></div>
+      ${fixedBlock}${groupBlock}${rotationBlock}
+      <div class="schedule-grid"><div class="field"><label>Frequência</label><select id="actScheduleType" onchange="toggleActivityScheduleFields()"><option value="daily" ${a.schedule_type==='daily'?'selected':''}>Diária</option><option value="specific_days" ${a.schedule_type==='specific_days'?'selected':''}>Dias específicos</option><option value="on_demand" ${a.schedule_type==='on_demand'?'selected':''}>Sob demanda</option></select></div>${proofBlock}</div>
+      <div id="actSpecificWrap" class="activity-schedule-box ${a.schedule_type==='specific_days'?'':'hidden'}"><b>Dias em que acontece</b><div class="weekday-picks">${WORKDAY_ORDER.map(d=>`<label><input id="actDay-${d}" type="checkbox" ${days.includes(d)?'checked':''}>${WORKDAY_LABELS[d]}</label>`).join('')}</div><div class="field"><label>Datas específicas adicionais (opcional)</label><input id="actSpecificDates" value="${esc(dates)}" placeholder="2026-09-15, 2026-10-20"><div class="sub">Use AAAA-MM-DD separadas por vírgula.</div></div></div>
+      <div id="actTimingWrap" class="schedule-grid ${a.schedule_type==='on_demand'?'hidden':''}"><div class="field"><label>Horários específicos (opcional)</label><input id="actTimeSlots" value="${esc(times)}" placeholder="10:00, 15:00"><div class="sub">Informe um ou mais horários, por exemplo: 10:00, 15:00. Cada horário cria uma execução no dia.</div></div><div class="field"><label>Momento do expediente</label><select id="actDayPart"><option value="start" ${a.day_part==='start'?'selected':''}>Início</option><option value="middle" ${a.day_part==='middle'?'selected':''}>Meio</option><option value="end" ${a.day_part==='end'?'selected':''}>Final</option><option value="any" ${!a.day_part||a.day_part==='any'?'selected':''}>Qualquer momento</option></select></div></div>
+      <div class="schedule-grid"><div class="field"><label>Prioridade</label><select id="actUrgency"><option value="critical" ${a.urgency==='critical'?'selected':''}>Crítica</option><option value="high" ${a.urgency==='high'?'selected':''}>Alta</option><option value="medium" ${a.urgency==='medium'?'selected':''}>Média</option><option value="normal" ${!a.urgency||a.urgency==='normal'?'selected':''}>Normal</option></select></div><div class="field"><label>Ordem</label><input id="actSort" type="number" value="${a.sort_order||0}"></div></div>
+      <div class="field"><label>Foto de referência do padrão (opcional)</label>${preview?`<img id="actRefPreview" class="reference-preview" src="${preview}">`:`<img id="actRefPreview" class="reference-preview hidden">`}<input id="actRefFile" type="file" accept="image/*" onchange="previewActivityReference(this)"><input id="actRefExisting" type="hidden" value="${esc(refValue)}"><div class="sub">Esta é apenas a foto que mostra como a atividade deve ficar; não é a comprovação da execução.</div></div>
+      <label class="toggle-line"><input id="actActive" type="checkbox" ${a.active?'checked':''}> Atividade ativa</label>
+      <div class="actions"><button class="btn" onclick="saveActivity('${id||''}')"><i data-lucide="save" class="ico"></i>Salvar atividade</button><button class="btn light" onclick="pendingActivityPhotoFile=null;closeModal()">Cancelar</button></div>`);
+    toggleActivityScheduleFields();refreshIcons();
+  };
+
+  window.saveActivity=async function(id){
+    const name=document.getElementById('actName')?.value.trim()||'',instruction=document.getElementById('actInstr')?.value.trim()||'',mode=document.getElementById('actDemandMode')?.value||'rotating';
+    const active=!!document.getElementById('actActive')?.checked,sort=Number(document.getElementById('actSort')?.value||0),existing=document.getElementById('actRefExisting')?.value||'',urgency=document.getElementById('actUrgency')?.value||'normal',dayPart=document.getElementById('actDayPart')?.value||'any',type=document.getElementById('actScheduleType')?.value||'daily',photoReq=mode==='fixed'?'none':(document.getElementById('actPhotoRequirement')?.value||'none');
+    const weekdays=type==='specific_days'?WORKDAY_ORDER.filter(d=>document.getElementById('actDay-'+d)?.checked):(type==='daily'?[1,2,3,4,5,6]:[]);
+    const dates=type==='specific_days'?parseCsvValues('actSpecificDates',/^\d{4}-\d{2}-\d{2}$/):[];
+    const times=type==='on_demand'?[]:parseActivityTimeSlotsV245131('actTimeSlots');
+    const fixedEmployee=mode==='fixed'?(document.getElementById('actFixedEmployee')?.value||null):null;
+    const groupEmployees=mode==='group'?[...document.querySelectorAll('input[name="actGroupEmployee"]:checked')].map(x=>x.value):[];
+    if(!name){toast('Informe o nome da atividade.');return}
+    if(mode==='fixed'&&!fixedEmployee){toast('Selecione o responsável pela demanda fixa.');return}
+    if(mode==='group'&&groupEmployees.length<2){toast('Selecione pelo menos 2 participantes para a demanda em grupo.');return}
+    if(dates===null){toast('Confira as datas. Use AAAA-MM-DD.');return}
+    if(times===null){toast('Confira os horários. Exemplo: 10:00, 15:00.');return}
+    if(type==='specific_days'&&!weekdays.length&&!dates.length){toast('Escolha pelo menos um dia ou uma data específica.');return}
+    const payload=ref=>({p_token:leaderToken,p_id:id||null,p_name:name,p_instruction:instruction,p_active:active,p_sort:sort,p_reference:ref,p_urgency:urgency,p_day_part:dayPart,p_schedule_type:type,p_schedule_weekdays:weekdays,p_specific_dates:dates,p_time_slots:times,p_photo_requirement:photoReq,p_activity_mode:mode,p_fixed_employee:fixedEmployee,p_group_employees:groupEmployees});
+    try{
+      let rid=await rpc('leader_save_activity_v5',payload(existing));
+      if(pendingActivityPhotoFile){toast('Enviando foto de referência...');const url=await uploadActivityReference(rid,pendingActivityPhotoFile);rid=await rpc('leader_save_activity_v5',{...payload(url),p_id:rid})}
+      pendingActivityPhotoFile=null;activityDemandTabV24513=mode;localStorage.setItem('activityDemandTabV24513',mode);closeModal();toast(`${modeLabel(mode)} salva ✓`);await loadManagement();if(activeTab==='activities')renderActivitiesAdmin();
+    }catch(e){
+      console.error(e);const raw=String(e?.message||e?.details||'');
+      if(raw.includes('published_day_activity_change_blocked'))toast('Esta atividade já faz parte da operação publicada de hoje. Altere a configuração estrutural após o encerramento do dia.');
+      else if(raw.includes('group_requires_two_employees'))toast('A demanda em grupo precisa de pelo menos 2 participantes.');
+      else if(raw.includes('fixed_employee'))toast('Confira o responsável da demanda fixa.');
+      else if(raw.includes('unauthorized'))toast('Sua sessão expirou. Entre novamente na Gestão.');
+      else toast('Não foi possível salvar a atividade.');
+    }
+  };
+
+  const baseSetTabV24513=window.setTab;
+  if(typeof baseSetTabV24513==='function')window.setTab=function(t,btn){const r=baseSetTabV24513(t,btn);if(t==='activities')renderActivitiesAdmin();return r};
+})();
+
 </script>
 
 </body></html>
