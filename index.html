@@ -4423,6 +4423,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
   function actionStatusV24519(r,current){
     if(r.status==='completed')return {label:'CONCLUÍDA',cls:'done',icon:'circle-check-big'};
+    if(r.status==='not_performed')return {label:'NÃO REALIZADA',cls:'skipped',icon:'triangle-alert'};
     if(r.status==='in_progress')return {label:'EM ANDAMENTO',cls:'run',icon:'play-circle'};
     if(current&&String(r.assignment_id)===String(current.assignment_id))return {label:'PRÓXIMA',cls:'next',icon:'play'};
     return {label:'AGUARDANDO',cls:'waiting',icon:'clock-3'};
@@ -4661,7 +4662,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
 <style id="v24529-no-device-pair-style">.team-access-panel{display:none!important}</style>
 <script id="v24529-version-marker">window.V24529='V24.5.29';
-window.V24531='V24.5.31';</script>
+window.V24531='V24.5.32';</script>
 <!-- V24.5.29: validação/pareamento de aparelho removidos; Rotina abre diretamente e mantém sessão curta por colaborador. -->
 </body></html>
 
@@ -4680,3 +4681,115 @@ window.V24531='V24.5.31';</script>
 <!-- V24.5.24: navegação inferior fixa padronizada para Android e iOS, com safe-area e reserva de conteúdo. -->
 
 <!-- V24.5.26: galeria de fotos estabilizada; links protegidos renovados ao abrir e painéis da Visão Geral preservam o estado. -->
+
+<!-- V24.5.32: justificativa de atividade rotativa não realizada. -->
+<style id="v24532-skip-rotation-style">
+.v24532-skip-action{margin-top:10px}
+.v24532-skip-action .btn{border:1px solid #edc98f;background:#fff9ec;color:#7a4b00;width:100%}
+.v24532-skip-action .btn:hover{background:#fff3d9}
+.v24532-justified{display:flex;align-items:flex-start;gap:9px;padding:12px 14px;border:1px solid #f0d29e;background:#fff8ea;color:#7a4b00;border-radius:13px;font-size:12px;line-height:1.45;margin-top:12px}
+.v24532-justified .ico{width:18px;height:18px;flex:0 0 auto;margin-top:1px}
+.v24532-justified b{display:block;margin-bottom:2px}
+.v24532-modal-note{padding:10px 12px;border-radius:12px;background:#fff8ea;border:1px solid #f0d29e;color:#6f4b0a;font-size:12px;line-height:1.45}
+@media(max-width:680px){.v24532-skip-action .btn{min-height:48px}.v24532-modal-note{font-size:13px}}
+</style>
+<script id="v24532-skip-rotation-script">
+(function(){
+  if(window.__V24532_SKIP_ROTATION__)return;window.__V24532_SKIP_ROTATION__=true;
+
+  const oldErrorV24532=window.v24ErrorMessage;
+  window.v24ErrorMessage=function(code){
+    const map={
+      reason_required:'Informe o motivo pelo qual a atividade não pôde ser realizada.',
+      reason_too_long:'A justificativa ficou muito longa.',
+      only_rotating:'Somente atividades rotativas podem ser justificadas desta forma.',
+      wrong_employee:'Esta atividade não está atribuída a você.',
+      not_pending:'Esta atividade já foi iniciada ou encerrada.',
+      operation_paused:'A operação está pausada no momento.',
+      wrong_work_date:'Essa atividade pertence a outra data.'
+    };
+    return map[code]||oldErrorV24532(code);
+  };
+
+  window.v24532OpenSkipModal=function(assignmentId,employeeId){
+    if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}
+    const row=(routine||[]).find(x=>String(x.assignment_id)===String(assignmentId));
+    if(!row||String(row.activity_mode||'rotating')!=='rotating'||row.status!=='pending'){toast('Somente uma atividade rotativa pendente pode receber uma justificativa.');return}
+    openModal(`<div class="section-head"><div><div class="section-kicker">NÃO REALIZADA</div><h3>Justificar atividade</h3><div class="sub">A atividade não será concluída. A justificativa ficará registrada para a Gestão acompanhar.</div></div></div>
+      <div class="v24532-modal-note"><b>${esc(row.activity_name||'Atividade')}</b><br>Use esta opção quando realmente não for possível executar a tarefa, por exemplo: carrinhos/plataformas em uso, local indisponível ou falta de recurso.</div>
+      <div class="field"><label>Motivo</label><select id="skipCategory"><option value="Equipamento / recurso indisponível">Equipamento / recurso indisponível</option><option value="Local / área indisponível">Local / área indisponível</option><option value="Atividade bloqueada por outra operação">Atividade bloqueada por outra operação</option><option value="Falta de material / condição para executar">Falta de material / condição para executar</option><option value="Outra situação">Outra situação</option></select></div>
+      <div class="field"><label>Justificativa</label><textarea id="skipReason" maxlength="1000" rows="4" placeholder="Ex.: Os carrinhos e plataformas estavam em uso durante todo o período disponível."></textarea></div>
+      <div class="actions"><button class="btn mint" onclick="v24532ConfirmSkip('${assignmentId}','${employeeId}')"><i data-lucide="circle-check" class="ico"></i>Registrar justificativa</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);
+    refreshIcons();
+    setTimeout(()=>document.getElementById('skipReason')?.focus(),80);
+  };
+
+  window.v24532ConfirmSkip=async function(assignmentId,employeeId){
+    if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}
+    const reason=(document.getElementById('skipReason')?.value||'').trim();
+    const category=document.getElementById('skipCategory')?.value||'Outra situação';
+    if(!reason){toast('Informe a justificativa.');document.getElementById('skipReason')?.focus();return}
+    return requireEmployee(employeeId,async token=>{
+      const key='skip:'+assignmentId;if(!beginAction(key))return;
+      try{
+        const res=await rpc('employee_skip_assignment_v1',{p_employee_token:token,p_assignment:assignmentId,p_reason:reason,p_category:category});
+        if(!res?.ok){toast(v24ErrorMessage(res?.error));return}
+        closeModal();
+        toast('Justificativa registrada. A atividade não foi concluída.');
+        await loadRoutine(isoLocal());
+      }catch(err){console.error(err);toast('Não foi possível registrar a justificativa.')}finally{endAction(key)}
+    },'Confirmar justificativa');
+  };
+
+  const basePanelV24532=window.activityPanel;
+  if(typeof basePanelV24532==='function')window.activityPanel=function(r){
+    const html=basePanelV24532(r);
+    if(!r||String(r.activity_mode||'rotating')!=='rotating')return html;
+    const box=document.createElement('div');box.innerHTML=html;
+    const actions=box.querySelector('.current-task .actions')||box.querySelector('.actions');
+    if(r.status==='pending'&&actions&&!box.querySelector('.v24532-skip-action')){
+      const wrap=document.createElement('div');wrap.className='v24532-skip-action';
+      wrap.innerHTML=`<button class="btn" onclick="v24532OpenSkipModal('${r.assignment_id}','${r.executor_id||r.employee_id}')"><i data-lucide="triangle-alert" class="ico"></i>Não consegui realizar</button>`;
+      actions.parentElement?.appendChild(wrap) || box.firstElementChild?.appendChild(wrap);
+    }
+    if(r.status==='not_performed'){
+      const actionsEl=box.querySelectorAll('.actions');
+      actionsEl.forEach(el=>el.remove());
+      const upload=box.querySelector('.upload');if(upload)upload.remove();
+      const note=document.createElement('div');note.className='v24532-justified';note.innerHTML=`<i data-lucide="triangle-alert" class="ico"></i><div><b>Não realizada — justificativa registrada</b><span>${esc(r.observation||'A atividade foi justificada pelo colaborador.')}</span></div>`;
+      box.querySelector('.activitybox')?.appendChild(note);
+    }
+    return box.innerHTML;
+  };
+
+  window.V24532='V24.5.32';
+})();
+</script>
+<style id="v24532-skip-plan-style">
+.daily-plan-status.skipped{background:#fff8ea;color:#7a4b00;border-color:#efcf98}
+</style>
+<script id="v24532-skip-render-fix">
+(function(){
+  if(window.__V24532_SKIP_RENDER_FIX__)return;window.__V24532_SKIP_RENDER_FIX__=true;
+  const base=window.renderSelected;
+  if(typeof base!=='function')return;
+  window.renderSelected=function(force=false){
+    base(force);
+    const el=document.getElementById('selectedActivity');
+    if(!el||!selectedEmployeeId||coverageAssignmentId)return;
+    const list=typeof v24TasksForPerson==='function'?v24TasksForPerson(selectedEmployeeId):[];
+    const actions=list.filter(r=>String(r?.activity_mode||'rotating')!=='fixed');
+    const current=actions.find(x=>x.status==='in_progress')||actions.find(x=>x.status==='pending')||null;
+    const skipped=actions.filter(x=>x.status==='not_performed').length;
+    const completed=actions.filter(x=>x.status==='completed').length;
+    if(actions.length&&!current&&(completed+skipped===actions.length)&&skipped>0){
+      const empty=el.querySelector('.activitybox .empty-state');
+      if(empty){
+        empty.innerHTML=`<i data-lucide="clipboard-check" class="ico"></i>Rotina operacional encerrada. ${completed?`${completed} concluída(s)`+' · ':''}${skipped} não realizada(s) com justificativa registrada.`;
+        refreshIcons();
+      }
+    }
+  };
+})();
+</script>
+
