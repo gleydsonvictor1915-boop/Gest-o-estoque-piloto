@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.10-v24.5.30-rotina-classica" />
+<meta name="app-version" content="2026.09.12-v24.5.31-grupo-sem-comprovacao" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -2064,7 +2064,7 @@ loadRoutine=async function(date=isoLocal()){
   try{localStorage.setItem('routineCacheV24:'+routineDate,JSON.stringify({people:dayPeople,routine}))}catch(_e){}
   if(selectedEmployeeId&&!dayPeople.some(x=>String(x.employee_id)===String(selectedEmployeeId))){selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null}
   renderRoutine(true);
- }catch(e){console.error(e);let cached=null;try{cached=JSON.parse(localStorage.getItem('routineCacheV24:'+routineDate)||'null')}catch(_e){}if(cached?.routine){routine=cached.routine||[];dayPeople=cached.people||[];renderRoutine(true);toast('Sem conexão. Mostrando o último estado sincronizado.')}else{const host=document.getElementById('teamCards');if(host)host.innerHTML='<div class="empty-state">Atualizando equipe...</div>'}}
+ }catch(e){console.error(e);let cached=null;try{cached=JSON.parse(localStorage.getItem('routineCacheV24:'+routineDate)||'null')}catch(_e){}if(cached?.routine){routine=cached.routine||[];dayPeople=cached.people||[];renderRoutine(true);toast('Sem conexão. Mostrando o último estado sincronizado.')}else{const host=document.getElementById('teamCards');if(host)host.innerHTML='<div class="activitybox" style="grid-column:1/-1"><b>Não foi possível carregar a operação.</b><div class="sub">Verifique a conexão e tente novamente.</div></div>';toast('Erro ao sincronizar rotina')}}
  finally{syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(isoLocal()),160)}}
 };
 function renderRoutineWaitingForLeader(){
@@ -2278,7 +2278,7 @@ loadRoutine=async function(date=isoLocal()){
     try{localStorage.setItem('routineCacheV24:'+routineDate,JSON.stringify({people:dayPeople,routine}))}catch(_e){}
     if(selectedEmployeeId&&!dayPeople.some(x=>String(x.employee_id)===String(selectedEmployeeId))){selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null}
     renderRoutine(true);
-  }catch(e){console.error(e);let cached=null;try{cached=JSON.parse(localStorage.getItem('routineCacheV24:'+routineDate)||'null')}catch(_e){}if(cached?.routine){routine=cached.routine||[];dayPeople=cached.people||[];renderRoutine(true);toast('Sem conexão. Mostrando o último estado sincronizado.')}else{document.getElementById('teamCards').innerHTML='<div class="empty-state">Atualizando equipe...</div>'}}
+  }catch(e){console.error(e);let cached=null;try{cached=JSON.parse(localStorage.getItem('routineCacheV24:'+routineDate)||'null')}catch(_e){}if(cached?.routine){routine=cached.routine||[];dayPeople=cached.people||[];renderRoutine(true);toast('Sem conexão. Mostrando o último estado sincronizado.')}else{document.getElementById('teamCards').innerHTML='<div class="activitybox" style="grid-column:1/-1"><b>Não foi possível carregar a operação.</b><div class="sub">Verifique a conexão e tente novamente.</div></div>';toast('Erro ao sincronizar rotina')}}
   finally{syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(leaderToken?v242LeaderPreviewDate():isoLocal()),160)}}
 };
 
@@ -2505,7 +2505,7 @@ loadRoutine=async function(date=isoLocal()){
     try{localStorage.setItem('routineCacheV24:'+routineDate,JSON.stringify({people:dayPeople,routine}))}catch(_e){}
     if(selectedEmployeeId&&!dayPeople.some(x=>String(x.employee_id)===String(selectedEmployeeId))){selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null}
     renderRoutine(true);
-  }catch(e){console.error(e);let cached=null;try{cached=JSON.parse(localStorage.getItem('routineCacheV24:'+routineDate)||'null')}catch(_e){}if(cached?.routine){routine=cached.routine||[];dayPeople=cached.people||[];renderRoutine(true);toast('Sem conexão. Mostrando o último estado sincronizado.')}else{document.getElementById('teamCards').innerHTML='<div class="empty-state">Atualizando equipe...</div>'}}
+  }catch(e){console.error(e);let cached=null;try{cached=JSON.parse(localStorage.getItem('routineCacheV24:'+routineDate)||'null')}catch(_e){}if(cached?.routine){routine=cached.routine||[];dayPeople=cached.people||[];renderRoutine(true);toast('Sem conexão. Mostrando o último estado sincronizado.')}else{document.getElementById('teamCards').innerHTML='<div class="activitybox" style="grid-column:1/-1"><b>Não foi possível carregar a operação.</b><div class="sub">Verifique a conexão e tente novamente.</div></div>';toast('Erro ao sincronizar rotina')}}
   finally{syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(isoLocal()),160)}}
 };
 
@@ -2554,7 +2554,7 @@ function v24514DailyPlan(list,current){
   const rows=ordered.map((r,i)=>{
     const st=v24514TaskStatus(r,current);
     const timing=r.scheduled_time?`Horário ${v24Time(r.scheduled_time)}`:dayPartLabel(r.activity_day_part);
-    const proof=v24PhotoLabel(r.activity_photo_requirement||'before_after');
+    const proof=v24PhotoLabel(r.activity_mode==='group'?'none':(r.activity_photo_requirement||'before_after'));
     return `<div class="daily-plan-row ${st.cls} ${current&&String(r.assignment_id)===String(current.assignment_id)?'is-current':''}">
       <div class="daily-plan-number">${i+1}</div>
       <div class="daily-plan-main"><b>${esc(r.activity_name||'Atividade')}</b><small><span><i data-lucide="clock-3" class="ico"></i>${esc(timing)}</span><span><i data-lucide="${(r.activity_photo_requirement||'before_after')==='none'?'camera-off':'camera'}" class="ico"></i>${esc(proof)}</span></small></div>
@@ -3360,8 +3360,8 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     }catch(e){
       console.error('Falha ao sincronizar Rotina V24.5.29',e);
       const h=document.getElementById('teamCards');
-      if(h)h.innerHTML='<div class="empty-state">Atualizando equipe...</div>';
-      refreshIcons();
+      if(h)h.innerHTML=`<div class="security-gate" style="grid-column:1/-1"><div class="security-mark"><i data-lucide="refresh-cw" class="ico"></i></div><h3>Não foi possível atualizar a rotina</h3><p>A conexão não respondeu como esperado. Toque abaixo para tentar novamente.</p><button class="btn mint" onclick="v24528RetryRoutine()"><i data-lucide="refresh-cw" class="ico"></i>Tentar novamente</button></div>`;
+      refreshIcons();toast('Não foi possível atualizar a rotina');
     }finally{
       syncBusy=false;if(routineQueued){routineQueued=false;setTimeout(()=>loadRoutine(isoLocal()),180)}
     }
@@ -4222,7 +4222,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const fixedBlock=mode==='fixed'?`<div class="field"><label>Responsável pela demanda</label><select id="actFixedEmployee"><option value="">Selecione a pessoa</option>${people.map(e=>`<option value="${e.id}" ${String(a.fixed_employee_id||'')===String(e.id)?'selected':''}>${esc(e.name)}</option>`).join('')}</select><div class="sub">Esta atividade será sempre direcionada a essa pessoa e não entra no rodízio.</div></div>`:'';
     const groupBlock=mode==='group'?`<div class="field"><label>Participantes da atividade</label><div class="activity-group-picker-v24513">${people.map(e=>`<label class="activity-group-person-v24513"><input type="checkbox" name="actGroupEmployee" value="${e.id}" ${selectedGroup.includes(String(e.id))?'checked':''}><span>${e.photo_url?`<img src="${e.photo_url}" alt="">`:`<b>${esc((e.name||'?')[0])}</b>`}<em>${esc(e.name)}</em></span></label>`).join('')}</div><div class="sub">Selecione pelo menos 2 pessoas. A atividade aparecerá para cada participante presente no dia.</div></div>`:'';
     const rotationBlock=mode==='rotating'?`<div class="rotation-info-v24513"><i data-lucide="shuffle" class="ico"></i><div><b>Rodízio automático ativado</b><small>O sistema divide estas atividades entre todos os colaboradores presentes e considera a carga já recebida por cada pessoa.</small></div></div>`:'';
-    const proofBlock=mode==='fixed'?`<div class="field"><label>Comprovação</label><div class="fixed-proof-v24513"><i data-lucide="camera-off" class="ico"></i><div><b>Sem comprovação por foto</b><small>Demandas fixas são concluídas sem exigir foto.</small></div></div><input id="actPhotoRequirement" type="hidden" value="none"></div>`:`<div class="field"><label>Comprovação por foto</label><select id="actPhotoRequirement"><option value="none" ${a.photo_requirement==='none'?'selected':''}>Sem foto</option><option value="after" ${a.photo_requirement==='after'?'selected':''}>Foto depois</option><option value="before_after" ${!a.photo_requirement||a.photo_requirement==='before_after'?'selected':''}>Foto antes e depois</option></select><div class="sub">Escolha somente a comprovação necessária para esta atividade.</div></div>`;
+    const proofBlock=mode==='fixed'||mode==='group'?`<div class="field"><label>Comprovação</label><div class="fixed-proof-v24513"><i data-lucide="camera-off" class="ico"></i><div><b>Sem comprovação por foto</b><small>${mode==='group'?'Demandas em grupo são realizadas sem exigir fotos.':'Demandas fixas são concluídas sem exigir foto.'}</small></div></div><input id="actPhotoRequirement" type="hidden" value="none"></div>`:`<div class="field"><label>Comprovação por foto</label><select id="actPhotoRequirement"><option value="none" ${a.photo_requirement==='none'?'selected':''}>Sem foto</option><option value="after" ${a.photo_requirement==='after'?'selected':''}>Foto depois</option><option value="before_after" ${!a.photo_requirement||a.photo_requirement==='before_after'?'selected':''}>Foto antes e depois</option></select><div class="sub">Escolha somente a comprovação necessária para esta atividade.</div></div>`;
     openModal(`<div class="section-head"><div><div class="section-kicker">${modeLabel(mode)}</div><h3>${id?'Editar':'Adicionar'} ${modeTitle}</h3><div class="sub">Configure a atividade sem alterar a lógica das outras categorias.</div></div></div>
       <input id="actDemandMode" type="hidden" value="${mode}">
       <div class="field"><label>Nome</label><input id="actName" value="${esc(a.name||'')}" placeholder="Ex.: Conferir termohigrômetro"></div>
@@ -4240,7 +4240,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
   window.saveActivity=async function(id){
     const name=document.getElementById('actName')?.value.trim()||'',instruction=document.getElementById('actInstr')?.value.trim()||'',mode=document.getElementById('actDemandMode')?.value||'rotating';
-    const active=!!document.getElementById('actActive')?.checked,sort=Number(document.getElementById('actSort')?.value||0),existing=document.getElementById('actRefExisting')?.value||'',urgency=document.getElementById('actUrgency')?.value||'normal',dayPart=document.getElementById('actDayPart')?.value||'any',type=document.getElementById('actScheduleType')?.value||'daily',photoReq=mode==='fixed'?'none':(document.getElementById('actPhotoRequirement')?.value||'none');
+    const active=!!document.getElementById('actActive')?.checked,sort=Number(document.getElementById('actSort')?.value||0),existing=document.getElementById('actRefExisting')?.value||'',urgency=document.getElementById('actUrgency')?.value||'normal',dayPart=document.getElementById('actDayPart')?.value||'any',type=document.getElementById('actScheduleType')?.value||'daily',photoReq=(mode==='fixed'||mode==='group')?'none':(document.getElementById('actPhotoRequirement')?.value||'none');
     const weekdays=type==='specific_days'?WORKDAY_ORDER.filter(d=>document.getElementById('actDay-'+d)?.checked):(type==='daily'?[1,2,3,4,5,6]:[]);
     const dates=type==='specific_days'?parseCsvValues('actSpecificDates',/^\d{4}-\d{2}-\d{2}$/):[];
     const times=type==='on_demand'?[]:parseActivityTimeSlotsV245131('actTimeSlots');
@@ -4311,7 +4311,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     if(!groups.length)return `<section class="group-day-section-v24518"><div class="group-day-head-v24518"><div><div class="section-kicker">Demandas em grupo do dia</div><h4><i data-lucide="users-round" class="ico"></i>Atividades em grupo</h4><div class="sub">Nenhum modelo em grupo está cadastrado. Cadastre o modelo em <b>Atividades → Demandas em grupo</b>; os participantes, horários e prioridade serão escolhidos aqui.</div></div></div></section>`;
     return `<section class="group-day-section-v24518"><div class="group-day-head-v24518"><div><div class="section-kicker">Configuração diária</div><h4><i data-lucide="users-round" class="ico"></i>Demandas em grupo do dia</h4><div class="sub">Escolha apenas as demandas que acontecerão em <b>${brDate(document.getElementById('manageDate')?.value||isoLocal())}</b>. O grupo pode ser diferente a cada dia.</div></div><span class="status-pill reviewing">${groups.filter(g=>g.selected_today).length} selecionada(s)</span></div><div class="group-day-list-v24518">${groups.map(g=>{
       const id=String(g.activity_id),sel=!!g.selected_today,members=(Array.isArray(g.employee_ids)?g.employee_ids:[]).map(String),times=groupTimeTextV24518(g.time_slots);
-      return `<article id="prepGroupCard-${id}" class="group-day-card-v24518 ${sel?'is-selected':''}"><label class="group-day-toggle-v24518"><input id="prepGroupUse-${id}" class="v24518-group-use" data-activity-id="${id}" type="checkbox" ${sel?'checked':''} onchange="toggleDayGroupV24518('${id}')"><span><b>${esc(g.activity_name||'Atividade em grupo')}</b><small>${esc(g.activity_instruction||'Sem instrução cadastrada.')}</small></span></label><div id="prepGroupConfig-${id}" class="group-day-config-v24518 ${sel?'':'hidden'}"><div class="group-day-grid-v24518"><div class="field"><label>Horário(s) do dia</label><input id="prepGroupTimes-${id}" value="${esc(times)}" placeholder="Ex.: 09:00 ou 09:00, 15:00"><div class="sub">Pode informar um ou mais horários. Deixe em branco se ainda não houver horário definido.</div></div><div class="field"><label>Prioridade do dia</label><select id="prepGroupUrgency-${id}">${groupUrgencyOptionsV24518(g.urgency)}</select><div class="sub">A prioridade vale somente para esta data.</div></div></div><div class="field"><label>Participantes de hoje</label><div class="group-day-people-v24518">${emps.map(e=>{const eid=String(e.employee_id),checked=members.includes(eid);return `<label class="group-day-person-v24518"><input type="checkbox" data-group-employee="${eid}" name="prepGroupMember-${id}" value="${eid}" ${checked?'checked':''}><span>${esc(e.employee_name)}</span></label>`}).join('')}</div><div class="sub">Selecione pelo menos 2 pessoas que estejam marcadas como <b>Presente</b>.</div></div><div class="group-day-hint-v24518"><i data-lucide="camera" class="ico"></i><span><b>Comprovação:</b> ${esc(groupPhotoLabelV24518(g.photo_requirement))}. Participantes, horários e prioridade não ficam presos ao cadastro do modelo.</span></div></div></article>`;
+      return `<article id="prepGroupCard-${id}" class="group-day-card-v24518 ${sel?'is-selected':''}"><label class="group-day-toggle-v24518"><input id="prepGroupUse-${id}" class="v24518-group-use" data-activity-id="${id}" type="checkbox" ${sel?'checked':''} onchange="toggleDayGroupV24518('${id}')"><span><b>${esc(g.activity_name||'Atividade em grupo')}</b><small>${esc(g.activity_instruction||'Sem instrução cadastrada.')}</small></span></label><div id="prepGroupConfig-${id}" class="group-day-config-v24518 ${sel?'':'hidden'}"><div class="group-day-grid-v24518"><div class="field"><label>Horário(s) do dia</label><input id="prepGroupTimes-${id}" value="${esc(times)}" placeholder="Ex.: 09:00 ou 09:00, 15:00"><div class="sub">Pode informar um ou mais horários. Deixe em branco se ainda não houver horário definido.</div></div><div class="field"><label>Prioridade do dia</label><select id="prepGroupUrgency-${id}">${groupUrgencyOptionsV24518(g.urgency)}</select><div class="sub">A prioridade vale somente para esta data.</div></div></div><div class="field"><label>Participantes de hoje</label><div class="group-day-people-v24518">${emps.map(e=>{const eid=String(e.employee_id),checked=members.includes(eid);return `<label class="group-day-person-v24518"><input type="checkbox" data-group-employee="${eid}" name="prepGroupMember-${id}" value="${eid}" ${checked?'checked':''}><span>${esc(e.employee_name)}</span></label>`}).join('')}</div><div class="sub">Selecione pelo menos 2 pessoas que estejam marcadas como <b>Presente</b>.</div></div><div class="group-day-hint-v24518"><i data-lucide="camera-off" class="ico"></i><span><b>Sem comprovação por foto.</b> Participantes, horários e prioridade não ficam presos ao cadastro do modelo.</span></div></div></article>`;
     }).join('')}</div></section>`;
   }
 
@@ -4357,13 +4357,13 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const found=(activitiesAdmin||[]).find(x=>String(x.id)===String(id)),mode=forcedMode||(found?.activity_mode||'rotating');if(mode!=='group')return baseEditActivityV24518(id,forcedMode);
     const a=found||{name:'',instruction:'',active:true,sort_order:(activitiesAdmin||[]).length+1,reference_photo_url:'',photo_requirement:'none',activity_mode:'group'};pendingActivityPhotoFile=null;
     const refValue=a._reference_storage_ref||a.reference_photo_url||'',preview=a._secure_reference_url||a.reference_photo_url||'';
-    openModal(`<div class="section-head"><div><div class="section-kicker">Demanda em grupo</div><h3>${id?'Editar':'Cadastrar'} modelo de atividade</h3><div class="sub">Cadastre somente o que é permanente. A composição do grupo é definida no Preparar o dia.</div></div></div><input id="actDemandMode" type="hidden" value="group"><input id="actSort" type="hidden" value="${Number(a.sort_order||0)}"><div class="field"><label>Nome</label><input id="actName" value="${esc(a.name||'')}" placeholder="Ex.: Recebimento de mercadorias"></div><div class="field"><label>Instrução</label><textarea id="actInstr" placeholder="Descreva o processo que o grupo deve executar">${esc(a.instruction||'')}</textarea></div><div class="group-template-note-v24518"><i data-lucide="calendar-cog" class="ico"></i><div><b>Definido somente no Preparar o dia</b><small>Participantes, horário(s) e prioridade serão escolhidos para cada data. Nada disso fica fixo neste cadastro.</small></div></div><div class="field"><label>Comprovação por foto</label><select id="actPhotoRequirement"><option value="none" ${a.photo_requirement==='none'?'selected':''}>Sem foto</option><option value="after" ${a.photo_requirement==='after'?'selected':''}>Foto depois</option><option value="before_after" ${a.photo_requirement==='before_after'?'selected':''}>Foto antes e depois</option></select></div><div class="field"><label>Foto de referência do padrão (opcional)</label>${preview?`<img id="actRefPreview" class="reference-preview" src="${preview}">`:`<img id="actRefPreview" class="reference-preview hidden">`}<input id="actRefFile" type="file" accept="image/*" onchange="previewActivityReference(this)"><input id="actRefExisting" type="hidden" value="${esc(refValue)}"><div class="sub">Mostra o padrão esperado da atividade; não é a comprovação da execução.</div></div><label class="toggle-line"><input id="actActive" type="checkbox" ${a.active?'checked':''}> Atividade ativa</label><div class="actions"><button class="btn" onclick="saveActivity('${id||''}')"><i data-lucide="save" class="ico"></i>Salvar modelo</button><button class="btn light" onclick="pendingActivityPhotoFile=null;closeModal()">Cancelar</button></div>`);refreshIcons();
+    openModal(`<div class="section-head"><div><div class="section-kicker">Demanda em grupo</div><h3>${id?'Editar':'Cadastrar'} modelo de atividade</h3><div class="sub">Cadastre somente o que é permanente. A composição do grupo é definida no Preparar o dia.</div></div></div><input id="actDemandMode" type="hidden" value="group"><input id="actSort" type="hidden" value="${Number(a.sort_order||0)}"><div class="field"><label>Nome</label><input id="actName" value="${esc(a.name||'')}" placeholder="Ex.: Recebimento de mercadorias"></div><div class="field"><label>Instrução</label><textarea id="actInstr" placeholder="Descreva o processo que o grupo deve executar">${esc(a.instruction||'')}</textarea></div><div class="group-template-note-v24518"><i data-lucide="calendar-cog" class="ico"></i><div><b>Definido somente no Preparar o dia</b><small>Participantes, horário(s) e prioridade serão escolhidos para cada data. Nada disso fica fixo neste cadastro.</small></div></div><div class="field"><label>Comprovação</label><div class="fixed-proof-v24513"><i data-lucide="camera-off" class="ico"></i><div><b>Sem comprovação por foto</b><small>Demandas em grupo são realizadas sem exigir fotos.</small></div></div><input id="actPhotoRequirement" type="hidden" value="none"></div><div class="field"><label>Foto de referência do padrão (opcional)</label>${preview?`<img id="actRefPreview" class="reference-preview" src="${preview}">`:`<img id="actRefPreview" class="reference-preview hidden">`}<input id="actRefFile" type="file" accept="image/*" onchange="previewActivityReference(this)"><input id="actRefExisting" type="hidden" value="${esc(refValue)}"><div class="sub">Mostra o padrão esperado da atividade; não é a comprovação da execução.</div></div><label class="toggle-line"><input id="actActive" type="checkbox" ${a.active?'checked':''}> Atividade ativa</label><div class="actions"><button class="btn" onclick="saveActivity('${id||''}')"><i data-lucide="save" class="ico"></i>Salvar modelo</button><button class="btn light" onclick="pendingActivityPhotoFile=null;closeModal()">Cancelar</button></div>`);refreshIcons();
   };
 
   const baseSaveActivityV24518=window.saveActivity;
   window.saveActivity=async function(id){
     const mode=document.getElementById('actDemandMode')?.value||'rotating';if(mode!=='group')return baseSaveActivityV24518(id);
-    const name=document.getElementById('actName')?.value.trim()||'',instruction=document.getElementById('actInstr')?.value.trim()||'',active=!!document.getElementById('actActive')?.checked,sort=Number(document.getElementById('actSort')?.value||0),existing=document.getElementById('actRefExisting')?.value||'',photoReq=document.getElementById('actPhotoRequirement')?.value||'none';if(!name){toast('Informe o nome da atividade.');return}
+    const name=document.getElementById('actName')?.value.trim()||'',instruction=document.getElementById('actInstr')?.value.trim()||'',active=!!document.getElementById('actActive')?.checked,sort=Number(document.getElementById('actSort')?.value||0),existing=document.getElementById('actRefExisting')?.value||'',photoReq='none';if(!name){toast('Informe o nome da atividade.');return}
     const payload=ref=>({p_token:leaderToken,p_id:id||null,p_name:name,p_instruction:instruction,p_active:active,p_sort:sort,p_reference:ref,p_urgency:'normal',p_day_part:'any',p_schedule_type:'on_demand',p_schedule_weekdays:[],p_specific_dates:[],p_time_slots:[],p_photo_requirement:photoReq,p_activity_mode:'group',p_fixed_employee:null,p_group_employees:[]});
     try{let rid=await rpc('leader_save_activity_v5',payload(existing));if(pendingActivityPhotoFile){toast('Enviando foto de referência...');const url=await uploadActivityReference(rid,pendingActivityPhotoFile);rid=await rpc('leader_save_activity_v5',{...payload(url),p_id:rid})}pendingActivityPhotoFile=null;closeModal();toast('Modelo de demanda em grupo salvo ✓');await loadManagement();if(activeTab==='activities')renderActivitiesAdmin();}catch(e){console.error(e);toast(String(e?.message||'').includes('unauthorized')?'Sua sessão expirou. Entre novamente na Gestão.':'Não foi possível salvar a demanda em grupo.')}
   };
@@ -4433,7 +4433,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const ordered=[...list].sort((a,b)=>Number(a.slot_index||999)-Number(b.slot_index||999)||String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR'));
     const done=ordered.filter(r=>r.status==='completed').length;
     const rows=ordered.map((r,i)=>{
-      const st=actionStatusV24519(r,current),timing=r.scheduled_time?`Horário ${v24Time(r.scheduled_time)}`:dayPartLabel(r.activity_day_part),proof=v24PhotoLabel(r.activity_photo_requirement||'before_after');
+      const st=actionStatusV24519(r,current),timing=r.scheduled_time?`Horário ${v24Time(r.scheduled_time)}`:dayPartLabel(r.activity_day_part),proof=v24PhotoLabel(r.activity_mode==='group'?'none':(r.activity_photo_requirement||'before_after'));
       return `<div class="daily-plan-row ${st.cls} ${current&&String(r.assignment_id)===String(current.assignment_id)?'is-current':''}">
         <div class="daily-plan-number">${i+1}</div><div class="daily-plan-main"><b>${esc(r.activity_name||'Atividade')}</b><small><span><i data-lucide="clock-3" class="ico"></i>${esc(timing)}</span><span><i data-lucide="${(r.activity_photo_requirement||'before_after')==='none'?'camera-off':'camera'}" class="ico"></i>${esc(proof)}</span></small></div><span class="daily-plan-status ${st.cls}"><i data-lucide="${st.icon}" class="ico"></i>${st.label}</span>
       </div>`;
@@ -4660,153 +4660,9 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
 
 <style id="v24529-no-device-pair-style">.team-access-panel{display:none!important}</style>
-<script id="v24529-version-marker">window.V24529='V24.5.29';</script>
+<script id="v24529-version-marker">window.V24529='V24.5.29';
+window.V24531='V24.5.31';</script>
 <!-- V24.5.29: validação/pareamento de aparelho removidos; Rotina abre diretamente e mantém sessão curta por colaborador. -->
-
-<style id="v24530-classic-routine-style">
-/* V24.5.30 — fluxo clássico: nomes -> confirmação -> atividades */
-#teamCards .security-gate{display:none!important}
-</style>
-<script id="v24530-classic-routine-script">
-(function(){
-  if(window.__V24530_CLASSIC_ROUTINE__)return;
-  window.__V24530_CLASSIC_ROUTINE__=true;
-
-  const previousLoadRoutineV24530=window.loadRoutine;
-
-  function updateRoutineHeaderV24530(target){
-    try{
-      const view=new Date(target+'T12:00:00');
-      const week=document.getElementById('weekText');if(week)week.textContent=weekRange(view);
-      const today=document.getElementById('todayText');if(today)today.textContent=view.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
-    }catch(_e){}
-  }
-
-  function applyPauseFromHomeV24530(home){
-    try{
-      globalPauseStateV24411={paused:!!home?.paused,message:home?.pause_message||null,updated_at:null};
-    }catch(_e){}
-  }
-
-  async function loadClassicRoutineV24530(){
-    const target=isoLocal();
-    routineDate=target;
-    updateRoutineHeaderV24530(target);
-
-    const localOp=operationState(target);
-    if(localOp.reason==='sunday'||(localOp.isToday&&!localOp.open)){
-      routine=[];dayPeople=[];selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;
-      renderClosedRoutine(localOp);
-      try{await loadPublicDailyInformation(target)}catch(_e){}
-      return;
-    }
-
-    let home=null;
-    try{
-      home=await rpc('public_routine_home_v1',{});
-    }catch(primaryError){
-      console.warn('Bootstrap principal da Rotina indisponível; usando fallback.',primaryError);
-      try{
-        const [state,cards]=await Promise.all([
-          rpc('public_operation_state_v3',{p_date:target}),
-          rpc('public_routine_cards_v2',{p_date:target})
-        ]);
-        home={ok:!!state?.ok,published:!!state?.published,paused:!!state?.paused,pause_message:state?.pause_message||null,people:Array.isArray(cards)?cards:[],rows:[]};
-      }catch(fallbackError){
-        console.error('Falha no fallback da Rotina',fallbackError);
-        // Não substitui a tela por um cartão de erro. Mantém o último estado visível.
-        if(Array.isArray(dayPeople)&&dayPeople.length){renderRoutine(true);return}
-        const host=document.getElementById('teamCards');
-        if(host)host.innerHTML='<div class="empty-state">Atualizando equipe...</div>';
-        setTimeout(()=>{try{window.loadRoutine(isoLocal())}catch(_e){}},1600);
-        return;
-      }
-    }
-
-    if(!home?.ok){
-      if(Array.isArray(dayPeople)&&dayPeople.length){renderRoutine(true);return}
-      const host=document.getElementById('teamCards');if(host)host.innerHTML='<div class="empty-state">Atualizando equipe...</div>';
-      return;
-    }
-
-    applyPauseFromHomeV24530(home);
-    dayPeople=Array.isArray(home.people)?home.people:[];
-    routine=Array.isArray(home.rows)?home.rows:[];
-    followupUnreadCounts=new Map();
-
-    if(!v24Bool(home.published)){
-      selected=null;selectedEmployeeId=null;coverageExecutorId=null;coverageAssignmentId=null;
-      renderRoutineWaitingForLeader();
-      try{renderRoutinePauseBannerV24411()}catch(_e){}
-      try{await loadPublicDailyInformation(target)}catch(_e){}
-      return;
-    }
-
-    if(selectedEmployeeId){
-      const personStillVisible=dayPeople.some(p=>String(p.employee_id)===String(selectedEmployeeId)&&v24Bool(p.active_today));
-      if(!personStillVisible){selectedEmployeeId=null;selected=null;coverageExecutorId=null;coverageAssignmentId=null}
-      else selected=routine.find(r=>String(r.employee_id)===String(selectedEmployeeId)||(r.is_coverage&&String(r.executor_id)===String(selectedEmployeeId)))||null;
-    }
-
-    renderRoutine(true);
-    if(selectedEmployeeId)renderSelected(true);
-    try{renderRoutinePauseBannerV24411()}catch(_e){}
-    try{applyPausedActivityControlsV24411()}catch(_e){}
-    try{await loadPublicDailyInformation(target)}catch(_e){}
-  }
-
-  window.loadRoutine=async function(date=isoLocal()){
-    // A prévia interna da Gestão continua usando o caminho administrativo existente.
-    try{
-      if(typeof v242IsLeaderPreview==='function'&&v242IsLeaderPreview()&&leaderToken){
-        return await previousLoadRoutineV24530(date);
-      }
-    }catch(_e){}
-    if(syncBusy){routineQueued=true;return}
-    syncBusy=true;
-    try{return await loadClassicRoutineV24530()}
-    finally{
-      syncBusy=false;
-      if(routineQueued){routineQueued=false;setTimeout(()=>window.loadRoutine(isoLocal()),140)}
-    }
-  };
-
-  window.selectPerson=function(employeeId){
-    const p=(dayPeople||[]).find(x=>String(x.employee_id)===String(employeeId));
-    if(!p)return;
-    if(!v24Bool(p.active_today)){toast('Somente quem está marcado como presente pode visualizar a rotina do dia.');return}
-    const safeName=esc(p.employee_name||'colaborador');
-    openModal(`<div class="section-head"><div><div class="section-kicker">CONFIRMAÇÃO</div><h3 style="margin-bottom:6px">Você é ${safeName}?</h3><div class="sub">Confirme seu nome para ver as atividades de hoje.</div></div></div><div class="actions" style="margin-top:18px"><button class="btn mint" onclick="confirmPersonSelectionV24530('${employeeId}')"><i data-lucide="user-check" class="ico"></i>Sim, sou eu</button><button class="btn light" onclick="closeModal()"><i data-lucide="x" class="ico"></i>Cancelar</button></div>`);
-    refreshIcons();
-  };
-
-  window.confirmPersonSelectionV24530=function(employeeId){
-    const p=(dayPeople||[]).find(x=>String(x.employee_id)===String(employeeId));
-    closeModal();
-    if(!p||!v24Bool(p.active_today)){toast('Seu nome não está disponível na rotina de hoje.');return}
-    selectedEmployeeId=employeeId;
-    coverageExecutorId=null;coverageAssignmentId=null;followupsExpandedEmployeeId=null;lastSelectedRenderSignature='';
-    selected=(routine||[]).find(r=>String(r.employee_id)===String(employeeId)||(r.is_coverage&&String(r.executor_id)===String(employeeId)))||null;
-    try{if(typeof v2438ApplyPersonMode==='function')v2438ApplyPersonMode(true)}catch(_e){}
-    renderSelected(true);
-    const box=document.getElementById('selectedActivity');if(box)box.scrollIntoView({behavior:'smooth',block:'nearest'});
-  };
-
-  // Compatibilidade com chamadas antigas do botão de confirmação.
-  window.confirmPersonSelection=window.confirmPersonSelectionV24530;
-  window.v24528RetryRoutine=()=>window.loadRoutine(isoLocal());
-  window.V24530='V24.5.30';
-
-  // Substitui imediatamente qualquer cartão de erro deixado pela versão anterior.
-  setTimeout(()=>{
-    const page=document.getElementById('pageRotina');
-    if(page&&!page.classList.contains('hidden'))window.loadRoutine(isoLocal());
-  },0);
-})();
-</script>
-<script id="v24530-version-marker">window.V24530='V24.5.30';</script>
-<!-- V24.5.30: Rotina clássica restaurada — nomes visíveis, confirmação de identidade e atividades sem validação de aparelho. -->
-
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
