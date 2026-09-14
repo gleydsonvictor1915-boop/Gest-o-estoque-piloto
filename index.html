@@ -2033,7 +2033,7 @@ function v24PresenceLabel(v){return V24_PRESENCE_LABELS[v]||'Presente'}
 function v24Time(v){return v?String(v).slice(0,5):''}
 function v24ScheduleTypeLabel(v){return v==='specific_days'?'Em dias específicos':v==='on_demand'?'Sob demanda':'Diária'}
 function v24PhotoLabel(v){return v==='none'?'Sem foto':v==='after'?'Somente foto depois':'Foto antes e depois'}
-function v24TaskSort(a,b){const sr=s=>s==='in_progress'?0:s==='pending'?1:2;return sr(a.status)-sr(b.status)||String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||(Number(a.slot_index||1)-Number(b.slot_index||1))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR')}
+function v24TaskSort(a,b){const sr=s=>s==='in_progress'?0:s==='pending'?1:2;const mr=r=>{const p=String(r.activity_day_part||'any');return p==='start'?0:(p==='middle'||p==='any'?1:2)};return sr(a.status)-sr(b.status)||mr(a)-mr(b)||String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||(Number(a.slot_index||1)-Number(b.slot_index||1))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR')}
 function v24TasksForPerson(employeeId){return (routine||[]).filter(r=>String(r.employee_id)===String(employeeId)||(r.is_coverage&&String(r.executor_id)===String(employeeId))).sort(v24TaskSort)}
 function v24WorkerBadges(r){const arr=[];if(['critical','high'].includes(r.activity_urgency))arr.push(`<span class="priority-badge ${urgencyClass(r.activity_urgency)}"><i data-lucide="${r.activity_urgency==='critical'?'siren':'triangle-alert'}" class="ico"></i>${r.activity_urgency==='critical'?'Prioridade crítica':'Prioridade alta'}</span>`);if(r.scheduled_time)arr.push(`<span class="priority-badge period"><i data-lucide="clock-3" class="ico"></i>${v24Time(r.scheduled_time)}</span>`);return arr.length?`<div class="priority-badges">${arr.join('')}</div>`:''}
 function v24ErrorMessage(code){return ({invalid_pin:'PIN incorreto.',before_photo_required:'Envie a foto ANTES para iniciar.',before_after_required:'Envie as fotos ANTES e DEPOIS.',after_photo_required:'Envie a foto DEPOIS para finalizar.',another_in_progress:'Finalize a atividade atual antes de iniciar outra.',employee_not_present:'Você não está marcado como presente no dia.',executor_not_present:'Quem vai cobrir não está marcado como presente.',owner_is_present:'Esta atividade não pode ser coberta porque o titular está presente.',not_pending:'Esta atividade já foi iniciada ou concluída.',operation_not_published:'A operação do dia ainda não foi publicada pelo líder.',day_not_prepared:'O dia ainda não foi preparado pelo líder.',not_in_progress:'Esta atividade não está em andamento.',problem_description_required:'Descreva o problema que precisa de ação do líder.',message_required:'Escreva o problema operacional.'})[code]||'Não foi possível concluir esta ação.'}
@@ -2549,7 +2549,7 @@ function v24514TaskStatus(r,current){
 }
 function v24514DailyPlan(list,current){
   if(!Array.isArray(list)||!list.length)return '';
-  const ordered=[...list].sort((a,b)=>Number(a.slot_index||999)-Number(b.slot_index||999)||String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR'));
+  const ordered=[...list].sort(v24TaskSort);
   const done=ordered.filter(r=>r.status==='completed').length;
   const rows=ordered.map((r,i)=>{
     const st=v24514TaskStatus(r,current);
@@ -4662,7 +4662,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 
 <style id="v24529-no-device-pair-style">.team-access-panel{display:none!important}</style>
 <script id="v24529-version-marker">window.V24529='V24.5.29';
-window.V24531='V24.5.32';</script>
+window.V24531='V24.5.33';</script>
 <!-- V24.5.29: validação/pareamento de aparelho removidos; Rotina abre diretamente e mantém sessão curta por colaborador. -->
 </body></html>
 
@@ -4682,7 +4682,7 @@ window.V24531='V24.5.32';</script>
 
 <!-- V24.5.26: galeria de fotos estabilizada; links protegidos renovados ao abrir e painéis da Visão Geral preservam o estado. -->
 
-<!-- V24.5.32: justificativa de atividade rotativa não realizada. -->
+<!-- V24.5.33: justificativa de atividade rotativa não realizada. -->
 <style id="v24532-skip-rotation-style">
 .v24532-skip-action{margin-top:10px}
 .v24532-skip-action .btn{border:1px solid #edc98f;background:#fff9ec;color:#7a4b00;width:100%}
@@ -4762,7 +4762,7 @@ window.V24531='V24.5.32';</script>
     return box.innerHTML;
   };
 
-  window.V24532='V24.5.32';
+  window.V24532='V24.5.33';
 })();
 </script>
 <style id="v24532-skip-plan-style">
@@ -4793,3 +4793,5 @@ window.V24531='V24.5.32';</script>
 })();
 </script>
 
+
+<!-- V24.5.33: atividades rotativas respeitam a ordem Inicio > Meio/Qualquer > Final; programacao diaria usa a mesma regra. -->
