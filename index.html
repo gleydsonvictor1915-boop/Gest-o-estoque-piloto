@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.12-v24.5.31-grupo-sem-comprovacao" />
+<meta name="app-version" content="2026.09.14-v24.5.34-upload-android" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -1219,9 +1219,9 @@ async function normalizeImageFile(file,maxSide=1600,quality=.84){
     return blob||file;
    }
   }
-  // Fallback controlado: só decodifica pelo <img> arquivos já pequenos.
-  // Em fotos grandes, envia o original em vez de arriscar travar aparelhos com pouca memória.
-  if(Number(file.size||0)>2*1024*1024)return file;
+  // Fallback compatível com Android/iOS quando createImageBitmap não existe.
+  // Reduz também arquivos grandes para evitar rejeição por tamanho no upload assinado.
+  if(Number(file.size||0)>14*1024*1024)throw new Error('A foto ficou muito grande para o aparelho. Tire novamente sem zoom.');
   const orientation=await readJpegOrientation(file);
   url=URL.createObjectURL(file);
   const img=await new Promise((resolve,reject)=>{const x=new Image();x.onload=()=>resolve(x);x.onerror=reject;x.src=url});
@@ -1251,9 +1251,16 @@ async function normalizeImageFile(file,maxSide=1600,quality=.84){
  }
 }
 async function prepareProofImage(file){
- if(!file||!/^image\//.test(file.type||''))return file;
- // Uma única passagem reduz picos de RAM em Android. Fotos são tratadas uma por vez.
- return await normalizeImageFile(file,1080,.72)
+ if(!file||!/^image\//.test(file.type||''))throw new Error('Selecione uma imagem válida.');
+ // Força uma versão leve e padronizada para Android/iOS antes do upload.
+ // Isso evita falhas com fotos HEIC/HEIF, formatos incomuns ou arquivos muito grandes.
+ const blob=await normalizeImageFile(file,900,.66);
+ if(!blob||!blob.size)throw new Error('Não foi possível preparar a foto. Tente tirar a foto novamente.');
+ const mime=(blob.type||'').toLowerCase();
+ if(mime!=='image/jpeg'&&mime!=='image/png'&&mime!=='image/webp'){
+   throw new Error('Formato de foto não compatível. Tire uma nova foto pela câmera.');
+ }
+ return blob;
 }
 function formatBytes(bytes){const n=Number(bytes||0);if(n<1024)return `${n} B`;if(n<1024*1024)return `${(n/1024).toFixed(n<10240?1:0)} KB`;if(n<1024*1024*1024)return `${(n/1024/1024).toFixed(n<10*1024*1024?1:0)} MB`;return `${(n/1024/1024/1024).toFixed(2)} GB`}
 function beginAction(key){if(actionBusy.has(key)){toast('Aguarde a operação atual terminar');return false}actionBusy.add(key);return true}
@@ -3515,7 +3522,25 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     if(!canExecuteRoutineAction())throw new Error(operationBlockedMessage());const row=(routine||[]).find(x=>String(x.assignment_id)===String(assignment));const eid=(phase==='before'&&coverageExecutorId)?coverageExecutorId:(row?.executor_id||row?.employee_id||selectedEmployeeId);if(!eid)throw new Error('Identidade do colaborador não encontrada');
     const token=await validEmployeeToken(eid);if(!token){openEmployeePin(eid,async()=>uploadProofBlob(blob,phase,assignment,mime,opts),'Confirmar envio da foto');return}
     const silent=opts.silent===true,refresh=opts.refresh!==false;if(!silent)toast('Enviando foto...');
-    const prep=await secureMedia('prepare_proof_upload',{employee_token:token,assignment_id:assignment,phase,mime,size:blob.size});const {error}=await sb.storage.from('proofs').uploadToSignedUrl(prep.path,prep.token,blob,{contentType:mime,cacheControl:'3600'});if(error)throw error;
+    let prep;
+    try{
+      prep=await secureMedia('prepare_proof_upload',{employee_token:token,assignment_id:assignment,phase,mime,size:blob.size});
+    }catch(e){
+      const code=String(e?.code||e?.message||'');
+      if(/mime|format|heic|heif|size|large|too_large/i.test(code))throw new Error('A foto do Android está em um formato ou tamanho não compatível. O sistema tentou preparar uma versão leve, mas não conseguiu. Tire uma nova foto pela câmera sem edição.');
+      throw e;
+    }
+    let uploadError=null;
+    for(let attempt=0;attempt<2;attempt++){
+      const res=await sb.storage.from('proofs').uploadToSignedUrl(prep.path,prep.token,blob,{contentType:'image/jpeg',cacheControl:'3600'});
+      uploadError=res?.error||null;
+      if(!uploadError)break;
+      if(attempt===0)await new Promise(r=>setTimeout(r,700));
+    }
+    if(uploadError){
+      const raw=String(uploadError.message||uploadError||'');
+      throw new Error(/network|fetch|failed to fetch|timeout|offline/i.test(raw)?'Não foi possível enviar a foto. Verifique a internet e tente novamente.':'Não foi possível salvar a foto. Tente tirar a foto novamente.');
+    }
     const r=await rpc('add_proof_secure_v1',{p_employee_token:token,p_assignment:assignment,p_phase:phase,p_path:prep.path});if(!r?.ok)throw new Error(r?.error||'proof_register_failed');if(!silent)toast('Foto enviada ✓');if(refresh)await loadRoutine(isoLocal());
   };
 
