@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.14-v24.5.35-delete-proof" />
+<meta name="app-version" content="2026.09.14-v24.5.36-delete-proof-ui" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -3542,13 +3542,16 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       throw new Error(/network|fetch|failed to fetch|timeout|offline/i.test(raw)?'Não foi possível enviar a foto. Verifique a internet e tente novamente.':'Não foi possível salvar a foto. Tente tirar a foto novamente.');
     }
     const r=await rpc('add_proof_secure_v1',{p_employee_token:token,p_assignment:assignment,p_phase:phase,p_path:prep.path});if(!r?.ok)throw new Error(r?.error||'proof_register_failed');
-    if(refresh)await loadRoutine(isoLocal());
+    // Mostra a decisão IMEDIATAMENTE após o envio. A atualização da rotina vem depois,
+    // para que um refresh lento/erro de rede nunca esconda a opção de apagar a foto.
     openUploadedProofActions(r.id,assignment,phase,eid);
+    if(refresh){try{await loadRoutine(isoLocal())}catch(e){console.warn('Rotina não atualizou após envio da foto',e)}}
   };
 
   window.openUploadedProofActions=async function(proofId,assignment,phase,eid){
     const label=phase==='before'?'ANTES':'DEPOIS';
-    openModal(`<div class="section-head"><div><div class="section-kicker">Foto enviada</div><h3>${label}: confira a foto</h3><div class="sub">A foto já foi salva. Caso tenha ficado errada, você pode apagá-la agora e tirar outra.</div></div></div><div class="actions"><button class="btn danger" onclick="deleteUploadedProof('${String(proofId)}','${String(assignment)}','${String(eid)}')"><i data-lucide="trash-2" class="ico"></i>Apagar esta foto</button><button class="btn mint" onclick="closeModal()"><i data-lucide="check" class="ico"></i>Foto correta</button></div>`);refreshIcons();
+    const pid=String(proofId||'');
+    openModal(`<div class="section-head"><div><div class="section-kicker">Foto enviada ✓</div><h3>${label}: confira a foto</h3><div class="sub">A foto foi salva. Escolha o que deseja fazer:</div></div></div><div style="display:grid;gap:10px;margin-top:14px"><button class="btn danger" style="min-height:52px;width:100%;justify-content:center;font-weight:800" ${pid?`onclick="deleteUploadedProof('${pid}','${String(assignment)}','${String(eid)}')"`:'disabled'}><i data-lucide="trash-2" class="ico"></i>Apagar esta foto e tirar outra</button><button class="btn mint" style="min-height:52px;width:100%;justify-content:center;font-weight:800" onclick="closeModal()"><i data-lucide="check-circle-2" class="ico"></i>Foto correta, continuar</button></div>${pid?'':'<div class="sub" style="margin-top:10px;color:#b45309">Não foi possível identificar o registro da foto para exclusão.</div>'}`);refreshIcons();
   };
 
   window.deleteUploadedProof=async function(proofId,assignment,eid){
