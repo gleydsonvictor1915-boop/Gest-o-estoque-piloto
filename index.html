@@ -4459,6 +4459,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 .person .role.v24519-count{white-space:normal;line-height:1.3}
 @media(max-width:680px){.fixed-reminder-row-v24519{grid-template-columns:48px minmax(0,1fr)}.fixed-reminder-time-v24519{width:48px}.fixed-reminder-badge-v24519{grid-column:2;justify-self:start}.fixed-reminders-head-v24519{align-items:flex-start}.fixed-reminders-count-v24519{font-size:10px}}
 </style>
+<!-- V24.5.52: card status treats not_performed as resolved, not pending -->
 <script id="v24519-fixed-reminders-script">
 (function(){
   if(window.__V24519_FIXED_REMINDERS__)return;window.__V24519_FIXED_REMINDERS__=true;
@@ -4540,7 +4541,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const rows=Array.isArray(dayPeople)?dayPeople:[];
     cards.forEach((card,i)=>{
       const p=rows[i];if(!p)return;
-      const reminders=Number(p.reminder_count||0),actions=Number(p.action_count ?? Math.max(0,Number(p.assignment_count||0)-reminders)),done=Number(p.completed_count||0),running=Number(p.in_progress_count||0);
+      const reminders=Number(p.reminder_count||0),actions=Number(p.action_count ?? Math.max(0,Number(p.assignment_count||0)-reminders)),done=Number(p.completed_count||0),running=Number(p.in_progress_count||0),open=Number(p.open_count||0),justified=Math.max(0,actions-done-running-open);
       const small=[...card.querySelectorAll('small.role')].pop();
       if(small){
         small.classList.add('v24519-count');
@@ -4551,8 +4552,10 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       const status=card.querySelector('.status');if(status){status.className='status';
         if(!v24Bool(p.active_today)){status.classList.add('absent');status.textContent='Ausente'}
         else if(actions===0&&reminders>0){status.textContent='Lembretes'}
-        else if(actions>0&&done>=actions){status.classList.add('done');status.textContent='Concluída'}
         else if(running>0){status.classList.add('run');status.textContent='Em andamento'}
+        else if(open>0){status.textContent='Pendente'}
+        else if(actions>0&&done>=actions){status.classList.add('done');status.textContent='Concluída'}
+        else if(actions>0&&justified>0){status.classList.add('done');status.textContent='Justificada'}
         else status.textContent='Pendente';
       }
     });
