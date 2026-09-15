@@ -4710,7 +4710,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 window.V24531='V24.5.33';</script>
 <!-- V24.5.29: validação/pareamento de aparelho removidos; Rotina abre diretamente e mantém sessão curta por colaborador. -->
 
-<!-- V24.5.37: corrigido envio da justificativa de atividade não realizada.
+<!-- V24.5.38: corrigido envio da justificativa de atividade não realizada.
      O registro não fica bloqueado pelo horário da operação; o backend valida a permissão.
      Também mostra o erro real retornado pelo RPC para evitar falha silenciosa. -->
 <script id="v24537-skip-fix">
@@ -4747,6 +4747,60 @@ window.V24531='V24.5.33';</script>
       console.error('employee_skip_assignment_v1',err);
       const code=err?.code||err?.details||err?.message||'erro desconhecido';
       toast('Não foi possível registrar a justificativa: '+String(code).slice(0,110));
+    }finally{endAction(key)}
+  };
+})();
+</script>
+
+
+<!-- V24.5.39: justificativa não realizada liberada mesmo quando ação de execução está bloqueada; backend continua validando a justificativa. -->
+<script id="v24538-skip-final-fix">
+(function(){
+  window.__V24538_SKIP_FINAL_FIX__=true; window.V24540='V24.5.40'; window.V24539='V24.5.39';
+  window.v24532ConfirmSkip=async function(assignmentId,employeeId){
+    // Justificar uma atividade não realizada não depende da permissão de iniciar/finalizar a operação.
+    // A própria RPC valida sessão, presença, dia publicado e se a atividade ainda está pendente.
+    const row=(routine||[]).find(x=>String(x.assignment_id)===String(assignmentId));
+    const targetEmployee=String(row?.executor_id||row?.employee_id||employeeId||'');
+    if(!row||!targetEmployee){toast('Não foi possível identificar o colaborador desta atividade.');return}
+    if(String(row.activity_mode||'rotating')!=='rotating'||row.status!=='pending'){toast('Esta atividade já não está disponível para justificativa.');return}
+    const reason=(document.getElementById('skipReason')?.value||'').trim();
+    const category=document.getElementById('skipCategory')?.value||'Outra situação';
+    if(!reason){toast('Informe a justificativa.');document.getElementById('skipReason')?.focus();return}
+    const key='skip:'+assignmentId;
+    if(!beginAction(key))return;
+    try{
+      let token=await validEmployeeToken(targetEmployee);
+      if(!token){
+        const session=await rpc('employee_open_session_v3',{p_employee:targetEmployee});
+        if(!session?.ok||!session?.token){
+          const map={employee_not_present:'Somente quem está marcado como presente pode registrar a justificativa.',operation_not_published:'A operação de hoje ainda não foi publicada.',employee_not_found:'Colaborador não encontrado.',try_again_later:'Aguarde um momento e tente novamente.',try_again_later:'Aguarde alguns segundos e tente novamente.'};
+          toast(map[session?.error]||('Não foi possível confirmar o colaborador: '+String(session?.error||'erro desconhecido')));
+          return;
+        }
+        saveEmployeeAuth(session);
+        token=session.token;
+      }
+      const res=await rpc('employee_skip_assignment_v1',{
+        p_employee_token:token,
+        p_assignment:assignmentId,
+        p_reason:reason,
+        p_category:category
+      });
+      if(!res?.ok){
+        const msg=v24ErrorMessage(res?.error)||('Não foi possível registrar a justificativa ('+(res?.error||'erro desconhecido')+').');
+        toast(msg);
+        return;
+      }
+      closeModal();
+      toast('Justificativa registrada. A atividade foi marcada como não realizada.');
+      selected=null;
+      selectedEmployeeId=targetEmployee;
+      await loadRoutine(isoLocal());
+    }catch(err){
+      console.error('employee_skip_assignment_v1',err);
+      const code=err?.code||err?.message||'erro desconhecido';
+      toast('Não foi possível registrar a justificativa: '+String(code).slice(0,120));
     }finally{endAction(key)}
   };
 })();
