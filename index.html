@@ -4895,7 +4895,7 @@ window.V24531='V24.5.33';</script>
 })();
 </script>
 
-</body></html>
+<script id="v24550-reset-hardening">/* reset edge v3 */</script></body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
 <!-- V24.5.16: edição de atividades publicadas liberada; pendências automáticas de hoje são reconciliadas sem alterar execuções já iniciadas. -->
@@ -5054,7 +5054,7 @@ window.V24531='V24.5.33';</script>
   window.commitQuickResetDay=async function(){
     const phrase=(document.getElementById('quickResetDayConfirm')?.value||'').trim().toUpperCase();if(phrase!=='REINICIAR DIA'){toast('Digite REINICIAR DIA para confirmar');return}
     const btn=document.getElementById('quickResetDayBtn');if(btn)btn.disabled=true;
-    try{const d=isoLocal();await callOperationResetEdge({action:'commit',from:d,to:d,include_suggestions:true,include_presence:true,confirmation:'REINICIAR'});closeModal();toast('Dia atual reiniciado. As atividades foram recriadas como pendentes.');await loadManagement();await loadRoutine(d)}catch(e){console.error(e);toast(e.code==='primary_only'?'Somente o Gestor principal pode fazer isso':'Não foi possível reiniciar o dia.')}finally{if(btn)btn.disabled=false}
+    try{const d=isoLocal();await callOperationResetEdge({action:'commit',from:d,to:d,include_suggestions:true,include_presence:true,confirmation:'REINICIAR'});closeModal();toast('Dia atual reiniciado. As atividades foram recriadas como pendentes.');await loadManagement();await loadRoutine(d)}catch(e){console.error(e);toast(e.code==='primary_only'?'Somente o Gestor principal pode fazer isso':`Não foi possível reiniciar o dia${e.stage?` (${e.stage})`:''}. ${e.message||''}`)}finally{if(btn)btn.disabled=false}
   };
   async function quickResetAll(){
     if(!currentManager?.is_primary){toast('Somente o Gestor principal pode zerar a operação.');return}
@@ -5072,7 +5072,7 @@ window.V24531='V24.5.33';</script>
   window.commitQuickResetAll=async function(){
     const phrase=(document.getElementById('quickResetAllConfirm')?.value||'').trim().toUpperCase();if(phrase!=='ZERAR TUDO'){toast('Digite ZERAR TUDO para confirmar');return}
     const btn=document.getElementById('quickResetAllBtn');if(btn)btn.disabled=true;
-    try{const today=isoLocal();await callOperationResetEdge({action:'commit',from:'2026-01-01',to:today,include_suggestions:true,include_presence:true,confirmation:'REINICIAR'});closeModal();toast('Projeto zerado. Equipe e atividades foram preservadas.');await loadManagement();await loadRoutine(today)}catch(e){console.error(e);toast(e.code==='primary_only'?'Somente o Gestor principal pode fazer isso':'Não foi possível zerar o projeto.')}finally{if(btn)btn.disabled=false}
+    try{const today=isoLocal();await callOperationResetEdge({action:'commit',from:'2026-01-01',to:today,include_suggestions:true,include_presence:true,confirmation:'REINICIAR'});closeModal();toast('Projeto zerado. Equipe e atividades foram preservadas.');await loadManagement();await loadRoutine(today)}catch(e){console.error(e);toast(e.code==='primary_only'?'Somente o Gestor principal pode fazer isso':`Não foi possível zerar o projeto${e.stage?` (${e.stage})`:''}. ${e.message||''}`)}finally{if(btn)btn.disabled=false}
   };
   function addControls(){
     const host=document.getElementById('tab-dayprep');if(!host||host.querySelector('#dayprepResetZone'))return;
