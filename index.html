@@ -779,6 +779,12 @@ input,select,textarea{max-width:100%}
 }
 </style>
 
+
+<style id="v24542-proof-review-ui">
+.proof-review-v24542{display:grid;gap:0;width:100%;max-width:520px}.proof-review-head-v24542{display:flex;align-items:center;gap:12px;min-width:0;margin:0 0 12px}.proof-review-icon-v24542{width:46px;height:46px;flex:0 0 46px;border-radius:14px;background:#eaf8f4;color:#117861;display:grid;place-items:center}.proof-review-icon-v24542 .ico{width:23px;height:23px}.proof-review-title-v24542{min-width:0}.proof-review-title-v24542 h3{margin:2px 0 0;font-size:20px;line-height:1.18;overflow-wrap:anywhere}.proof-review-note-v24542{padding:12px 13px;border:1px solid #dce9ee;background:#f7fbfc;border-radius:14px;color:#587184;font-size:13px;line-height:1.45;margin-bottom:16px}.proof-review-actions-v24542{display:grid;gap:10px}.proof-review-actions-v24542 .btn{width:100%;min-height:54px;padding:12px 14px;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;line-height:1.2;white-space:normal}.proof-review-actions-v24542 .btn .ico{width:19px;height:19px;flex:0 0 auto}.proof-review-warning-v24542{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff7e8;color:#9a6510;font-size:12px;line-height:1.4}
+@media(min-width:761px){.proof-review-actions-v24542{grid-template-columns:1fr 1fr}.proof-review-actions-v24542 .btn{min-height:56px}}
+@media(max-width:760px){.proof-review-v24542{max-width:none}.proof-review-head-v24542{align-items:flex-start}.proof-review-title-v24542 h3{font-size:18px}.proof-review-actions-v24542 .btn{min-height:56px;font-size:14px}.proof-review-note-v24542{font-size:13px;margin-bottom:14px}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -3551,7 +3557,19 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
   window.openUploadedProofActions=async function(proofId,assignment,phase,eid){
     const label=phase==='before'?'ANTES':'DEPOIS';
     const pid=String(proofId||'');
-    openModal(`<div class="section-head"><div><div class="section-kicker">Foto enviada ✓</div><h3>${label}: confira a foto</h3><div class="sub">A foto foi salva. Escolha o que deseja fazer:</div></div></div><div style="display:grid;gap:10px;margin-top:14px"><button class="btn danger" style="min-height:52px;width:100%;justify-content:center;font-weight:800" ${pid?`onclick="deleteUploadedProof('${pid}','${String(assignment)}','${String(eid)}')"`:'disabled'}><i data-lucide="trash-2" class="ico"></i>Apagar esta foto e tirar outra</button><button class="btn mint" style="min-height:52px;width:100%;justify-content:center;font-weight:800" onclick="closeModal()"><i data-lucide="check-circle-2" class="ico"></i>Foto correta, continuar</button></div>${pid?'':'<div class="sub" style="margin-top:10px;color:#b45309">Não foi possível identificar o registro da foto para exclusão.</div>'}`);refreshIcons();
+    openModal(`<div class="proof-review-v24542">
+      <div class="proof-review-head-v24542">
+        <div class="proof-review-icon-v24542"><i data-lucide="image-check" class="ico"></i></div>
+        <div class="proof-review-title-v24542"><div class="section-kicker">Foto enviada</div><h3>${label}: confira a foto</h3></div>
+      </div>
+      <div class="proof-review-note-v24542">A foto foi salva com sucesso. Confirme se ela está correta antes de continuar.</div>
+      <div class="proof-review-actions-v24542">
+        <button type="button" class="btn danger" ${pid?`onclick="deleteUploadedProof('${pid}','${String(assignment)}','${String(eid)}')"`:'disabled'}><i data-lucide="trash-2" class="ico"></i><span>Apagar foto e tirar outra</span></button>
+        <button type="button" class="btn mint" onclick="closeModal()"><i data-lucide="check-circle-2" class="ico"></i><span>Foto correta, continuar</span></button>
+      </div>
+      ${pid?'':'<div class="proof-review-warning-v24542">Não foi possível identificar o registro da foto para exclusão.</div>'}
+    </div>`);
+    refreshIcons();
   };
 
   window.deleteUploadedProof=async function(proofId,assignment,eid){
