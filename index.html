@@ -4825,6 +4825,76 @@ window.V24531='V24.5.33';</script>
 })();
 </script>
 
+
+<!-- V24.5.45: fluxo final da justificativa simplificado e resiliente. -->
+<script id="v24545-skip-hard-fix">
+(function(){
+  window.V24545='V24.5.45';
+  function skipError(code){
+    return ({
+      employee_auth_required:'A sessão do colaborador expirou. Tente enviar novamente.',
+      wrong_employee:'Essa atividade não pertence ao colaborador selecionado.',
+      not_pending:'Essa atividade já foi iniciada ou finalizada.',
+      operation_paused:'A operação está pausada no momento.',
+      operation_not_published:'A operação de hoje ainda não foi publicada.',
+      wrong_work_date:'Essa atividade pertence a outra data.',
+      only_rotating:'Essa opção vale somente para atividades rotativas.',
+      employee_not_present:'O colaborador precisa estar marcado como presente.',
+      reason_required:'Digite a justificativa antes de enviar.',
+      reason_too_long:'A justificativa ficou muito longa.',
+      try_again_later:'Aguarde alguns segundos e tente novamente.'
+    })[code] || ('Não foi possível registrar a justificativa ('+String(code||'erro desconhecido')+').');
+  }
+  window.v24532OpenSkipModal=function(assignmentId,employeeId){
+    const row=(routine||[]).find(x=>String(x.assignment_id)===String(assignmentId));
+    if(!row||String(row.activity_mode||'rotating')!=='rotating'||row.status!=='pending'){
+      toast('Essa atividade não está mais disponível para justificativa.');return;
+    }
+    const safeA=esc(String(assignmentId)),safeE=esc(String(employeeId||row.executor_id||row.employee_id||''));
+    openModal(`<div class="section-head"><div><div class="section-kicker">NÃO REALIZADA</div><h3>Justificar atividade</h3><div class="sub">Digite o motivo pelo qual você não conseguiu realizar a atividade.</div></div></div>
+      <div class="v24532-modal-note"><b>${esc(row.activity_name||'Atividade')}</b></div>
+      <div class="field"><label>Justificativa</label><textarea id="skipReason" maxlength="1000" rows="5" placeholder="Digite o motivo..."></textarea></div>
+      <div class="actions" style="margin-top:14px"><button id="skipSubmitBtn" class="btn mint" type="button" onclick="v24545SendSkip('${safeA}','${safeE}')"><i data-lucide="send" class="ico"></i>Enviar justificativa</button><button class="btn light" type="button" onclick="closeModal()">Cancelar</button></div>`);
+    refreshIcons();
+    setTimeout(()=>document.getElementById('skipReason')?.focus(),80);
+  };
+  window.v24545SendSkip=async function(assignmentId,employeeId){
+    const reason=(document.getElementById('skipReason')?.value||'').trim();
+    if(!reason){toast('Digite o motivo antes de enviar.');document.getElementById('skipReason')?.focus();return;}
+    const btn=document.getElementById('skipSubmitBtn');
+    if(btn){btn.disabled=true;btn.innerHTML='<i data-lucide="loader-circle" class="ico spin"></i>Enviando...';refreshIcons();}
+    const key='skip:'+assignmentId;if(!beginAction(key)){if(btn)btn.disabled=false;return;}
+    try{
+      const target=String(employeeId||'');
+      let token=await validEmployeeToken(target);
+      if(!token){
+        const session=await rpc('employee_open_session_v3',{p_employee:target});
+        if(!session?.ok||!session?.token){toast(skipError(session?.error));return;}
+        saveEmployeeAuth(session);token=session.token;
+      }
+      let res=await rpc('employee_skip_assignment_v1',{p_employee_token:token,p_assignment:assignmentId,p_reason:reason,p_category:'Outra situação'});
+      if(res?.error==='employee_auth_required'){
+        const session=await rpc('employee_open_session_v3',{p_employee:target});
+        if(session?.ok&&session?.token){saveEmployeeAuth(session);res=await rpc('employee_skip_assignment_v1',{p_employee_token:session.token,p_assignment:assignmentId,p_reason:reason,p_category:'Outra situação'});}
+      }
+      if(!res?.ok){toast(skipError(res?.error));return;}
+      closeModal();
+      selected=null;
+      selectedEmployeeId=target;
+      await loadRoutine(isoLocal());
+      if(typeof renderSelected==='function')renderSelected(true);
+      toast('Justificativa enviada. Atividade marcada como não realizada.');
+    }catch(err){
+      console.error('v24545SendSkip',err);
+      toast('Não foi possível enviar a justificativa. Tente novamente.');
+    }finally{
+      endAction(key);
+      if(btn){btn.disabled=false;btn.innerHTML='<i data-lucide="send" class="ico"></i>Enviar justificativa';refreshIcons();}
+    }
+  };
+})();
+</script>
+
 </body></html>
 
 <!-- V24.4.11: mobile first, calendário refinado, TV na paleta do app e preparação sem motivo manual. -->
