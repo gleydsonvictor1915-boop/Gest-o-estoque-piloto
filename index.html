@@ -4937,3 +4937,64 @@ window.V24531='V24.5.33';</script>
 
 
 <!-- V24.5.33: atividades rotativas respeitam a ordem Inicio > Meio/Qualquer > Final; programacao diaria usa a mesma regra. -->
+
+<style id="v24541-operation-reset-dayprep-style">
+.dayprep-reset-zone{margin-top:18px;border:1px solid #ead1d1;background:#fffafa;border-radius:18px;padding:16px}
+.dayprep-reset-zone .reset-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.dayprep-reset-zone .reset-actions .btn{flex:1 1 240px;justify-content:center}
+.dayprep-reset-zone .reset-danger-note{margin-top:10px;font-size:12px;color:#7a4b00}
+@media(max-width:760px){.dayprep-reset-zone .reset-actions{display:grid}.dayprep-reset-zone .reset-actions .btn{width:100%}}
+</style>
+<script id="v24541-operation-reset-dayprep">
+(function(){
+  if(window.__V24541_OPERATION_RESETS__)return;window.__V24541_OPERATION_RESETS__=true;
+  async function getResetPreview(from,to,includeSuggestions,includePresence){
+    return callOperationResetEdge({action:'preview',from,to,include_suggestions:!!includeSuggestions,include_presence:!!includePresence});
+  }
+  async function quickResetDay(){
+    if(!currentManager?.is_primary){toast('Somente o Gestor principal pode reiniciar a operação.');return}
+    const d=isoLocal();
+    try{
+      const p=await getResetPreview(d,d,true,true),s=p.summary||{};
+      openModal(`<div class="section-head"><div><div class="section-kicker">Manutenção do dia</div><h3 class="dangertext">Reiniciar somente o dia atual</h3><div class="sub">${brDate(d)}</div></div></div>
+      <div class="reset-operation-note"><b>Isso apaga apenas os dados operacionais de hoje.</b><div class="sub">Execuções, fotos, presenças/ausências e ideias de hoje serão removidas. <b>Equipe e atividades cadastradas permanecem.</b> As atividades de hoje serão recriadas como pendentes.</div></div>
+      <div class="reset-summary-grid"><div class="reset-summary-item"><small>Execuções</small><b>${s.assignments||0}</b></div><div class="reset-summary-item"><small>Fotos</small><b>${Number(s.proof_files||0)+Number(s.deviation_files||0)}</b></div><div class="reset-summary-item"><small>Ideias</small><b>${s.suggestions||0}</b></div><div class="reset-summary-item"><small>Presenças</small><b>${s.presence||0}</b></div></div>
+      <div class="field"><label>Para confirmar, digite REINICIAR DIA</label><input id="quickResetDayConfirm" autocomplete="off" autocapitalize="characters" placeholder="REINICIAR DIA"></div>
+      <div class="actions"><button id="quickResetDayBtn" class="btn danger" onclick="commitQuickResetDay()"><i data-lucide="rotate-ccw" class="ico"></i>Reiniciar o dia</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);refreshIcons();
+    }catch(e){console.error(e);toast('Não foi possível analisar o reinício do dia.')}
+  }
+  window.commitQuickResetDay=async function(){
+    const phrase=(document.getElementById('quickResetDayConfirm')?.value||'').trim().toUpperCase();if(phrase!=='REINICIAR DIA'){toast('Digite REINICIAR DIA para confirmar');return}
+    const btn=document.getElementById('quickResetDayBtn');if(btn)btn.disabled=true;
+    try{const d=isoLocal();await callOperationResetEdge({action:'commit',from:d,to:d,include_suggestions:true,include_presence:true,confirmation:'REINICIAR'});closeModal();toast('Dia atual reiniciado. As atividades foram recriadas como pendentes.');await loadManagement();await loadRoutine(d)}catch(e){console.error(e);toast(e.code==='primary_only'?'Somente o Gestor principal pode fazer isso':'Não foi possível reiniciar o dia.')}finally{if(btn)btn.disabled=false}
+  };
+  async function quickResetAll(){
+    if(!currentManager?.is_primary){toast('Somente o Gestor principal pode zerar a operação.');return}
+    const today=isoLocal();
+    try{
+      const p=await getResetPreview('2026-01-01',today,true,true),s=p.summary||{};
+      openModal(`<div class="section-head"><div><div class="section-kicker">Início oficial do aplicativo</div><h3 class="dangertext">Zerar tudo e começar do zero</h3><div class="sub">Dados operacionais de ${brDate('2026-01-01')} até ${brDate(today)}</div></div></div>
+      <div class="reset-operation-note"><b>ATENÇÃO: esta é a limpeza geral do projeto.</b><div class="sub">Serão apagados resultados de operação, execuções, fotos de comprovação, presença/ausência e ideias do período. <b>Nada do cadastro estrutural será perdido.</b></div></div>
+      <div class="reset-preserve"><b>Será preservado</b><div class="sub">Equipe, funções, horários, atividades, instruções, fotos de referência, gestores, acessos e configurações.</div></div>
+      <div class="reset-summary-grid"><div class="reset-summary-item"><small>Execuções</small><b>${s.assignments||0}</b></div><div class="reset-summary-item"><small>Fotos</small><b>${Number(s.proof_files||0)+Number(s.deviation_files||0)}</b></div><div class="reset-summary-item"><small>Ideias</small><b>${s.suggestions||0}</b></div><div class="reset-summary-item"><small>Presenças</small><b>${s.presence||0}</b></div></div>
+      <div class="field"><label>Para confirmar, digite ZERAR TUDO</label><input id="quickResetAllConfirm" autocomplete="off" autocapitalize="characters" placeholder="ZERAR TUDO"></div>
+      <div class="actions"><button id="quickResetAllBtn" class="btn danger" onclick="commitQuickResetAll()"><i data-lucide="trash-2" class="ico"></i>Zerar tudo</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);refreshIcons();
+    }catch(e){console.error(e);toast('Não foi possível analisar a limpeza geral.')}
+  }
+  window.commitQuickResetAll=async function(){
+    const phrase=(document.getElementById('quickResetAllConfirm')?.value||'').trim().toUpperCase();if(phrase!=='ZERAR TUDO'){toast('Digite ZERAR TUDO para confirmar');return}
+    const btn=document.getElementById('quickResetAllBtn');if(btn)btn.disabled=true;
+    try{const today=isoLocal();await callOperationResetEdge({action:'commit',from:'2026-01-01',to:today,include_suggestions:true,include_presence:true,confirmation:'REINICIAR'});closeModal();toast('Projeto zerado. Equipe e atividades foram preservadas.');await loadManagement();await loadRoutine(today)}catch(e){console.error(e);toast(e.code==='primary_only'?'Somente o Gestor principal pode fazer isso':'Não foi possível zerar o projeto.')}finally{if(btn)btn.disabled=false}
+  };
+  function addControls(){
+    const host=document.getElementById('tab-dayprep');if(!host||host.querySelector('#dayprepResetZone'))return;
+    const zone=document.createElement('div');zone.id='dayprepResetZone';zone.className='dayprep-reset-zone';zone.innerHTML=`<div class="section-kicker">Manutenção da operação</div><h3 style="margin:4px 0 6px">Reinício e preparação para produção</h3><div class="sub">Use somente quando precisar refazer o dia ou quando o projeto sair da fase de testes.</div><div class="reset-actions"><button class="btn danger" type="button" onclick="quickResetDay()"><i data-lucide="rotate-ccw" class="ico"></i>Reiniciar apenas o dia atual</button><button class="btn danger" type="button" onclick="quickResetAll()"><i data-lucide="trash-2" class="ico"></i>Zerar tudo e começar do zero</button></div><div class="reset-danger-note">Equipe e atividades cadastradas não são apagadas por nenhuma dessas duas opções.</div>`;
+    host.appendChild(zone);refreshIcons();
+  }
+  const baseRender=window.renderDayPrep;
+  if(typeof baseRender==='function'){
+    window.renderDayPrep=function(){baseRender.apply(this,arguments);setTimeout(addControls,0)};
+    setTimeout(addControls,50);
+  }else{setTimeout(()=>{const b=window.renderDayPrep;if(typeof b==='function'){window.renderDayPrep=function(){b.apply(this,arguments);setTimeout(addControls,0)};addControls()}},200)}
+})();
+</script>
