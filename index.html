@@ -5039,7 +5039,7 @@ window.V24531='V24.5.33';</script>
   async function getResetPreview(from,to,includeSuggestions,includePresence){
     return callOperationResetEdge({action:'preview',from,to,include_suggestions:!!includeSuggestions,include_presence:!!includePresence});
   }
-  async function quickResetDay(){
+  window.quickResetDay=async function(){
     if(!currentManager?.is_primary){toast('Somente o Gestor principal pode reiniciar a operação.');return}
     const d=isoLocal();
     try{
@@ -5056,7 +5056,7 @@ window.V24531='V24.5.33';</script>
     const btn=document.getElementById('quickResetDayBtn');if(btn)btn.disabled=true;
     try{const d=isoLocal();await callOperationResetEdge({action:'commit',from:d,to:d,include_suggestions:true,include_presence:true,confirmation:'REINICIAR'});closeModal();toast('Dia atual reiniciado. As atividades foram recriadas como pendentes.');await loadManagement();await loadRoutine(d)}catch(e){console.error(e);toast(e.code==='primary_only'?'Somente o Gestor principal pode fazer isso':`Não foi possível reiniciar o dia${e.stage?` (${e.stage})`:''}. ${e.message||''}`)}finally{if(btn)btn.disabled=false}
   };
-  async function quickResetAll(){
+  window.quickResetAll=async function(){
     if(!currentManager?.is_primary){toast('Somente o Gestor principal pode zerar a operação.');return}
     const today=isoLocal();
     try{
