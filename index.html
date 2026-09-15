@@ -5272,3 +5272,127 @@ window.V24531='V24.5.33';</script>
   };
 })();
 </script>
+
+<!-- V24.5.48: correção definitiva do envio de justificativa; usa sessão existente e timeout em todas as chamadas. -->
+<script id="v24548-skip-final">
+(function(){
+  window.V24548='V24.5.48';
+  const EMP_KEY='v245EmployeeAuth';
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  async function timeoutCall(factory,ms){
+    let timer;
+    try{
+      return await Promise.race([
+        Promise.resolve().then(factory),
+        new Promise((_,rej)=>timer=setTimeout(()=>rej(new Error('request_timeout')),ms))
+      ]);
+    }finally{clearTimeout(timer)}
+  }
+  function sessionToken(employeeId){
+    try{
+      const raw=JSON.parse(sessionStorage.getItem(EMP_KEY)||'null');
+      if(raw?.token&&raw?.employee?.id&&String(raw.employee.id)===String(employeeId)&&Number(raw.client_expires_at||0)>Date.now()) return String(raw.token);
+    }catch(_){ }
+    return '';
+  }
+  function saveSession(data){
+    try{
+      if(data?.token&&data?.employee?.id){
+        sessionStorage.setItem(EMP_KEY,JSON.stringify({token:String(data.token),employee:data.employee,client_expires_at:Date.now()+15*60*1000}));
+      }
+    }catch(_){ }
+  }
+  async function getToken(employeeId){
+    const cached=sessionToken(employeeId);
+    if(cached){
+      try{
+        const valid=await timeoutCall(()=>rpc('employee_valid_v1',{p_token:cached}),7000);
+        if(valid?.ok&&String(valid.employee?.id)===String(employeeId)) return cached;
+      }catch(_){ }
+    }
+    const session=await timeoutCall(()=>rpc('employee_open_session_v3',{p_employee:employeeId}),9000);
+    if(!session?.ok||!session?.token) throw new Error(session?.error||'employee_auth_required');
+    saveSession(session);
+    return String(session.token);
+  }
+  async function sendSkip(token,assignmentId,reason){
+    return await timeoutCall(()=>rpc('employee_skip_assignment_v1',{
+      p_employee_token:token,
+      p_assignment:assignmentId,
+      p_reason:reason,
+      p_category:'Outra situação'
+    }),9000);
+  }
+  function msg(code){
+    return ({
+      request_timeout:'A conexão demorou para responder. Verifique a internet e tente novamente.',
+      employee_auth_required:'Não foi possível validar sua sessão. Feche e abra novamente seu nome na Rotina.',
+      employee_not_present:'Seu nome precisa estar marcado como presente.',
+      operation_not_published:'A operação de hoje ainda não foi publicada.',
+      operation_paused:'A operação está pausada.',
+      wrong_employee:'Essa atividade não pertence a você.',
+      wrong_work_date:'Essa atividade não pertence ao dia de hoje.',
+      assignment_not_found:'Atividade não encontrada.',
+      not_pending:'Essa atividade já foi alterada.',
+      only_rotating:'Essa justificativa só pode ser usada em atividades rotativas.',
+      reason_required:'Digite a justificativa antes de enviar.',
+      reason_too_long:'A justificativa ficou muito longa.',
+      try_again_later:'Aguarde alguns segundos e tente novamente.'
+    })[String(code||'')]||('Não foi possível enviar a justificativa: '+String(code||'erro desconhecido'));
+  }
+  window.v24545SendSkip=async function(assignmentId,employeeId){
+    const reason=(document.getElementById('skipReason')?.value||'').trim();
+    if(!reason){toast('Digite o motivo antes de enviar.');document.getElementById('skipReason')?.focus();return}
+    const btn=document.getElementById('skipSubmitBtn');
+    const key='skip:'+assignmentId;
+    if(typeof beginAction==='function'&&!beginAction(key))return;
+    if(btn){btn.disabled=true;btn.innerHTML='<i data-lucide="loader-circle" class="ico spin"></i>Enviando...';try{refreshIcons()}catch(_){} }
+    let success=false;
+    try{
+      const target=String(employeeId||selectedEmployeeId||'').trim();
+      if(!target)throw new Error('employee_not_found');
+      let token=await getToken(target);
+      let res;
+      try{
+        res=await sendSkip(token,String(assignmentId),reason);
+      }catch(first){
+        if(String(first?.message||'')!=='request_timeout')throw first;
+        await sleep(300);
+        res=await sendSkip(token,String(assignmentId),reason);
+      }
+      if(!res?.ok&&res?.error==='employee_auth_required'){
+        const session=await timeoutCall(()=>rpc('employee_open_session_v3',{p_employee:target}),9000);
+        if(!session?.ok||!session?.token)throw new Error(session?.error||'employee_auth_required');
+        saveSession(session);
+        res=await sendSkip(String(session.token),String(assignmentId),reason);
+      }
+      if(!res?.ok)throw new Error(res?.error||'skip_failed');
+      success=true;
+
+      const row=(routine||[]).find(x=>String(x.assignment_id)===String(assignmentId));
+      if(row){
+        row.status='not_performed';
+        row.observation=reason;
+        row.deviation_status='open';
+        row.leader_action_required=true;
+      }
+      selected=null;
+      closeModal();
+      try{renderSelected(true)}catch(_){}
+      try{renderRoutine(true)}catch(_){}
+      toast('Justificativa enviada. Atividade marcada como não realizada.');
+      setTimeout(()=>{try{loadRoutine(isoLocal())}catch(_){}},250);
+    }catch(e){
+      console.error('V24548_SKIP',e);
+      toast(msg(e?.message||e));
+    }finally{
+      if(typeof endAction==='function')endAction(key);
+      if(btn){btn.disabled=false;btn.innerHTML='<i data-lucide="send" class="ico"></i>Enviar justificativa';try{refreshIcons()}catch(_){} }
+      if(!success){
+        // garante que o modal continue utilizável caso a chamada falhe;
+        // nunca deixa o botão preso em "Enviando...".
+      }
+    }
+  };
+})();
+</script>
