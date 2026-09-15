@@ -3306,8 +3306,10 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       if(fixed)c.reminder_count++;else{
         c.action_count++;
         if(r.status==='in_progress')c.in_progress_count++;
-        if(r.status==='completed')c.completed_count++;else c.open_count++;
-        const urg=String(r.activity_urgency||'').toLowerCase();if(['critical','critica','crítica','urgent','urgente'].includes(urg)&&r.status!=='completed')c.critical_count++;
+        if(r.status==='completed')c.completed_count++;
+        else if(r.status!=='not_performed')c.open_count++;
+        const urg=String(r.activity_urgency||'').toLowerCase();
+        if(['critical','critica','crítica','urgent','urgente'].includes(urg)&&!['completed','not_performed'].includes(r.status))c.critical_count++;
       }
     }
     return [...map.values()];
@@ -4459,7 +4461,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 .person .role.v24519-count{white-space:normal;line-height:1.3}
 @media(max-width:680px){.fixed-reminder-row-v24519{grid-template-columns:48px minmax(0,1fr)}.fixed-reminder-time-v24519{width:48px}.fixed-reminder-badge-v24519{grid-column:2;justify-self:start}.fixed-reminders-head-v24519{align-items:flex-start}.fixed-reminders-count-v24519{font-size:10px}}
 </style>
-<!-- V24.5.52: card status treats not_performed as resolved, not pending -->
+<!-- V24.5.53: justified activities no longer count as pending on routine cards -->
 <script id="v24519-fixed-reminders-script">
 (function(){
   if(window.__V24519_FIXED_REMINDERS__)return;window.__V24519_FIXED_REMINDERS__=true;
