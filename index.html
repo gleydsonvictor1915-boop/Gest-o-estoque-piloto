@@ -5396,3 +5396,218 @@ window.V24531='V24.5.33';</script>
   };
 })();
 </script>
+
+<!-- V24.5.49: fluxo definitivo da justificativa. O botão visível agora aponta para este fluxo e não para o legado v24532. -->
+<style id="v24549-skip-fix-style">
+  #skipReason{width:100%;min-height:130px;resize:vertical}
+  #skipSubmitBtn{min-height:48px}
+</style>
+<script id="v24549-skip-fix">
+(function(){
+  window.V24549='V24.5.49';
+
+  function escSafe(v){
+    try{return esc(String(v == null ? '' : v));}
+    catch(_){return String(v == null ? '' : v);}
+  }
+
+  function withTimeout(fn, ms){
+    return new Promise(function(resolve,reject){
+      var settled=false;
+      var timer=setTimeout(function(){
+        if(settled)return;
+        settled=true;
+        reject(new Error('request_timeout'));
+      },ms);
+      Promise.resolve().then(fn).then(function(v){
+        if(settled)return;
+        settled=true;
+        clearTimeout(timer);
+        resolve(v);
+      }).catch(function(err){
+        if(settled)return;
+        settled=true;
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+  }
+
+  function getCachedEmployeeToken(employeeId){
+    try{
+      var raw=sessionStorage.getItem('v245EmployeeAuth');
+      var data=raw ? JSON.parse(raw) : null;
+      if(data && data.token && data.employee && String(data.employee.id)===String(employeeId)){
+        return String(data.token);
+      }
+    }catch(_){ }
+    return '';
+  }
+
+  function storeEmployeeSession(session){
+    try{
+      if(session && session.token && session.employee){
+        sessionStorage.setItem('v245EmployeeAuth',JSON.stringify({
+          token:String(session.token),
+          employee:session.employee,
+          client_expires_at:Date.now()+8*60*60*1000
+        }));
+      }
+    }catch(_){ }
+  }
+
+  async function resolveEmployeeToken(employeeId){
+    var cached=getCachedEmployeeToken(employeeId);
+    if(cached){
+      try{
+        var valid=await withTimeout(function(){
+          return rpc('employee_valid_v1',{p_token:cached});
+        },7000);
+        if(valid && valid.ok && valid.employee && String(valid.employee.id)===String(employeeId)){
+          return cached;
+        }
+      }catch(_){ }
+    }
+
+    var session=await withTimeout(function(){
+      return rpc('employee_open_session_v3',{p_employee:employeeId});
+    },9000);
+
+    if(!session || !session.ok || !session.token){
+      throw new Error(String(session && session.error || 'employee_auth_required'));
+    }
+    storeEmployeeSession(session);
+    return String(session.token);
+  }
+
+  async function submitSkip(assignmentId,employeeId,reason){
+    var token=await resolveEmployeeToken(employeeId);
+    var res=await withTimeout(function(){
+      return rpc('employee_skip_assignment_v1',{
+        p_employee_token:token,
+        p_assignment:String(assignmentId),
+        p_reason:reason,
+        p_category:'Outra situação'
+      });
+    },9000);
+
+    if(res && res.ok)return res;
+
+    if(res && res.error==='employee_auth_required'){
+      var session=await withTimeout(function(){
+        return rpc('employee_open_session_v3',{p_employee:employeeId});
+      },9000);
+      if(!session || !session.ok || !session.token){
+        throw new Error(String(session && session.error || 'employee_auth_required'));
+      }
+      storeEmployeeSession(session);
+      return await withTimeout(function(){
+        return rpc('employee_skip_assignment_v1',{
+          p_employee_token:String(session.token),
+          p_assignment:String(assignmentId),
+          p_reason:reason,
+          p_category:'Outra situação'
+        });
+      },9000);
+    }
+
+    throw new Error(String(res && res.error || 'skip_failed'));
+  }
+
+  function errorMessage(code){
+    var map={
+      request_timeout:'A conexão demorou para responder. Verifique a internet e tente novamente.',
+      employee_auth_required:'Não foi possível validar a sessão do colaborador. Feche e abra novamente seu nome na Rotina.',
+      employee_not_present:'O colaborador precisa estar marcado como presente.',
+      employee_not_found:'Colaborador não encontrado.',
+      operation_not_published:'A operação de hoje ainda não foi publicada.',
+      operation_paused:'A operação está pausada.',
+      wrong_employee:'Essa atividade não pertence ao colaborador.',
+      wrong_work_date:'Essa atividade pertence a outro dia.',
+      assignment_not_found:'Atividade não encontrada.',
+      not_pending:'Essa atividade já foi alterada.',
+      only_rotating:'Esta justificativa vale apenas para atividades rotativas.',
+      reason_required:'Digite o motivo antes de enviar.',
+      reason_too_long:'A justificativa ficou muito longa.',
+      try_again_later:'Aguarde alguns segundos e tente novamente.'
+    };
+    return map[String(code || '')] || ('Não foi possível enviar a justificativa: ' + String(code || 'erro desconhecido'));
+  }
+
+  window.v24549OpenSkipModal=function(assignmentId,employeeId){
+    var row=(routine||[]).find(function(x){return String(x.assignment_id)===String(assignmentId);});
+    var target=String(employeeId || row && (row.executor_id || row.employee_id) || selectedEmployeeId || '');
+    if(!row || !target){toast('Não foi possível identificar esta atividade.');return;}
+    if(String(row.activity_mode || 'rotating')!=='rotating' || String(row.status || '')!=='pending'){
+      toast('Esta atividade já não está disponível para justificativa.');
+      return;
+    }
+
+    openModal(
+      '<div class="section-head"><div><div class="section-kicker">NÃO REALIZADA</div><h3>Justificar atividade</h3><div class="sub">A atividade não será concluída. A justificativa ficará registrada para a Gestão acompanhar.</div></div></div>'+
+      '<div class="v24532-modal-note"><b>'+escSafe(row.activity_name || 'Atividade')+'</b><br>Informe somente o motivo pelo qual você não conseguiu realizar a atividade.</div>'+
+      '<div class="field"><label for="skipReason">Justificativa</label><textarea id="skipReason" maxlength="1000" rows="5" placeholder="Digite o motivo..."></textarea></div>'+
+      '<div class="actions"><button id="skipSubmitBtn" class="btn mint" type="button" onclick="v24549SendSkip(\''+String(assignmentId).replace(/'/g,"\\'")+'\',\''+String(target).replace(/'/g,"\\'")+'\')"><i data-lucide="send" class="ico"></i>Registrar justificativa</button><button class="btn light" type="button" onclick="closeModal()">Cancelar</button></div>'
+    );
+    try{refreshIcons();}catch(_){ }
+    setTimeout(function(){
+      var field=document.getElementById('skipReason');
+      if(field)field.focus();
+    },80);
+  };
+
+  window.v24549SendSkip=async function(assignmentId,employeeId){
+    var field=document.getElementById('skipReason');
+    var reason=(field && field.value || '').trim();
+    if(!reason){toast('Digite o motivo antes de enviar.');if(field)field.focus();return;}
+
+    var btn=document.getElementById('skipSubmitBtn');
+    var target=String(employeeId || selectedEmployeeId || '').trim();
+    if(!target){toast('Não foi possível identificar o colaborador.');return;}
+
+    if(btn){
+      btn.disabled=true;
+      btn.innerHTML='<i data-lucide="loader-circle" class="ico spin"></i>Enviando...';
+      try{refreshIcons();}catch(_){ }
+    }
+
+    try{
+      var res=await submitSkip(String(assignmentId),target,reason);
+      if(!res || !res.ok)throw new Error(String(res && res.error || 'skip_failed'));
+
+      var row=(routine||[]).find(function(x){return String(x.assignment_id)===String(assignmentId);});
+      if(row){
+        row.status='not_performed';
+        row.observation=reason;
+        row.deviation_status='open';
+        row.leader_action_required=true;
+      }
+
+      selected=null;
+      closeModal();
+      try{renderSelected(true);}catch(_){ }
+      try{renderRoutine(true);}catch(_){ }
+      toast('Justificativa enviada. Atividade marcada como não realizada.');
+
+      setTimeout(function(){
+        try{loadRoutine(isoLocal());}catch(_){ }
+      },150);
+    }catch(err){
+      console.error('V24549_SKIP',err);
+      toast(errorMessage(err && err.message || err));
+    }finally{
+      if(btn){
+        btn.disabled=false;
+        btn.innerHTML='<i data-lucide="send" class="ico"></i>Registrar justificativa';
+        try{refreshIcons();}catch(_){ }
+      }
+    }
+  };
+
+  // O botão que já existe no painel usa estes nomes antigos.
+  // Eles agora apontam para o fluxo definitivo acima.
+  window.v24532OpenSkipModal=window.v24549OpenSkipModal;
+  window.v24532ConfirmSkip=window.v24549SendSkip;
+  window.v24545SendSkip=window.v24549SendSkip;
+})();
+</script>
