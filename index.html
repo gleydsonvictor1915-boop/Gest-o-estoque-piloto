@@ -5088,3 +5088,82 @@ window.V24531='V24.5.33';</script>
 </script>
 
 <!-- V24.5.44: exclusão de comprovação do colaborador também remove o arquivo do Storage. -->
+<script id="v24546-skip-final-override">
+(function(){
+  window.V24546='V24.5.46';
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  async function withTimeout(p,ms){
+    let timer;
+    try{return await Promise.race([p,new Promise((_,rej)=>timer=setTimeout(()=>rej(new Error('request_timeout')),ms))]);}
+    finally{clearTimeout(timer)}
+  }
+  async function skipRpc(token,assignmentId,reason){
+    return await withTimeout(rpc('employee_skip_assignment_v1',{p_employee_token:token,p_assignment:assignmentId,p_reason:reason,p_category:'Outra situação'}),10000);
+  }
+  window.v24545SendSkip=async function(assignmentId,employeeId){
+    const reason=(document.getElementById('skipReason')?.value||'').trim();
+    if(!reason){toast('Digite o motivo antes de enviar.');document.getElementById('skipReason')?.focus();return;}
+    const btn=document.getElementById('skipSubmitBtn');
+    const key='skip:'+assignmentId;
+    if(!beginAction(key))return;
+    if(btn){btn.disabled=true;btn.innerHTML='<i data-lucide="loader-circle" class="ico spin"></i>Enviando...';refreshIcons();}
+    try{
+      const target=String(employeeId||selectedEmployeeId||'');
+      if(!target)throw new Error('employee_not_selected');
+      let token=await withTimeout(validEmployeeToken(target),7000);
+      if(!token){
+        const session=await withTimeout(rpc('employee_open_session_v3',{p_employee:target}),10000);
+        if(!session?.ok||!session?.token)throw new Error(session?.error||'employee_auth_required');
+        saveEmployeeAuth(session); token=session.token;
+      }
+      let res;
+      try{res=await skipRpc(token,assignmentId,reason)}catch(firstErr){
+        if(String(firstErr?.message||'').includes('request_timeout')){
+          await sleep(500);
+          res=await skipRpc(token,assignmentId,reason);
+        }else throw firstErr;
+      }
+      if(res?.error==='employee_auth_required'){
+        const session=await withTimeout(rpc('employee_open_session_v3',{p_employee:target}),10000);
+        if(!session?.ok||!session?.token)throw new Error(session?.error||'employee_auth_required');
+        saveEmployeeAuth(session);
+        res=await skipRpc(session.token,assignmentId,reason);
+      }
+      if(!res?.ok)throw new Error(res?.error||'skip_failed');
+
+      // Atualiza a tela imediatamente, sem depender da sincronização para encerrar a ação.
+      const localRow=(routine||[]).find(x=>String(x.assignment_id)===String(assignmentId));
+      if(localRow){
+        localRow.status='not_performed';
+        localRow.observation=reason;
+        localRow.deviation_status='open';
+        localRow.leader_action_required=true;
+      }
+      closeModal();
+      selected=null;
+      renderSelected(true);
+      renderRoutine();
+      toast('Justificativa enviada. Atividade marcada como não realizada.');
+      setTimeout(()=>{loadRoutine(isoLocal()).catch(()=>{});},250);
+    }catch(err){
+      console.error('V24546_SKIP',err);
+      const code=String(err?.message||err||'').replace(/^Error:\s*/,'');
+      const msg={
+        request_timeout:'A conexão demorou para responder. Tente enviar novamente.',
+        employee_auth_required:'Sua sessão expirou. Selecione seu nome novamente e tente enviar.',
+        employee_not_present:'Seu nome precisa estar marcado como presente para registrar a justificativa.',
+        operation_not_published:'A operação de hoje ainda não foi publicada.',
+        wrong_employee:'Essa atividade não pertence a você.',
+        not_pending:'Essa atividade já foi alterada.',
+        wrong_work_date:'Essa atividade não pertence ao dia de hoje.',
+        reason_required:'Digite uma justificativa.',
+        operation_paused:'A operação está pausada.'
+      }[code]||('Não foi possível enviar a justificativa: '+code);
+      toast(msg);
+    }finally{
+      endAction(key);
+      if(btn){btn.disabled=false;btn.innerHTML='<i data-lucide="send" class="ico"></i>Enviar justificativa';refreshIcons();}
+    }
+  };
+})();
+</script>
