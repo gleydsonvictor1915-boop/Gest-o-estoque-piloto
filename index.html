@@ -4740,7 +4740,7 @@ window.V24531='V24.5.33';</script>
     if(!row||!targetEmployee){toast('Não foi possível identificar o colaborador desta atividade.');return}
     if(String(row.activity_mode||'rotating')!=='rotating'||row.status!=='pending'){toast('Esta atividade não pode mais receber uma justificativa.');return}
     const reason=(document.getElementById('skipReason')?.value||'').trim();
-    const category=document.getElementById('skipCategory')?.value||'Outra situação';
+    const category='Outra situação';
     if(!reason){toast('Informe a justificativa.');document.getElementById('skipReason')?.focus();return}
     const key='skip:'+assignmentId; if(!beginAction(key))return;
     try{
@@ -4783,7 +4783,7 @@ window.V24531='V24.5.33';</script>
     if(!row||!targetEmployee){toast('Não foi possível identificar o colaborador desta atividade.');return}
     if(String(row.activity_mode||'rotating')!=='rotating'||row.status!=='pending'){toast('Esta atividade já não está disponível para justificativa.');return}
     const reason=(document.getElementById('skipReason')?.value||'').trim();
-    const category=document.getElementById('skipCategory')?.value||'Outra situação';
+    const category='Outra situação';
     if(!reason){toast('Informe a justificativa.');document.getElementById('skipReason')?.focus();return}
     const key='skip:'+assignmentId;
     if(!beginAction(key))return;
@@ -4877,8 +4877,7 @@ window.V24531='V24.5.33';</script>
     if(!row||String(row.activity_mode||'rotating')!=='rotating'||row.status!=='pending'){toast('Somente uma atividade rotativa pendente pode receber uma justificativa.');return}
     openModal(`<div class="section-head"><div><div class="section-kicker">NÃO REALIZADA</div><h3>Justificar atividade</h3><div class="sub">A atividade não será concluída. A justificativa ficará registrada para a Gestão acompanhar.</div></div></div>
       <div class="v24532-modal-note"><b>${esc(row.activity_name||'Atividade')}</b><br>Use esta opção quando realmente não for possível executar a tarefa, por exemplo: carrinhos/plataformas em uso, local indisponível ou falta de recurso.</div>
-      <div class="field"><label>Motivo</label><select id="skipCategory"><option value="Equipamento / recurso indisponível">Equipamento / recurso indisponível</option><option value="Local / área indisponível">Local / área indisponível</option><option value="Atividade bloqueada por outra operação">Atividade bloqueada por outra operação</option><option value="Falta de material / condição para executar">Falta de material / condição para executar</option><option value="Outra situação">Outra situação</option></select></div>
-      <div class="field"><label>Justificativa</label><textarea id="skipReason" maxlength="1000" rows="4" placeholder="Ex.: Os carrinhos e plataformas estavam em uso durante todo o período disponível."></textarea></div>
+      <div class="field"><label>Justificativa</label><textarea id="skipReason" maxlength="1000" rows="5" placeholder="Digite o motivo pelo qual você não conseguiu realizar a atividade."></textarea></div>
       <div class="actions"><button class="btn mint" onclick="v24532ConfirmSkip('${assignmentId}','${employeeId}')"><i data-lucide="circle-check" class="ico"></i>Registrar justificativa</button><button class="btn light" onclick="closeModal()">Cancelar</button></div>`);
     refreshIcons();
     setTimeout(()=>document.getElementById('skipReason')?.focus(),80);
@@ -4887,7 +4886,7 @@ window.V24531='V24.5.33';</script>
   window.v24532ConfirmSkip=async function(assignmentId,employeeId){
     if(!canExecuteRoutineAction()){toast(operationBlockedMessage());return}
     const reason=(document.getElementById('skipReason')?.value||'').trim();
-    const category=document.getElementById('skipCategory')?.value||'Outra situação';
+    const category='Outra situação';
     if(!reason){toast('Informe a justificativa.');document.getElementById('skipReason')?.focus();return}
     return requireEmployee(employeeId,async token=>{
       const key='skip:'+assignmentId;if(!beginAction(key))return;
