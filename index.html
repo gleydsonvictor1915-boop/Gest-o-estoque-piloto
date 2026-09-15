@@ -3576,10 +3576,11 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     try{
       const ok=confirm('Apagar esta foto? Ela será removida da atividade e você poderá tirar outra.');if(!ok)return;
       const token=await validEmployeeToken(eid);if(!token)throw new Error('employee_auth_required');
-      const r=await rpc('employee_delete_proof_v1',{p_employee_token:token,p_proof_id:proofId});
-      if(!r?.ok)throw new Error(r?.error||'proof_delete_failed');
+      const res=await fetch(`${SUPA_URL}/functions/v1/employee-delete-proof`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`},body:JSON.stringify({employee_token:token,proof_id:proofId})});
+      const r=await res.json().catch(()=>({}));
+      if(!res.ok||!r?.ok)throw new Error(r?.error||'proof_delete_failed');
       closeModal();toast('Foto apagada ✓');await loadRoutine(isoLocal());
-    }catch(e){console.error(e);toast(/completed|not_allowed|proof_not_found/i.test(String(e?.message||''))?'Não é possível apagar esta foto agora.':'Não foi possível apagar a foto. Tente novamente.')}
+    }catch(e){console.error(e);toast(/completed|not_allowed|proof_not_found|wrong_employee|unauthorized/i.test(String(e?.message||''))?'Não é possível apagar esta foto agora.':'Não foi possível apagar a foto. Tente novamente.')}
   };
 
   loadEmployeeFollowups=async function(employeeId,markSeen=false){
@@ -5015,3 +5016,5 @@ window.V24531='V24.5.33';</script>
   }else{setTimeout(()=>{const b=window.renderDayPrep;if(typeof b==='function'){window.renderDayPrep=function(){b.apply(this,arguments);setTimeout(addControls,0)};addControls()}},200)}
 })();
 </script>
+
+<!-- V24.5.44: exclusão de comprovação do colaborador também remove o arquivo do Storage. -->
