@@ -5167,3 +5167,108 @@ window.V24531='V24.5.33';</script>
   };
 })();
 </script>
+
+
+<!-- V24.5.47: justificativa - fluxo final independente dos helpers privados do IIFE de sessão. -->
+<script id="v24547-skip-direct-final">
+(function(){
+  window.V24547='V24.5.47';
+  const EMP_KEY='v245EmployeeAuth';
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const safeToast=msg=>{try{toast(msg)}catch(_){}};
+  function errorText(code){
+    return ({
+      employee_auth_required:'Não foi possível abrir a sessão do colaborador.',
+      employee_not_present:'O colaborador precisa estar marcado como presente.',
+      employee_not_found:'Colaborador não encontrado.',
+      operation_not_published:'A operação de hoje ainda não foi publicada.',
+      operation_paused:'A operação está pausada.',
+      wrong_employee:'Essa atividade não pertence ao colaborador selecionado.',
+      wrong_work_date:'Essa atividade não pertence ao dia de hoje.',
+      assignment_not_found:'Atividade não encontrada.',
+      not_pending:'Essa atividade já foi alterada.',
+      only_rotating:'Essa opção vale apenas para atividades rotativas.',
+      reason_required:'Digite a justificativa antes de enviar.',
+      reason_too_long:'A justificativa ficou muito longa.',
+      try_again_later:'Aguarde alguns segundos e tente novamente.'
+    })[String(code||'')]||('Não foi possível registrar a justificativa. Código: '+String(code||'desconhecido'));
+  }
+  function saveSessionDirect(session){
+    try{
+      if(session?.token&&session?.employee?.id){
+        sessionStorage.setItem(EMP_KEY,JSON.stringify({token:String(session.token),employee:session.employee,client_expires_at:Date.now()+15*60*1000}));
+      }
+    }catch(_){ }
+  }
+  async function callSkipDirect(assignmentId,employeeId,reason){
+    const session=await rpc('employee_open_session_v3',{p_employee:employeeId});
+    if(!session?.ok||!session?.token) return {ok:false,error:session?.error||'employee_auth_required'};
+    saveSessionDirect(session);
+    return await rpc('employee_skip_assignment_v1',{
+      p_employee_token:String(session.token),
+      p_assignment:assignmentId,
+      p_reason:reason,
+      p_category:'Outra situação'
+    });
+  }
+  window.v24545SendSkip=async function(assignmentId,employeeId){
+    const reason=(document.getElementById('skipReason')?.value||'').trim();
+    if(!reason){safeToast('Digite o motivo antes de enviar.');document.getElementById('skipReason')?.focus();return;}
+    const btn=document.getElementById('skipSubmitBtn');
+    const key='skip:'+assignmentId;
+    if(!beginAction(key))return;
+    let dbOk=false;
+    try{
+      const target=String(employeeId||selectedEmployeeId||'').trim();
+      if(!target)throw new Error('employee_not_selected');
+      if(btn){
+        btn.disabled=true;
+        btn.innerHTML='<i data-lucide="loader-circle" class="ico spin"></i>Enviando...';
+        try{refreshIcons()}catch(_){ }
+      }
+      let res;
+      try{
+        res=await Promise.race([
+          callSkipDirect(String(assignmentId),target,reason),
+          new Promise((_,rej)=>setTimeout(()=>rej(new Error('request_timeout')),12000))
+        ]);
+      }catch(e){
+        if(String(e?.message||'')==='request_timeout'){
+          await wait(400);
+          res=await Promise.race([
+            callSkipDirect(String(assignmentId),target,reason),
+            new Promise((_,rej)=>setTimeout(()=>rej(new Error('request_timeout')),12000))
+          ]);
+        }else throw e;
+      }
+      if(!res?.ok)throw new Error(res?.error||'skip_failed');
+      dbOk=true;
+      // Atualiza o objeto local imediatamente; o resultado do banco já foi confirmado.
+      try{
+        const localRow=(routine||[]).find(x=>String(x.assignment_id)===String(assignmentId));
+        if(localRow){
+          localRow.status='not_performed';
+          localRow.observation=reason;
+          localRow.deviation_status='open';
+          localRow.leader_action_required=true;
+        }
+        closeModal();
+      }catch(uiErr){console.warn('skip local UI refresh',uiErr)}
+      safeToast('Justificativa enviada. Atividade marcada como não realizada.');
+      try{renderSelected(true)}catch(_){ }
+      try{renderRoutine()}catch(_){ }
+      setTimeout(()=>{try{loadRoutine(isoLocal())}catch(_){ }},300);
+    }catch(err){
+      console.error('V24547_SKIP',err);
+      if(!dbOk)safeToast(errorText(err?.message||err));
+    }finally{
+      endAction(key);
+      if(btn){
+        btn.disabled=false;
+        btn.innerHTML='<i data-lucide="send" class="ico"></i>Enviar justificativa';
+        try{refreshIcons()}catch(_){ }
+      }
+    }
+  };
+})();
+</script>
