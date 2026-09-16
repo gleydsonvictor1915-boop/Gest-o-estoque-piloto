@@ -3302,8 +3302,9 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
       const id=String(r.employee_id||'');if(!id)continue;
       if(!map.has(id))map.set(id,emptyCardFromPersonV24528({employee_id:r.employee_id,employee_name:r.employee_name||'Colaborador',employee_role:r.employee_role||'Equipe',active_today:r.active_today,presence_status:r.presence_status||'off'}));
       const c=map.get(id);c.assignment_count++;
-      const fixed=String(r.activity_mode||'rotating')==='fixed';
-      if(fixed)c.reminder_count++;else{
+      const mode=String(r.activity_mode||'rotating');
+      const nonExecution=mode==='fixed'||mode==='group';
+      if(nonExecution)c.reminder_count++;else{
         c.action_count++;
         if(r.status==='in_progress')c.in_progress_count++;
         if(r.status==='completed')c.completed_count++;
@@ -4466,7 +4467,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
 (function(){
   if(window.__V24519_FIXED_REMINDERS__)return;window.__V24519_FIXED_REMINDERS__=true;
 
-  function isFixedV24519(r){return String(r?.activity_mode||'rotating')==='fixed'}
+  function isNonExecutionV24519(r){const m=String(r?.activity_mode||'rotating');return m==='fixed'||m==='group'}
   function pluralV24519(n,one,many){return Number(n)===1?one:many}
   function cleanInstructionV24519(v){
     let s=String(v||'').trim();
@@ -4479,12 +4480,12 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     if(!Array.isArray(list)||!list.length)return '';
     const ordered=[...list].sort((a,b)=>String(a.scheduled_time||'99:99').localeCompare(String(b.scheduled_time||'99:99'))||(Number(a.slot_index||999)-Number(b.slot_index||999))||String(a.activity_name||'').localeCompare(String(b.activity_name||''),'pt-BR'));
     return `<section class="fixed-reminders-v24519">
-      <div class="fixed-reminders-head-v24519"><div><div class="section-kicker">LEMBRETES FIXOS DO DIA</div><h3>Demandas fixas</h3><p>Apenas consulte e realize no horário indicado. Não precisa iniciar nem finalizar no sistema.</p></div><span class="fixed-reminders-count-v24519">${ordered.length} ${pluralV24519(ordered.length,'lembrete','lembretes')}</span></div>
-      <div class="fixed-reminders-list-v24519">${ordered.map(r=>`<div class="fixed-reminder-row-v24519 fixed-reminder-click-v24520" role="button" tabindex="0" onclick="v24520OpenFixedGuide('${r.assignment_id}','${r.employee_id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();v24520OpenFixedGuide('${r.assignment_id}','${r.employee_id}')}" title="Ver como deve ser feito">
+      <div class="fixed-reminders-head-v24519"><div><div class="section-kicker">LEMBRETES DO DIA</div><h3>Demandas sem execução no sistema</h3><p>Demandas fixas e atividades em grupo são apenas orientações de execução. Não precisam ser iniciadas, finalizadas ou comprovadas por foto.</p></div><span class="fixed-reminders-count-v24519">${ordered.length} ${pluralV24519(ordered.length,'item','itens')}</span></div>
+      <div class="fixed-reminders-list-v24519">${ordered.map(r=>{const group=String(r.activity_mode||'')==='group';return `<div class="fixed-reminder-row-v24519 fixed-reminder-click-v24520" role="button" tabindex="0" onclick="v24520OpenFixedGuide('${r.assignment_id}','${r.employee_id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();v24520OpenFixedGuide('${r.assignment_id}','${r.employee_id}')}" title="Ver como deve ser feito">
         <div class="fixed-reminder-time-v24519">${esc(fixedTimingV24519(r))}</div>
-        <div class="fixed-reminder-main-v24519"><b>${esc(r.activity_name||'Demanda fixa')}</b><small>Toque para ver como deve ser feito.</small></div>
-        <span class="fixed-reminder-badge-v24519"><i data-lucide="eye" class="ico"></i>VER COMO FAZER</span>
-      </div>`).join('')}</div>
+        <div class="fixed-reminder-main-v24519"><b>${esc(r.activity_name||'Demanda')}</b><small>${group?'Atividade em grupo · toque para ver a orientação.':'Lembrete fixo · toque para ver a orientação.'}</small></div>
+        <span class="fixed-reminder-badge-v24519"><i data-lucide="${group?'users-round':'eye'}" class="ico"></i>${group?'ATIVIDADE EM GRUPO':'VER COMO FAZER'}</span>
+      </div>`}).join('')}</div>
     </section>`;
   }
 
@@ -4515,7 +4516,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     const el=document.getElementById('selectedActivity');
     if(!el||!selectedEmployeeId||coverageAssignmentId)return;
     const list=typeof v24TasksForPerson==='function'?v24TasksForPerson(selectedEmployeeId):[];
-    const reminders=list.filter(isFixedV24519),actions=list.filter(r=>!isFixedV24519(r));
+    const reminders=list.filter(isNonExecutionV24519),actions=list.filter(r=>!isNonExecutionV24519(r));
     if(!reminders.length)return;
 
     const authPill=el.querySelector('.employee-auth-pill')?.outerHTML||'';
@@ -4585,7 +4586,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{await loadG
     return oldErrorV24519(code);
   };
 
-  window.V24519='V24.5.19';
+  window.V24519='V24.5.54';
 })();
 </script>
 
@@ -4941,6 +4942,7 @@ window.V24531='V24.5.33';</script>
       only_rotating:'Somente atividades rotativas podem ser justificadas desta forma.',
       wrong_employee:'Esta atividade não está atribuída a você.',
       not_pending:'Esta atividade já foi iniciada ou encerrada.',
+      group_activity_no_execution:'Esta é uma atividade em grupo. Ela não precisa ser iniciada nem finalizada no sistema.',
       operation_paused:'A operação está pausada no momento.',
       wrong_work_date:'Essa atividade pertence a outra data.'
     };
@@ -5013,7 +5015,7 @@ window.V24531='V24.5.33';</script>
     const el=document.getElementById('selectedActivity');
     if(!el||!selectedEmployeeId||coverageAssignmentId)return;
     const list=typeof v24TasksForPerson==='function'?v24TasksForPerson(selectedEmployeeId):[];
-    const actions=list.filter(r=>String(r?.activity_mode||'rotating')!=='fixed');
+    const actions=list.filter(r=>{const m=String(r?.activity_mode||'rotating');return m!=='fixed'&&m!=='group'});
     const current=actions.find(x=>x.status==='in_progress')||actions.find(x=>x.status==='pending')||null;
     const skipped=actions.filter(x=>x.status==='not_performed').length;
     const completed=actions.filter(x=>x.status==='completed').length;
