@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.24-v24.5.55-separation-tracking" />
+<meta name="app-version" content="2026.10.02-v24.5.56-separation-picker" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -786,7 +786,7 @@ input,select,textarea{max-width:100%}
 @media(max-width:760px){.proof-review-v24542{max-width:none}.proof-review-head-v24542{align-items:flex-start}.proof-review-title-v24542 h3{font-size:18px}.proof-review-actions-v24542 .btn{min-height:56px;font-size:14px}.proof-review-note-v24542{font-size:13px;margin-bottom:14px}}
 </style>
 
-<style id="v24555-separation-style">
+<style id="v24556-separation-style">
 .separation-hero-v24555{background:linear-gradient(110deg,#245b89,#2cc3a2)}
 .separation-type-grid-v24555{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
 .separation-type-card-v24555{border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;background:#fff;display:flex;flex-direction:column;gap:8px;min-height:150px;transition:.18s;box-shadow:none}
@@ -808,7 +808,9 @@ input,select,textarea{max-width:100%}
 .separation-management-kpi-v24555{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fbfdfe}.separation-management-kpi-v24555 small{display:block;color:var(--muted);font-weight:800}.separation-management-kpi-v24555 b{display:block;font-size:25px;margin-top:4px}
 .separation-empty-v24555{border:1px dashed var(--line);border-radius:15px;padding:22px;text-align:center;color:var(--muted)}
 .separation-search-row-v24555{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:10px;align-items:end;margin-top:14px}
-@media(max-width:760px){.separation-type-grid-v24555{grid-template-columns:1fr}.separation-type-card-v24555{min-height:104px;flex-direction:row;align-items:center}.separation-type-card-v24555 .sep-icon{flex:0 0 42px}.separation-session-v24555{align-items:flex-start}.separation-list-row-v24555{grid-template-columns:1fr;gap:5px}.separation-list-row-v24555 .separation-list-time{justify-self:start}.separation-management-kpis-v24555{grid-template-columns:1fr 1fr}.separation-search-row-v24555{grid-template-columns:1fr}}
+.separation-people-grid-v24556{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}.separation-person-card-v24556{border:1px solid var(--line);border-radius:16px;background:#fff;padding:13px 12px;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;transition:.18s;min-height:66px}.separation-person-card-v24556:hover{transform:translateY(-1px);box-shadow:var(--shadow);border-color:#bfd5df}.separation-person-card-v24556 .avatar{width:40px;height:40px;flex:0 0 40px}.separation-person-card-v24556 b{display:block;color:var(--nav);font-size:14px;line-height:1.2}.separation-person-card-v24556 small{display:block;color:var(--muted);margin-top:3px;line-height:1.2}.separation-choice-note-v24556{margin-top:10px;padding:10px 12px;border-radius:12px;background:#f5fafb;color:var(--muted);font-size:12px}.separation-type-card-v24555 b,.separation-type-card-v24555 small{display:block}.separation-type-card-v24555 b{line-height:1.25}.separation-type-card-v24555 small{margin-top:2px}.separation-type-card-v24555 span:last-child{min-width:0}.separation-type-card-v24555{overflow:hidden}.separation-type-card-v24555 .sep-icon{flex:0 0 42px}.separation-locked-type-v24556{opacity:.55;cursor:not-allowed}.separation-locked-type-v24556:hover{transform:none;box-shadow:none;border-color:var(--line)}
+@media(max-width:980px){.separation-people-grid-v24556{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.separation-people-grid-v24556{grid-template-columns:1fr}.separation-type-grid-v24555{grid-template-columns:1fr}.separation-type-card-v24555{min-height:104px;flex-direction:row;align-items:center}.separation-session-v24555{align-items:flex-start}.separation-list-row-v24555{grid-template-columns:1fr;gap:5px}.separation-list-row-v24555 .separation-list-time{justify-self:start}.separation-management-kpis-v24555{grid-template-columns:1fr 1fr}.separation-search-row-v24555{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -5648,9 +5650,9 @@ window.V24531='V24.5.33';</script>
   window.v24545SendSkip=window.v24549SendSkip;
 })();
 </script>
-\n<script id="v24555-separation-feature">
+\n<script id="v24556-separation-feature">
 (function(){
-  const V24555='V24.5.55';
+  const V24555='V24.5.56';
   const SEP_EMP_KEY='v24555SeparationEmployee';
   let sepEmployee=null;
   let sepType=null;
@@ -5683,6 +5685,13 @@ window.V24531='V24.5.33';</script>
     return sepEmployee;
   }
 
+  async function loadSepPeople(){
+    try{
+      const rows=await rpc('get_day_people_v2',{p_date:isoLocal()});
+      return (Array.isArray(rows)?rows:[]).filter(x=>v24Bool(x.active_today)&&String(x.employee_role||'').toLowerCase()!=='líder de estoque');
+    }catch(e){console.error('V24556_SEP_PEOPLE',e);return [];}
+  }
+
   async function validateSepSession(){
     loadSepSession();
     if(!sepEmployee?.token)return null;
@@ -5711,26 +5720,25 @@ window.V24531='V24.5.33';</script>
     refreshIcons();
   }
 
-  window.v24555ConfirmSeparationEmployee=async function(){
-    const id=document.getElementById('sepEmployeeChoice')?.value||'';
+  window.v24555SelectSeparationEmployee=async function(id){
+    id=String(id||'');
     if(!id){toast('Selecione seu nome.');return;}
-    const btn=[...document.querySelectorAll('#modalBox .actions .btn')][0];
-    if(btn){btn.disabled=true;btn.textContent='Validando...';}
+    const btn=document.querySelector(`[data-sep-person-id="${CSS.escape(id)}"]`);
+    if(btn){btn.disabled=true;btn.classList.add('is-loading');const old=btn.innerHTML;btn.dataset.oldHtml=old;btn.innerHTML='<span class="spinner"></span><span>Validando...</span>';}
     try{
       const r=await rpc('employee_open_session_v3',{p_employee:id});
       if(!r?.ok){toast(({employee_not_present:'Somente quem está presente pode registrar a separação.',operation_not_published:'A operação de hoje ainda não foi publicada.',employee_not_found:'Colaborador não encontrado.'})[r?.error]||'Não foi possível validar seu acesso.');return;}
       sepEmployee={id:String(r.employee?.id||id),name:r.employee?.name||'Colaborador',role:r.employee?.role||'Equipe de Estoque',token:String(r.token)};
       try{sessionStorage.setItem(SEP_EMP_KEY,JSON.stringify(sepEmployee));}catch(_){}
-      const cb=window.v24555PendingSepCallback;window.v24555PendingSepCallback=null;closeModal();
-      if(typeof cb==='function')await cb();
+      const cb=window.v24555PendingSepCallback;window.v24555PendingSepCallback=null;
+      if(typeof cb==='function')await cb();else{await loadSepRecent();renderSepPage();}
     }catch(e){console.error(e);toast('Não foi possível validar seu acesso.');}
-    finally{if(btn)btn.disabled=false;}
+    finally{if(btn){btn.disabled=false;if(btn.dataset.oldHtml)btn.innerHTML=btn.dataset.oldHtml;}}
   };
 
   async function ensureSepEmployee(after){
     const v=await validateSepSession();
     if(v){return true;}
-    await openSepEmployeePicker(after);
     return false;
   }
 
@@ -5741,23 +5749,25 @@ window.V24531='V24.5.33';</script>
     try{sepRecent=await rpc('employee_list_separations_v1',{p_employee_token:v.token,p_date:isoLocal()})||[];}catch(e){console.warn('Separações recentes indisponíveis',e)}
   }
 
-  function renderSepPage(){
+  async function renderSepPage(){
     const host=document.getElementById('separationApp');if(!host)return;
     loadSepSession();
     const session=sepEmployee;
+    const people=session?[]:await loadSepPeople();
     const sessionHtml=session?`<div class="separation-session-v24555"><div class="separation-session-main-v24555">${sepAvatar(session.name)}<div><b>${sepEsc(session.name)}</b><small>${sepEsc(session.role||'Equipe de Estoque')}</small></div></div><button class="btn light" type="button" onclick="v24555ChangeSeparationEmployee()"><i data-lucide="users" class="ico"></i>Trocar</button></div>`:'';
-    const cards=Object.entries(SEP_META).map(([key,m])=>`<button type="button" class="separation-type-card-v24555" onclick="v24555OpenSeparationType('${key}')"><span class="sep-icon"><i data-lucide="${m.icon}" class="ico" style="margin:0"></i></span><span><b>${m.label}</b><small>Informe ${m.field.toLowerCase()} e registre quem fez a separação.</small></span></button>`).join('');
+    const peopleHtml=session?'':(people.length?`<div class="separation-people-grid-v24556">${people.map(p=>`<button type="button" class="separation-person-card-v24556" data-sep-person-id="${sepEsc(p.employee_id)}" onclick="v24555SelectSeparationEmployee('${sepEsc(p.employee_id)}')">${sepAvatar(p.employee_name)}<span><b>${sepEsc(p.employee_name)}</b><small>${sepEsc(p.employee_role||'Equipe de Estoque')}</small></span></button>`).join('')}</div><div class="separation-choice-note-v24556">Selecione seu nome. Depois disso, escolha o tipo de separação que vai realizar.</div>`:'<div class="empty-state"><i data-lucide="users" class="ico"></i>Nenhum colaborador da equipe está presente no momento.</div>');
+    const cards=Object.entries(SEP_META).map(([key,m])=>`<button type="button" class="separation-type-card-v24555 ${session?'':'separation-locked-type-v24556'}" ${session?`onclick="v24555OpenSeparationType('${key}')"`:'disabled'}><span class="sep-icon"><i data-lucide="${m.icon}" class="ico" style="margin:0"></i></span><span><b>${m.label}</b><small>Informe ${m.field.toLowerCase()} e registre quem fez a separação.</small></span></button>`).join('');
     const recent=sepRecent.length?`<div class="separation-current-v24555"><div class="section-head"><div><div class="section-kicker">REGISTROS DE HOJE</div><h3>Minhas separações</h3><div class="sub">Ficam vinculadas ao seu nome e podem ser consultadas pela Gestão.</div></div><span class="status-pill done">${sepRecent.length} registro(s)</span></div><div class="separation-list-v24555">${sepRecent.slice(0,8).map(r=>`<div class="separation-list-row-v24555"><span class="separation-type-badge-v24555">${sepEsc(sepShortType(r.separation_type))}</span><div><b>${sepEsc(r.reference_number)}</b><small>${sepEsc(sepTypeLabel(r.separation_type))}</small></div><small class="separation-list-time">${sepTime(r.created_at)}</small></div>`).join('')}</div></div>`:'';
-    host.innerHTML=`<div class="section-head"><div><div class="section-kicker">1 · IDENTIFICAÇÃO</div><h3>Quem está usando a aba?</h3><div class="sub">A primeira vez no dia, informe seu nome. Depois disso, o sistema mantém sua sessão de separação.</div></div></div>${sessionHtml||'<div class="empty-state"><i data-lucide="user-round" class="ico"></i>Selecione seu nome para começar a registrar separações.</div>'}<div style="margin-top:16px"><div class="section-head"><div><div class="section-kicker">2 · TIPO DE SEPARAÇÃO</div><h3>O que você vai separar?</h3><div class="sub">Escolha uma das opções abaixo.</div></div></div><div class="separation-type-grid-v24555">${cards}</div></div>${recent}`;
+    host.innerHTML=`<div class="section-head"><div><div class="section-kicker">1 · IDENTIFICAÇÃO</div><h3>${session?'Quem está usando a aba?':'Quem vai fazer a separação?'}</h3><div class="sub">${session?'Usuário identificado. Você pode trocar o responsável quando necessário.':'Selecione o colaborador que vai realizar a separação.'}</div></div></div>${sessionHtml||peopleHtml}<div style="margin-top:16px"><div class="section-head"><div><div class="section-kicker">2 · TIPO DE SEPARAÇÃO</div><h3>O que você vai separar?</h3><div class="sub">${session?'Escolha uma das opções abaixo.':'Primeiro selecione o colaborador acima.'}</div></div></div><div class="separation-type-grid-v24555">${cards}</div></div>${recent}`;
     refreshIcons();
   }
 
-  window.v24555ChangeSeparationEmployee=async function(){sepEmployee=null;try{sessionStorage.removeItem(SEP_EMP_KEY)}catch(_){}await openSepEmployeePicker(async()=>{await loadSepRecent();renderSepPage();});};
+  window.v24555ChangeSeparationEmployee=async function(){sepEmployee=null;sepType=null;sepRecent=[];try{sessionStorage.removeItem(SEP_EMP_KEY)}catch(_){}renderSepPage();};
 
   window.v24555OpenSeparationType=async function(type){
     const meta=SEP_META[type];if(!meta)return;
-    const ready=await ensureSepEmployee(async()=>{sepType=type;showSepForm(type);});
-    if(!ready){return;}
+    const v=await validateSepSession();
+    if(!v){renderSepPage();return;}
     sepType=type;showSepForm(type);
   };
 
