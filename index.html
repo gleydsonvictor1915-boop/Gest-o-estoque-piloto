@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.10.02-v24.5.56-separation-picker" />
+<meta name="app-version" content="2026.10.02-v24.5.58-separation-independent-entry" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -5650,9 +5650,9 @@ window.V24531='V24.5.33';</script>
   window.v24545SendSkip=window.v24549SendSkip;
 })();
 </script>
-\n<script id="v24556-separation-feature">
+\n<script id="v24558-separation-independent">
 (function(){
-  const V24555='V24.5.56';
+  const V24555='V24.5.58';
   const SEP_EMP_KEY='v24555SeparationEmployee';
   let sepEmployee=null;
   let sepType=null;
@@ -5672,8 +5672,8 @@ window.V24531='V24.5.33';</script>
   function sepAvatar(name){const ini=sepEsc(String(name||'?').slice(0,1).toUpperCase());return `<div class="avatar">${ini}</div>`}
 
   // A aba Separação tem sessão própria e NÃO deve herdar a pessoa
-  // selecionada na aba Rotina. Assim, ao entrar aqui, o responsável
-  // sempre é escolhido de forma independente.
+  // selecionada na aba Rotina. A sessão é usada somente enquanto
+  // o colaborador permanece nesta entrada da aba.
   function loadSepSession(){
     try{
       const raw=sessionStorage.getItem(SEP_EMP_KEY);
@@ -5683,8 +5683,14 @@ window.V24531='V24.5.33';</script>
         return sepEmployee;
       }
     }catch(_){}
+    return sepEmployee;
+  }
+
+  function resetSepEntry(){
     sepEmployee=null;
-    return null;
+    sepType=null;
+    sepRecent=[];
+    try{sessionStorage.removeItem(SEP_EMP_KEY)}catch(_){}
   }
 
   async function loadSepPeople(){
@@ -5808,6 +5814,9 @@ window.V24531='V24.5.33';</script>
   const baseShowPageV24555=showPage;
   window.showPage=function(p){
     if(p==='separacao'){
+      // Cada entrada na aba começa pela seleção independente do colaborador.
+      // Isso evita reaproveitar a pessoa escolhida na Rotina ou uma sessão anterior.
+      resetSepEntry();
       localStorage.setItem('activePage','separacao');
       ['pageRotina','pageSeparacao','pageGestao','pageSugestoes'].forEach(id=>document.getElementById(id)?.classList.toggle('hidden',id!== 'pageSeparacao'));
       ['navRotina','navSeparacao','navGestao','navSugestoes'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
@@ -5879,7 +5888,6 @@ window.V24531='V24.5.33';</script>
     }
   }
 
-  loadSepSession();
-  console.info('Gestão do Estoque',V24555,'separação com rastreabilidade por colaborador');
+  console.info('Gestão do Estoque',V24555,'separação com seleção independente por colaborador');
 })();
 </script>
