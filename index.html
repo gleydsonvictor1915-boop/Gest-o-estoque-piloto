@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.09.14-v24.5.36-delete-proof-ui" />
+<meta name="app-version" content="2026.09.24-v24.5.55-separation-tracking" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -100,7 +100,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <style>
-:root{--nav:#0b4a78;--nav2:#135f8f;--mint:#2bc7a4;--mint2:#eaf8f4;--bg:#f1f6f8;--card:#fff;--text:#0f2942;--muted:#688197;--line:#d8e5ea;--danger:#d94a59;--warn:#f2a633;--ok:#1ca36d;--shadow:0 8px 26px rgba(19,60,84,.08)}*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:grid;grid-template-columns:280px 1fr}.side{background:var(--nav);color:#fff;padding:24px 18px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}.brand{display:flex;gap:12px;align-items:center}.logo{width:58px;height:58px;border-radius:16px;background:linear-gradient(145deg,#ffffff,#dff7f0);display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(11,74,120,.08)}.logo-badge{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#0b4a78,#1888aa);display:grid;place-items:center;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.15)}.logo-badge .ico{width:24px;height:24px;margin:0;stroke-width:2.4}.brand h1{font-size:22px;margin:0}.brand small{opacity:.82;display:block;margin-top:2px}.nav{display:grid;gap:8px}.nav button{border:0;color:#fff;background:transparent;border-radius:14px;padding:15px 16px;text-align:left;font-weight:800}.nav button.active{background:#145f8e;box-shadow:inset 4px 0 0 var(--mint)}.motto{margin-top:auto;border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:18px;background:rgba(255,255,255,.06)}.motto b{display:block;margin-bottom:8px}.main{padding:18px 22px 60px}.hero{background:linear-gradient(110deg,#245b89,#2cc3a2);border-radius:26px;color:#fff;padding:30px 36px;display:flex;justify-content:space-between;gap:20px;align-items:center;box-shadow:var(--shadow)}.hero h2{font-size:42px;margin:6px 0}.hero p{margin:0;font-size:18px}.week{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);padding:18px 22px;border-radius:18px;min-width:230px}.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;margin-top:18px;box-shadow:var(--shadow)}.panel h3{margin:0 0 4px;font-size:21px}.sub{color:var(--muted);font-size:14px}.team{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}.person{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;gap:12px;align-items:center;background:#fff;transition:.18s}.person:hover{transform:translateY(-1px);box-shadow:var(--shadow)}.avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#dce9ef;display:grid;place-items:center;font-weight:900;color:var(--nav)}.person .name{font-weight:900}.person .role{font-size:12px;color:var(--muted);margin-top:2px}.status{margin-left:auto;padding:7px 9px;border-radius:999px;font-size:11px;font-weight:900;background:#edf3f5;color:#5a7488}.status.done{background:#e6f7ef;color:var(--ok)}.status.run{background:#fff4dc;color:#9a6710}.status.absent{background:#ffecef;color:var(--danger)}.activitybox{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:18px;background:#fbfdfe}.activitybox h4{margin:0 0 8px}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:900;background:var(--nav);color:#fff}.btn.mint{background:var(--mint);color:#073d39}.btn.light{background:#eef5f7;color:var(--nav)}.btn.danger{background:#ffe8eb;color:#b12739}.btn.warn{background:#fff0d0;color:#835710}.btn:disabled{opacity:.45;cursor:not-allowed}.upload{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.upload label{border:1px dashed #9cbac8;border-radius:14px;padding:12px;text-align:center;font-weight:800;color:var(--nav);background:#f7fbfc}.upload input{display:none}.cover-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:16px}.field{display:grid;gap:6px}.field label{font-size:12px;font-weight:800;color:var(--muted)}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:white;color:var(--text)}textarea{min-height:90px;resize:vertical}.hidden{display:none!important}.manage-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 8px}.tabs button{white-space:nowrap;border:0;border-radius:10px;padding:10px 12px;background:#eaf1f4;color:var(--nav);font-weight:900}.tabs button.active{background:var(--nav);color:#fff}.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.kpi b{font-size:27px;display:block;margin-top:5px}.kpi small{color:var(--muted)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:14px 0}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:16px}table{width:100%;border-collapse:collapse;min-width:900px;background:#fff}th,td{padding:11px 12px;border-bottom:1px solid #e8f0f3;text-align:left;font-size:13px}th{background:#f5f9fa;position:sticky;top:0;z-index:1}.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.photo-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}.photo-card img{width:100%;aspect-ratio:4/3;object-fit:cover}.photo-card .meta{padding:10px;font-size:12px}.phase-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.phase-tabs button{border:0;border-radius:10px;padding:10px 12px;background:#eaf1f4;color:var(--nav);font-weight:900}.phase-tabs button.active{background:var(--nav);color:#fff}.employee-photo-block{margin-bottom:18px}.employee-photo-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.modal{position:fixed;inset:0;background:rgba(3,27,43,.58);display:grid;place-items:center;padding:18px;z-index:30}.modal .box{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.28)}.login{max-width:440px;margin:9vh auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow)}.toast{position:fixed;right:18px;bottom:18px;background:#17384f;color:white;padding:12px 16px;border-radius:12px;z-index:100;display:none}.muted{color:var(--muted)}.dangertext{color:var(--danger)}@media(max-width:1100px){.team{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(3,1fr)}.photo-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.app{display:block}.side{height:auto;position:sticky;top:0;z-index:20;padding:10px 12px;display:grid;grid-template-columns:1fr;align-items:center}.brand{gap:8px}.logo{width:42px;height:42px;border-radius:12px}.brand h1{font-size:16px}.brand small,.motto{display:none}.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.nav button{padding:10px 8px;font-size:12px;text-align:center}.nav .ico{display:block;margin:0 auto 4px}.main{padding:12px 12px 80px}.hero{padding:22px 18px;border-radius:20px;display:block}.hero h2{font-size:31px}.hero p{font-size:15px}.week{margin-top:15px;min-width:0}.panel{padding:16px;border-radius:18px}.team{grid-template-columns:1fr}.cover-grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.photo-grid{grid-template-columns:repeat(2,1fr)}.upload{grid-template-columns:1fr}.person{padding:11px}.manage-head{align-items:flex-start;flex-direction:column}.toolbar .field{min-width:140px;flex:1}}@media(max-width:430px){.cards{grid-template-columns:1fr 1fr}.photo-grid{grid-template-columns:1fr}.hero h2{font-size:27px}}
+:root{--nav:#0b4a78;--nav2:#135f8f;--mint:#2bc7a4;--mint2:#eaf8f4;--bg:#f1f6f8;--card:#fff;--text:#0f2942;--muted:#688197;--line:#d8e5ea;--danger:#d94a59;--warn:#f2a633;--ok:#1ca36d;--shadow:0 8px 26px rgba(19,60,84,.08)}*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:grid;grid-template-columns:280px 1fr}.side{background:var(--nav);color:#fff;padding:24px 18px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}.brand{display:flex;gap:12px;align-items:center}.logo{width:58px;height:58px;border-radius:16px;background:linear-gradient(145deg,#ffffff,#dff7f0);display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(11,74,120,.08)}.logo-badge{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#0b4a78,#1888aa);display:grid;place-items:center;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.15)}.logo-badge .ico{width:24px;height:24px;margin:0;stroke-width:2.4}.brand h1{font-size:22px;margin:0}.brand small{opacity:.82;display:block;margin-top:2px}.nav{display:grid;gap:8px}.nav button{border:0;color:#fff;background:transparent;border-radius:14px;padding:15px 16px;text-align:left;font-weight:800}.nav button.active{background:#145f8e;box-shadow:inset 4px 0 0 var(--mint)}.motto{margin-top:auto;border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:18px;background:rgba(255,255,255,.06)}.motto b{display:block;margin-bottom:8px}.main{padding:18px 22px 60px}.hero{background:linear-gradient(110deg,#245b89,#2cc3a2);border-radius:26px;color:#fff;padding:30px 36px;display:flex;justify-content:space-between;gap:20px;align-items:center;box-shadow:var(--shadow)}.hero h2{font-size:42px;margin:6px 0}.hero p{margin:0;font-size:18px}.week{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);padding:18px 22px;border-radius:18px;min-width:230px}.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;margin-top:18px;box-shadow:var(--shadow)}.panel h3{margin:0 0 4px;font-size:21px}.sub{color:var(--muted);font-size:14px}.team{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}.person{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;gap:12px;align-items:center;background:#fff;transition:.18s}.person:hover{transform:translateY(-1px);box-shadow:var(--shadow)}.avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#dce9ef;display:grid;place-items:center;font-weight:900;color:var(--nav)}.person .name{font-weight:900}.person .role{font-size:12px;color:var(--muted);margin-top:2px}.status{margin-left:auto;padding:7px 9px;border-radius:999px;font-size:11px;font-weight:900;background:#edf3f5;color:#5a7488}.status.done{background:#e6f7ef;color:var(--ok)}.status.run{background:#fff4dc;color:#9a6710}.status.absent{background:#ffecef;color:var(--danger)}.activitybox{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:18px;background:#fbfdfe}.activitybox h4{margin:0 0 8px}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:900;background:var(--nav);color:#fff}.btn.mint{background:var(--mint);color:#073d39}.btn.light{background:#eef5f7;color:var(--nav)}.btn.danger{background:#ffe8eb;color:#b12739}.btn.warn{background:#fff0d0;color:#835710}.btn:disabled{opacity:.45;cursor:not-allowed}.upload{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.upload label{border:1px dashed #9cbac8;border-radius:14px;padding:12px;text-align:center;font-weight:800;color:var(--nav);background:#f7fbfc}.upload input{display:none}.cover-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:16px}.field{display:grid;gap:6px}.field label{font-size:12px;font-weight:800;color:var(--muted)}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:white;color:var(--text)}textarea{min-height:90px;resize:vertical}.hidden{display:none!important}.manage-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 8px}.tabs button{white-space:nowrap;border:0;border-radius:10px;padding:10px 12px;background:#eaf1f4;color:var(--nav);font-weight:900}.tabs button.active{background:var(--nav);color:#fff}.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.kpi b{font-size:27px;display:block;margin-top:5px}.kpi small{color:var(--muted)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:14px 0}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:16px}table{width:100%;border-collapse:collapse;min-width:900px;background:#fff}th,td{padding:11px 12px;border-bottom:1px solid #e8f0f3;text-align:left;font-size:13px}th{background:#f5f9fa;position:sticky;top:0;z-index:1}.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.photo-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}.photo-card img{width:100%;aspect-ratio:4/3;object-fit:cover}.photo-card .meta{padding:10px;font-size:12px}.phase-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.phase-tabs button{border:0;border-radius:10px;padding:10px 12px;background:#eaf1f4;color:var(--nav);font-weight:900}.phase-tabs button.active{background:var(--nav);color:#fff}.employee-photo-block{margin-bottom:18px}.employee-photo-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.modal{position:fixed;inset:0;background:rgba(3,27,43,.58);display:grid;place-items:center;padding:18px;z-index:30}.modal .box{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.28)}.login{max-width:440px;margin:9vh auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow)}.toast{position:fixed;right:18px;bottom:18px;background:#17384f;color:white;padding:12px 16px;border-radius:12px;z-index:100;display:none}.muted{color:var(--muted)}.dangertext{color:var(--danger)}@media(max-width:1100px){.team{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:repeat(3,1fr)}.photo-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.app{display:block}.side{height:auto;position:sticky;top:0;z-index:20;padding:10px 12px;display:grid;grid-template-columns:1fr;align-items:center}.brand{gap:8px}.logo{width:42px;height:42px;border-radius:12px}.brand h1{font-size:16px}.brand small,.motto{display:none}.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.nav button{padding:10px 8px;font-size:12px;text-align:center}.nav .ico{display:block;margin:0 auto 4px}.main{padding:12px 12px 80px}.hero{padding:22px 18px;border-radius:20px;display:block}.hero h2{font-size:31px}.hero p{font-size:15px}.week{margin-top:15px;min-width:0}.panel{padding:16px;border-radius:18px}.team{grid-template-columns:1fr}.cover-grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.photo-grid{grid-template-columns:repeat(2,1fr)}.upload{grid-template-columns:1fr}.person{padding:11px}.manage-head{align-items:flex-start;flex-direction:column}.toolbar .field{min-width:140px;flex:1}}@media(max-width:430px){.cards{grid-template-columns:1fr 1fr}.photo-grid{grid-template-columns:1fr}.hero h2{font-size:27px}}
 
 /* Escala tipográfica padronizada */
 body{font-size:15px;line-height:1.45}.brand h1{font-size:20px}.hero h2{font-size:34px;line-height:1.15}.hero p{font-size:15px}.panel h3{font-size:20px}.sub,.muted{font-size:14px}.person .name,.btn,.nav button{font-size:14px}.person .role,.status,.field label,th,td,.photo-card .meta{font-size:12px}.activitybox h4{font-size:18px}.activitybox p{font-size:15px}.camera-stage{width:100%;max-height:62vh;background:#071827;border-radius:16px;overflow:hidden;position:relative}.camera-stage video{display:block;width:100%;height:auto;max-height:62vh;object-fit:cover}.camera-tip{font-size:13px;color:var(--muted);margin:8px 0}.time-result{margin-top:14px;padding:12px 14px;border-radius:14px;background:#eaf8f4;color:#11684f;font-weight:900}.proof-step{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.proof-step.done{background:#edfaf5;border-color:#bdebd9}.proof-step.locked{opacity:.58}.btn.camera{background:#12699a}.admin-photo-preview{width:74px;height:74px;border-radius:50%;object-fit:cover;background:#e7f0f4;border:1px solid var(--line)}
@@ -785,12 +785,37 @@ input,select,textarea{max-width:100%}
 @media(min-width:761px){.proof-review-actions-v24542{grid-template-columns:1fr 1fr}.proof-review-actions-v24542 .btn{min-height:56px}}
 @media(max-width:760px){.proof-review-v24542{max-width:none}.proof-review-head-v24542{align-items:flex-start}.proof-review-title-v24542 h3{font-size:18px}.proof-review-actions-v24542 .btn{min-height:56px;font-size:14px}.proof-review-note-v24542{font-size:13px;margin-bottom:14px}}
 </style>
+
+<style id="v24555-separation-style">
+.separation-hero-v24555{background:linear-gradient(110deg,#245b89,#2cc3a2)}
+.separation-type-grid-v24555{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.separation-type-card-v24555{border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;background:#fff;display:flex;flex-direction:column;gap:8px;min-height:150px;transition:.18s;box-shadow:none}
+.separation-type-card-v24555:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.separation-type-card-v24555 .sep-icon{width:42px;height:42px;border-radius:13px;background:var(--mint2);display:grid;place-items:center;color:var(--nav);font-weight:900}
+.separation-type-card-v24555 b{font-size:16px;color:var(--nav)}
+.separation-type-card-v24555 small{color:var(--muted);line-height:1.45}
+.separation-session-v24555{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:15px;padding:11px 13px;background:#f8fbfc}
+.separation-session-main-v24555{display:flex;align-items:center;gap:9px;min-width:0}
+.separation-session-main-v24555 .avatar{width:38px;height:38px;flex:0 0 38px}
+.separation-session-main-v24555 b,.separation-session-main-v24555 small{display:block}
+.separation-session-main-v24555 small{color:var(--muted);margin-top:2px}
+.separation-current-v24555{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.separation-list-v24555{display:grid;gap:8px;margin-top:10px}
+.separation-list-row-v24555{display:grid;grid-template-columns:145px 1fr 110px;align-items:center;gap:10px;border:1px solid var(--line);border-radius:13px;padding:10px 12px;background:#fff}
+.separation-list-row-v24555 b{display:block}.separation-list-row-v24555 small{display:block;color:var(--muted);margin-top:2px}
+.separation-type-badge-v24555{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border-radius:999px;padding:6px 9px;background:#edf4f6;color:var(--nav);font-size:10px;font-weight:900}
+.separation-management-kpis-v24555{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.separation-management-kpi-v24555{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fbfdfe}.separation-management-kpi-v24555 small{display:block;color:var(--muted);font-weight:800}.separation-management-kpi-v24555 b{display:block;font-size:25px;margin-top:4px}
+.separation-empty-v24555{border:1px dashed var(--line);border-radius:15px;padding:22px;text-align:center;color:var(--muted)}
+.separation-search-row-v24555{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:10px;align-items:end;margin-top:14px}
+@media(max-width:760px){.separation-type-grid-v24555{grid-template-columns:1fr}.separation-type-card-v24555{min-height:104px;flex-direction:row;align-items:center}.separation-type-card-v24555 .sep-icon{flex:0 0 42px}.separation-session-v24555{align-items:flex-start}.separation-list-row-v24555{grid-template-columns:1fr;gap:5px}.separation-list-row-v24555 .separation-list-time{justify-self:start}.separation-management-kpis-v24555{grid-template-columns:1fr 1fr}.separation-search-row-v24555{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div class="app">
 <aside class="side">
   <div class="brand"><div class="logo"><div class="logo-badge"><i data-lucide="clipboard-check" class="ico"></i></div></div><div><h1>Gestão do Estoque</h1><small></small></div></div>
-  <div class="nav"><button id="navRotina" class="active" onclick="showPage('rotina')"><i data-lucide="house" class="ico"></i>Rotina</button><button id="navGestao" onclick="showPage('gestao')"><i data-lucide="shield-check" class="ico"></i>Gestão</button><button id="navSugestoes" onclick="showPage('sugestoes')"><i data-lucide="lightbulb" class="ico"></i>Ideias</button></div>
+  <div class="nav"><button id="navRotina" class="active" onclick="showPage('rotina')"><i data-lucide="house" class="ico"></i>Rotina</button><button id="navSeparacao" onclick="showPage('separacao')"><i data-lucide="package-search" class="ico"></i>Separação</button><button id="navGestao" onclick="showPage('gestao')"><i data-lucide="shield-check" class="ico"></i>Gestão</button><button id="navSugestoes" onclick="showPage('sugestoes')"><i data-lucide="lightbulb" class="ico"></i>Ideias</button></div>
   <div class="motto"><b><i data-lucide="users-round" class="ico"></i>Todo mundo faz tudo,<br>juntos somos mais fortes!</b><small>A escala divide o trabalho e fortalece o time.</small></div>
 </aside>
 <main class="main">
@@ -812,6 +837,11 @@ input,select,textarea{max-width:100%}
   </div>
 </section>
 
+<section id="pageSeparacao" class="hidden">
+  <div class="hero separation-hero-v24555"><div><div style="font-weight:900;letter-spacing:.08em">CONTROLE DE SEPARAÇÃO</div><h2>Separação</h2><p>Registre quem está separando cada pedido, requisição ou ticket para manter a rastreabilidade da operação.</p></div><div class="week"><i data-lucide="package-search" class="ico"></i><b>Registro rápido</b><small style="display:block;margin-top:6px;opacity:.82">Escolha o tipo e informe o número.</small></div></div>
+  <div class="panel" id="separationApp"></div>
+</section>
+
 <section id="pageSugestoes" class="hidden">
   <div class="hero"><div><div style="font-weight:900;letter-spacing:.08em">MELHORIA CONTÍNUA</div><h2>Ideias</h2><p>Um espaço simples e anônimo para sugerir melhorias na rotina, organização e operação do estoque.</p></div><div class="week"><i data-lucide="lightbulb" class="ico"></i><b> Ideias da equipe</b></div></div>
   <div class="panel idea-only-panel">
@@ -824,8 +854,8 @@ input,select,textarea{max-width:100%}
   <div id="loginArea" class="login"><div style="text-align:center;margin-bottom:14px"><div class="logo" style="width:88px;height:88px;border-radius:22px;margin:0 auto"><div class="logo-badge" style="width:62px;height:62px;border-radius:18px"><i data-lucide="clipboard-check" class="ico" style="width:34px;height:34px;margin:0"></i></div></div><h2 style="margin:8px 0 0">Gestão</h2></div><p class="muted">Área exclusiva para gestores autorizados.</p><div class="field"><label>Usuário</label><input id="loginUser" value="gestor.mestre" placeholder="Seu usuário" autocomplete="username" autocapitalize="none" spellcheck="false"></div><div class="field" style="margin-top:10px"><label>Senha</label><input id="loginPass" type="password" autocomplete="current-password"></div><div class="actions"><button class="btn" onclick="leaderLogin()"><i data-lucide="log-in" class="ico"></i>Entrar</button></div><small class="muted">Sua sessão de Gestão permanece ativa por até 8 horas e suporta até 2 horas sem atividade.</small></div>
   <div id="management" class="hidden">
     <div class="manage-head"><div><h2 style="margin:0">Gestão</h2><div class="sub">Visão e controle completo da operação do estoque.</div></div><div class="actions"><input id="manageDate" type="date" style="width:auto" onchange="dashboardPeriod='custom';localStorage.setItem('dashboardPeriod','custom');loadManagement()"><button class="btn danger" onclick="leaderLogout()"><i data-lucide="log-out" class="ico"></i>Sair</button></div></div>
-    <div class="panel"><div class="tabs" id="tabs"><button class="active" data-tab="dayprep" onclick="setTab('dayprep',this)"><i data-lucide="clipboard-check" class="ico"></i><span class="desktop-label">Preparar o dia</span><span class="mobile-label">Preparar</span></button><button data-tab="overview" onclick="setTab('overview',this)"><i data-lucide="layout-dashboard" class="ico"></i><span class="desktop-label">Visão geral</span><span class="mobile-label">Painel</span></button><button data-tab="pending" onclick="setTab('pending',this)"><i data-lucide="clipboard-list" class="ico"></i><span class="desktop-label">Observações citadas</span><span class="mobile-label">Observações</span></button><button class="mobile-secondary" data-tab="team" onclick="setTab('team',this)"><i data-lucide="users" class="ico"></i>Equipe</button><button class="mobile-secondary" data-tab="activities" onclick="setTab('activities',this)"><i data-lucide="clipboard-list" class="ico"></i>Atividades</button><button data-tab="dashboard" onclick="setTab('dashboard',this)"><i data-lucide="monitor-up" class="ico"></i><span class="desktop-label">Dashboard online</span><span class="mobile-label">Online</span></button><button id="manageMoreBtn" class="manage-more-btn" onclick="openManagementMore()"><i data-lucide="menu" class="ico"></i>Mais</button></div>
-      <div id="tab-dayprep"></div><div id="tab-overview" class="hidden"></div><div id="tab-pending" class="hidden"></div><div id="tab-team" class="hidden"></div><div id="tab-activities" class="hidden"></div><div id="tab-dashboard" class="hidden"></div><div id="tab-suggestions" class="hidden"></div><div id="tab-managers" class="hidden"></div><div id="tab-storage" class="hidden"></div><div id="tab-records" class="hidden"></div><div id="tab-photos" class="hidden"></div><div id="tab-csv" class="hidden"></div>
+    <div class="panel"><div class="tabs" id="tabs"><button class="active" data-tab="dayprep" onclick="setTab('dayprep',this)"><i data-lucide="clipboard-check" class="ico"></i><span class="desktop-label">Preparar o dia</span><span class="mobile-label">Preparar</span></button><button data-tab="overview" onclick="setTab('overview',this)"><i data-lucide="layout-dashboard" class="ico"></i><span class="desktop-label">Visão geral</span><span class="mobile-label">Painel</span></button><button data-tab="pending" onclick="setTab('pending',this)"><i data-lucide="clipboard-list" class="ico"></i><span class="desktop-label">Observações citadas</span><span class="mobile-label">Observações</span></button><button data-tab="separation" onclick="setTab('separation',this)"><i data-lucide="package-search" class="ico"></i><span class="desktop-label">Separação</span><span class="mobile-label">Separação</span></button><button class="mobile-secondary" data-tab="team" onclick="setTab('team',this)"><i data-lucide="users" class="ico"></i>Equipe</button><button class="mobile-secondary" data-tab="activities" onclick="setTab('activities',this)"><i data-lucide="clipboard-list" class="ico"></i>Atividades</button><button data-tab="dashboard" onclick="setTab('dashboard',this)"><i data-lucide="monitor-up" class="ico"></i><span class="desktop-label">Dashboard online</span><span class="mobile-label">Online</span></button><button id="manageMoreBtn" class="manage-more-btn" onclick="openManagementMore()"><i data-lucide="menu" class="ico"></i>Mais</button></div>
+      <div id="tab-dayprep"></div><div id="tab-overview" class="hidden"></div><div id="tab-pending" class="hidden"></div><div id="tab-separation" class="hidden"></div><div id="tab-team" class="hidden"></div><div id="tab-activities" class="hidden"></div><div id="tab-dashboard" class="hidden"></div><div id="tab-suggestions" class="hidden"></div><div id="tab-managers" class="hidden"></div><div id="tab-storage" class="hidden"></div><div id="tab-records" class="hidden"></div><div id="tab-photos" class="hidden"></div><div id="tab-csv" class="hidden"></div>
     </div>
   </div>
 </section>
@@ -5616,5 +5646,228 @@ window.V24531='V24.5.33';</script>
   window.v24532OpenSkipModal=window.v24549OpenSkipModal;
   window.v24532ConfirmSkip=window.v24549SendSkip;
   window.v24545SendSkip=window.v24549SendSkip;
+})();
+</script>
+\n<script id="v24555-separation-feature">
+(function(){
+  const V24555='V24.5.55';
+  const SEP_EMP_KEY='v24555SeparationEmployee';
+  let sepEmployee=null;
+  let sepType=null;
+  let sepRecent=[];
+  let sepRowsAdmin=[];
+
+  const SEP_META={
+    vips:{label:'Separação de VIPs',short:'VIPs',icon:'badge-check',field:'Número do pedido',placeholder:'Ex.: 123456'},
+    abastecimento:{label:'Separação de abastecimento',short:'Abastecimento',icon:'store',field:'Número da requisição',placeholder:'Ex.: REQ-123456'},
+    transferencias:{label:'Separação de transferências',short:'Transferências',icon:'truck',field:'Número do ticket',placeholder:'Ex.: TKT-123456'}
+  };
+
+  function sepEsc(v){try{return esc(String(v==null?'':v));}catch(_){return String(v==null?'':v)}}
+  function sepTime(v){try{return new Date(v).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}catch(_){return ''}}
+  function sepTypeLabel(t){return SEP_META[t]?.label||String(t||'').replace(/^\\w/,m=>m.toUpperCase())}
+  function sepShortType(t){return SEP_META[t]?.short||t||''}
+  function sepAvatar(name){const ini=sepEsc(String(name||'?').slice(0,1).toUpperCase());return `<div class="avatar">${ini}</div>`}
+
+  function loadSepSession(){
+    try{
+      const raw=sessionStorage.getItem('v245EmployeeAuth');
+      const a=raw?JSON.parse(raw):null;
+      if(a?.token&&a?.employee?.id){sepEmployee={id:String(a.employee.id),name:a.employee.name||'Colaborador',role:a.employee.role||'Equipe de Estoque',token:String(a.token)};return sepEmployee;}
+    }catch(_){}
+    try{
+      const raw=sessionStorage.getItem(SEP_EMP_KEY);
+      const a=raw?JSON.parse(raw):null;
+      if(a?.id)sepEmployee=a;
+    }catch(_){}
+    return sepEmployee;
+  }
+
+  async function validateSepSession(){
+    loadSepSession();
+    if(!sepEmployee?.token)return null;
+    try{
+      const r=await rpc('employee_valid_v1',{p_token:sepEmployee.token});
+      if(r?.ok&&r.employee?.id){
+        sepEmployee={id:String(r.employee.id),name:r.employee.name||sepEmployee.name||'Colaborador',role:r.employee.role||sepEmployee.role||'Equipe de Estoque',token:sepEmployee.token};
+        sessionStorage.setItem(SEP_EMP_KEY,JSON.stringify(sepEmployee));
+        return sepEmployee;
+      }
+    }catch(_){}
+    sepEmployee=null;
+    try{sessionStorage.removeItem(SEP_EMP_KEY)}catch(_){}
+    return null;
+  }
+
+  async function openSepEmployeePicker(after){
+    let people=[];
+    try{
+      const rows=await rpc('get_day_people_v2',{p_date:isoLocal()});
+      people=(Array.isArray(rows)?rows:[]).filter(x=>v24Bool(x.active_today));
+    }catch(e){console.error(e);toast('Não foi possível carregar a equipe agora.');return;}
+    if(!people.length){toast('Nenhum colaborador presente está disponível agora.');return;}
+    openModal(`<div class="section-head"><div><div class="section-kicker">SEPARAÇÃO</div><h3>Quem está separando?</h3><div class="sub">Selecione seu nome para registrar a separação no seu usuário.</div></div></div><div class="field"><label>Seu nome</label><select id="sepEmployeeChoice"><option value="">Selecione</option>${people.map(p=>`<option value="${p.employee_id}">${sepEsc(p.employee_name)}</option>`).join('')}</select></div><div class="actions"><button class="btn mint" type="button" onclick="v24555ConfirmSeparationEmployee()"><i data-lucide="user-check" class="ico"></i>Continuar</button><button class="btn light" type="button" onclick="closeModal()">Cancelar</button></div>`);
+    window.v24555PendingSepCallback=after;
+    refreshIcons();
+  }
+
+  window.v24555ConfirmSeparationEmployee=async function(){
+    const id=document.getElementById('sepEmployeeChoice')?.value||'';
+    if(!id){toast('Selecione seu nome.');return;}
+    const btn=[...document.querySelectorAll('#modalBox .actions .btn')][0];
+    if(btn){btn.disabled=true;btn.textContent='Validando...';}
+    try{
+      const r=await rpc('employee_open_session_v3',{p_employee:id});
+      if(!r?.ok){toast(({employee_not_present:'Somente quem está presente pode registrar a separação.',operation_not_published:'A operação de hoje ainda não foi publicada.',employee_not_found:'Colaborador não encontrado.'})[r?.error]||'Não foi possível validar seu acesso.');return;}
+      sepEmployee={id:String(r.employee?.id||id),name:r.employee?.name||'Colaborador',role:r.employee?.role||'Equipe de Estoque',token:String(r.token)};
+      try{sessionStorage.setItem(SEP_EMP_KEY,JSON.stringify(sepEmployee));}catch(_){}
+      const cb=window.v24555PendingSepCallback;window.v24555PendingSepCallback=null;closeModal();
+      if(typeof cb==='function')await cb();
+    }catch(e){console.error(e);toast('Não foi possível validar seu acesso.');}
+    finally{if(btn)btn.disabled=false;}
+  };
+
+  async function ensureSepEmployee(after){
+    const v=await validateSepSession();
+    if(v){return true;}
+    await openSepEmployeePicker(after);
+    return false;
+  }
+
+  async function loadSepRecent(){
+    sepRecent=[];
+    const v=await validateSepSession();
+    if(!v)return;
+    try{sepRecent=await rpc('employee_list_separations_v1',{p_employee_token:v.token,p_date:isoLocal()})||[];}catch(e){console.warn('Separações recentes indisponíveis',e)}
+  }
+
+  function renderSepPage(){
+    const host=document.getElementById('separationApp');if(!host)return;
+    loadSepSession();
+    const session=sepEmployee;
+    const sessionHtml=session?`<div class="separation-session-v24555"><div class="separation-session-main-v24555">${sepAvatar(session.name)}<div><b>${sepEsc(session.name)}</b><small>${sepEsc(session.role||'Equipe de Estoque')}</small></div></div><button class="btn light" type="button" onclick="v24555ChangeSeparationEmployee()"><i data-lucide="users" class="ico"></i>Trocar</button></div>`:'';
+    const cards=Object.entries(SEP_META).map(([key,m])=>`<button type="button" class="separation-type-card-v24555" onclick="v24555OpenSeparationType('${key}')"><span class="sep-icon"><i data-lucide="${m.icon}" class="ico" style="margin:0"></i></span><span><b>${m.label}</b><small>Informe ${m.field.toLowerCase()} e registre quem fez a separação.</small></span></button>`).join('');
+    const recent=sepRecent.length?`<div class="separation-current-v24555"><div class="section-head"><div><div class="section-kicker">REGISTROS DE HOJE</div><h3>Minhas separações</h3><div class="sub">Ficam vinculadas ao seu nome e podem ser consultadas pela Gestão.</div></div><span class="status-pill done">${sepRecent.length} registro(s)</span></div><div class="separation-list-v24555">${sepRecent.slice(0,8).map(r=>`<div class="separation-list-row-v24555"><span class="separation-type-badge-v24555">${sepEsc(sepShortType(r.separation_type))}</span><div><b>${sepEsc(r.reference_number)}</b><small>${sepEsc(sepTypeLabel(r.separation_type))}</small></div><small class="separation-list-time">${sepTime(r.created_at)}</small></div>`).join('')}</div></div>`:'';
+    host.innerHTML=`<div class="section-head"><div><div class="section-kicker">1 · IDENTIFICAÇÃO</div><h3>Quem está usando a aba?</h3><div class="sub">A primeira vez no dia, informe seu nome. Depois disso, o sistema mantém sua sessão de separação.</div></div></div>${sessionHtml||'<div class="empty-state"><i data-lucide="user-round" class="ico"></i>Selecione seu nome para começar a registrar separações.</div>'}<div style="margin-top:16px"><div class="section-head"><div><div class="section-kicker">2 · TIPO DE SEPARAÇÃO</div><h3>O que você vai separar?</h3><div class="sub">Escolha uma das opções abaixo.</div></div></div><div class="separation-type-grid-v24555">${cards}</div></div>${recent}`;
+    refreshIcons();
+  }
+
+  window.v24555ChangeSeparationEmployee=async function(){sepEmployee=null;try{sessionStorage.removeItem(SEP_EMP_KEY)}catch(_){}await openSepEmployeePicker(async()=>{await loadSepRecent();renderSepPage();});};
+
+  window.v24555OpenSeparationType=async function(type){
+    const meta=SEP_META[type];if(!meta)return;
+    const ready=await ensureSepEmployee(async()=>{sepType=type;showSepForm(type);});
+    if(!ready){return;}
+    sepType=type;showSepForm(type);
+  };
+
+  function showSepForm(type){
+    const host=document.getElementById('separationApp');if(!host)return;
+    const meta=SEP_META[type],session=sepEmployee;if(!session){renderSepPage();return;}
+    host.innerHTML=`<div class="section-head"><div><div class="section-kicker">REGISTRAR SEPARAÇÃO</div><h3>${sepEsc(meta.label)}</h3><div class="sub">Separando como <b>${sepEsc(session.name)}</b>. Não precisa iniciar nem comprovar com foto.</div></div><button class="btn light" type="button" onclick="renderSeparationPage()"><i data-lucide="arrow-left" class="ico"></i>Voltar</button></div><div class="activitybox"><div class="section-kicker">${sepEsc(meta.field)}</div><div style="font-size:17px;font-weight:900;margin-top:4px">Informe o número para registrar.</div><div class="field" style="margin-top:13px"><label for="sepReferenceInput">${sepEsc(meta.field)}</label><input id="sepReferenceInput" maxlength="80" inputmode="text" autocomplete="off" placeholder="${sepEsc(meta.placeholder)}" onkeydown="if(event.key==='Enter')v24555SubmitSeparation()"></div><div class="actions"><button id="sepSubmitBtn" class="btn mint" type="button" onclick="v24555SubmitSeparation()"><i data-lucide="save" class="ico"></i>Registrar separação</button><button class="btn light" type="button" onclick="renderSeparationPage()">Cancelar</button></div></div>`;
+    refreshIcons();setTimeout(()=>document.getElementById('sepReferenceInput')?.focus(),60);
+  }
+
+  window.v24555SubmitSeparation=async function(){
+    const input=document.getElementById('sepReferenceInput'),ref=(input?.value||'').trim();
+    if(!sepType||!SEP_META[sepType]){toast('Escolha o tipo de separação.');return;}
+    if(!ref){toast(`Informe ${SEP_META[sepType].field.toLowerCase()}.`);input?.focus();return;}
+    const v=await validateSepSession();
+    if(!v){toast('Sua sessão expirou. Selecione seu nome novamente.');renderSepPage();return;}
+    const btn=document.getElementById('sepSubmitBtn');if(btn){btn.disabled=true;btn.innerHTML='<i data-lucide="loader-circle" class="ico spin"></i>Registrando...';refreshIcons();}
+    try{
+      const r=await rpc('employee_register_separation_v1',{p_employee_token:v.token,p_separation_type:sepType,p_reference_number:ref});
+      if(!r?.ok){
+        if(r?.error==='reference_already_registered'){toast(`Esse número já foi registrado hoje por ${r.registered_by||'outro colaborador'}.`);}else{toast(({reference_required:'Informe o número.',reference_too_long:'O número informado é muito longo.',employee_not_present:'Você não está marcado como presente hoje.',employee_auth_required:'Sua sessão expirou. Selecione seu nome novamente.'})[r?.error]||'Não foi possível registrar a separação.');}
+        return;
+      }
+      input.value='';
+      await loadSepRecent();
+      toast(`${SEP_META[sepType].label} registrada ✓`);
+      showSepForm(sepType);
+      if(leaderToken){try{if(typeof loadManagement==='function')await loadManagement();}catch(_){} }
+    }catch(e){console.error('V24555_SEPARATION',e);toast('Erro ao registrar a separação.');}
+    finally{if(btn){btn.disabled=false;btn.innerHTML='<i data-lucide="save" class="ico"></i>Registrar separação';refreshIcons();}}
+  };
+
+  window.renderSeparationPage=async function(){await loadSepRecent();renderSepPage();};
+
+  // Final showPage wrapper: adds the new page without breaking the existing routine/management flows.
+  const baseShowPageV24555=showPage;
+  window.showPage=function(p){
+    if(p==='separacao'){
+      localStorage.setItem('activePage','separacao');
+      ['pageRotina','pageSeparacao','pageGestao','pageSugestoes'].forEach(id=>document.getElementById(id)?.classList.toggle('hidden',id!== 'pageSeparacao'));
+      ['navRotina','navSeparacao','navGestao','navSugestoes'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+      document.getElementById('navSeparacao')?.classList.add('active');
+      refreshIcons();requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
+      renderSeparationPage();
+      return;
+    }
+    baseShowPageV24555(p);
+    document.getElementById('pageSeparacao')?.classList.add('hidden');
+    document.getElementById('navSeparacao')?.classList.remove('active');
+  };
+
+  // Management tab support.
+  applyActiveTabState=function(){
+    const names=['dayprep','overview','pending','separation','records','photos','suggestions','team','activities','managers','storage','csv'];
+    if(!names.includes(activeTab))activeTab='dayprep';
+    names.forEach(n=>document.getElementById('tab-'+n)?.classList.toggle('hidden',n!==activeTab));
+    document.querySelectorAll('#tabs [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab));
+    document.getElementById('manageMoreBtn')?.classList.toggle('active',['records','photos','team','suggestions','activities','managers','storage','csv'].includes(activeTab));
+  };
+
+  function renderSeparationManagement(){
+    const host=document.getElementById('tab-separation');if(!host)return;
+    const d=document.getElementById('manageDate')?.value||isoLocal(),rows=Array.isArray(sepRowsAdmin)?sepRowsAdmin:[];
+    const counts={vips:rows.filter(r=>r.separation_type==='vips').length,abastecimento:rows.filter(r=>r.separation_type==='abastecimento').length,transferencias:rows.filter(r=>r.separation_type==='transferencias').length};
+    host.innerHTML=`<div class="section-head"><div><div class="section-kicker">RASTREABILIDADE</div><h3 class="icon-title"><i data-lucide="package-search" class="ico"></i>Separações</h3><div class="sub">Veja qual colaborador registrou cada pedido, requisição ou ticket.</div></div><span class="status-pill done">${rows.length} registro(s)</span></div><div class="separation-management-kpis-v24555"><div class="separation-management-kpi-v24555"><small>VIPs</small><b>${counts.vips}</b></div><div class="separation-management-kpi-v24555"><small>Abastecimento</small><b>${counts.abastecimento}</b></div><div class="separation-management-kpi-v24555"><small>Transferências</small><b>${counts.transferencias}</b></div></div><div class="separation-search-row-v24555"><div class="field"><label>Buscar pedido, requisição, ticket ou colaborador</label><input id="sepAdminSearch" value="${sepEsc(window.v24555SepAdminSearch||'')}" oninput="window.v24555SepAdminSearch=this.value;renderSeparationManagementTable()" placeholder="Digite para filtrar..."></div><div class="field"><label>Tipo</label><select id="sepAdminType" onchange="window.v24555SepAdminType=this.value;renderSeparationManagementTable()"><option value="">Todos</option><option value="vips" ${window.v24555SepAdminType==='vips'?'selected':''}>VIPs</option><option value="abastecimento" ${window.v24555SepAdminType==='abastecimento'?'selected':''}>Abastecimento</option><option value="transferencias" ${window.v24555SepAdminType==='transferencias'?'selected':''}>Transferências</option></select></div></div><div id="separationManagementTable" style="margin-top:14px"></div>`;
+    renderSeparationManagementTable();refreshIcons();
+  }
+
+  window.renderSeparationManagementTable=function(){
+    const host=document.getElementById('separationManagementTable');if(!host)return;
+    const term=String(window.v24555SepAdminSearch||'').trim().toLowerCase(),type=window.v24555SepAdminType||'';
+    const rows=(sepRowsAdmin||[]).filter(r=>(!type||r.separation_type===type)&&(!term||String(r.reference_number||'').toLowerCase().includes(term)||String(r.employee_name||'').toLowerCase().includes(term)));
+    if(!rows.length){host.innerHTML='<div class="separation-empty-v24555"><i data-lucide="search-x" class="ico"></i>Nenhuma separação encontrada para os filtros selecionados.</div>';refreshIcons();return;}
+    host.innerHTML=`<div class="tablewrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Número</th><th>Separado por</th><th>Horário</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${brDate(r.work_date)}</td><td><span class="separation-type-badge-v24555">${sepEsc(sepTypeLabel(r.separation_type))}</span></td><td><b>${sepEsc(r.reference_number)}</b></td><td><b>${sepEsc(r.employee_name)}</b><div class="muted">${sepEsc(r.employee_role||'')}</div></td><td>${sepTime(r.created_at)}</td></tr>`).join('')}</tbody></table></div>`;refreshIcons();
+  };
+
+  const baseSetTabV24555=setTab;
+  setTab=function(t,btn){activeTab=t;baseSetTabV24555(t,btn);};
+
+  async function loadSeparationManagementTab(){
+    if(!leaderToken)return;
+    const d=document.getElementById('manageDate')?.value||isoLocal();
+    try{sepRowsAdmin=await rpc('leader_list_separations_v1',{p_token:leaderToken,p_from:d,p_to:d,p_separation_type:null,p_search:null})||[];}catch(e){console.error('V24555_SEP_ADMIN',e);sepRowsAdmin=[];toast('Não foi possível carregar as separações.');}
+    if(activeTab==='separation'){renderSeparationManagement();refreshIcons();}
+  }
+
+  const baseRenderManagementTabsV24555=renderManagementTabs;
+  renderManagementTabs=function(force=false){
+    if(activeTab==='separation'){applyActiveTabState();loadSeparationManagementTab();return;}
+    baseRenderManagementTabsV24555(force);
+  };
+
+
+  // When the page loads, honor a saved Separation page selected before this patch was evaluated.
+  setTimeout(()=>{
+    if((localStorage.getItem('activePage')||'rotina')==='separacao')window.showPage('separacao');
+    else if(document.getElementById('pageSeparacao')?.classList.contains('hidden')){}
+  },0);
+
+  // Management date changes should refresh the Separation tab too.
+  const manageDateEl=document.getElementById('manageDate');
+  if(manageDateEl){
+    const oldChange=manageDateEl.getAttribute('onchange')||'';
+    if(!manageDateEl.dataset.v24555SeparationHook){
+      manageDateEl.addEventListener('change',()=>{if(activeTab==='separation')loadSeparationManagementTab();});
+      manageDateEl.dataset.v24555SeparationHook='1';
+    }
+  }
+
+  loadSepSession();
+  console.info('Gestão do Estoque',V24555,'separação com rastreabilidade por colaborador');
 })();
 </script>
