@@ -5671,18 +5671,20 @@ window.V24531='V24.5.33';</script>
   function sepShortType(t){return SEP_META[t]?.short||t||''}
   function sepAvatar(name){const ini=sepEsc(String(name||'?').slice(0,1).toUpperCase());return `<div class="avatar">${ini}</div>`}
 
+  // A aba Separação tem sessão própria e NÃO deve herdar a pessoa
+  // selecionada na aba Rotina. Assim, ao entrar aqui, o responsável
+  // sempre é escolhido de forma independente.
   function loadSepSession(){
-    try{
-      const raw=sessionStorage.getItem('v245EmployeeAuth');
-      const a=raw?JSON.parse(raw):null;
-      if(a?.token&&a?.employee?.id){sepEmployee={id:String(a.employee.id),name:a.employee.name||'Colaborador',role:a.employee.role||'Equipe de Estoque',token:String(a.token)};return sepEmployee;}
-    }catch(_){}
     try{
       const raw=sessionStorage.getItem(SEP_EMP_KEY);
       const a=raw?JSON.parse(raw):null;
-      if(a?.id)sepEmployee=a;
+      if(a?.token&&a?.id){
+        sepEmployee={id:String(a.id),name:a.name||'Colaborador',role:a.role||'Equipe de Estoque',token:String(a.token)};
+        return sepEmployee;
+      }
     }catch(_){}
-    return sepEmployee;
+    sepEmployee=null;
+    return null;
   }
 
   async function loadSepPeople(){
