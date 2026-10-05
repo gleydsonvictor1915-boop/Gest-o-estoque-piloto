@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.10.02-v24.5.59-separation-independent-entry" />
+<meta name="app-version" content="2026.10.05-v24.5.62-separation-independent-team-v2" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -5713,7 +5713,7 @@ window.V24531='V24.5.33';</script>
 </script>
 \n<script id="v24559-separation-independent">
 (function(){
-  const V24555='V24.5.59';
+  const V24555='V24.5.62';
   const SEP_EMP_KEY='v24555SeparationEmployee';
   let sepEmployee=null;
   let sepType=null;
@@ -5756,9 +5756,22 @@ window.V24531='V24.5.33';</script>
 
   async function loadSepPeople(){
     try{
-      const rows=await rpc('get_day_people_v2',{p_date:isoLocal()});
-      return (Array.isArray(rows)?rows:[]).filter(x=>v24Bool(x.active_today)&&String(x.employee_role||'').toLowerCase()!=='líder de estoque');
-    }catch(e){console.error('V24556_SEP_PEOPLE',e);return [];}
+      // Independente da Rotina e da presença do dia: a Separação sempre mostra
+      // todos os colaboradores ativos da equipe. Novos colaboradores ativos
+      // entram automaticamente porque a lista vem do cadastro do banco.
+      const rows=await rpc('employee_separation_team_v2',{});
+      return Array.isArray(rows)?rows:[];
+    }catch(e){
+      console.error('V24562_SEP_PEOPLE',e);
+      // Compatibilidade caso o cache da API ainda não reconheça a função nova.
+      try{
+        const rows=await rpc('employee_separation_people_v1',{p_date:isoLocal()});
+        return Array.isArray(rows)?rows:[];
+      }catch(e2){
+        console.error('V24562_SEP_PEOPLE_FALLBACK',e2);
+        return [];
+      }
+    }
   }
 
   async function validateSepSession(){
@@ -5795,8 +5808,8 @@ window.V24531='V24.5.33';</script>
     const btn=document.querySelector(`[data-sep-person-id="${CSS.escape(id)}"]`);
     if(btn){btn.disabled=true;btn.classList.add('is-loading');const old=btn.innerHTML;btn.dataset.oldHtml=old;btn.innerHTML='<span class="spinner"></span><span>Validando...</span>';}
     try{
-      const r=await rpc('employee_open_session_v3',{p_employee:id});
-      if(!r?.ok){toast(({employee_not_present:'Somente quem está presente pode registrar a separação.',operation_not_published:'A operação de hoje ainda não foi publicada.',employee_not_found:'Colaborador não encontrado.'})[r?.error]||'Não foi possível validar seu acesso.');return;}
+      const r=await rpc('employee_open_separation_session_v1',{p_employee:id});
+      if(!r?.ok){toast(({employee_not_found:'Colaborador não encontrado.',try_again_later:'Tente novamente em alguns segundos.'})[r?.error]||'Não foi possível selecionar o colaborador.');return;}
       sepEmployee={id:String(r.employee?.id||id),name:r.employee?.name||'Colaborador',role:r.employee?.role||'Equipe de Estoque',token:String(r.token)};
       try{sessionStorage.setItem(SEP_EMP_KEY,JSON.stringify(sepEmployee));}catch(_){}
       const cb=window.v24555PendingSepCallback;window.v24555PendingSepCallback=null;
@@ -5825,10 +5838,10 @@ window.V24531='V24.5.33';</script>
     const session=sepEmployee;
     const people=session?[]:await loadSepPeople();
     const sessionHtml=session?`<div class="separation-session-v24555"><div class="separation-session-main-v24555">${sepAvatar(session.name)}<div><b>${sepEsc(session.name)}</b><small>${sepEsc(session.role||'Equipe de Estoque')}</small></div></div><button class="btn light" type="button" onclick="v24555ChangeSeparationEmployee()"><i data-lucide="users" class="ico"></i>Trocar</button></div>`:'';
-    const peopleHtml=session?'':(people.length?`<div class="separation-people-grid-v24556">${people.map(p=>`<button type="button" class="separation-person-card-v24556" data-sep-person-id="${sepEsc(p.employee_id)}" onclick="v24555SelectSeparationEmployee('${sepEsc(p.employee_id)}')">${sepAvatar(p.employee_name)}<span><b>${sepEsc(p.employee_name)}</b><small>${sepEsc(p.employee_role||'Equipe de Estoque')}</small></span></button>`).join('')}</div><div class="separation-choice-note-v24556">Selecione seu nome. Depois disso, escolha o tipo de separação que vai realizar.</div>`:'<div class="empty-state"><i data-lucide="users" class="ico"></i>Nenhum colaborador da equipe está presente no momento.</div>');
+    const peopleHtml=session?'':(people.length?`<div class="separation-people-grid-v24556">${people.map(p=>`<button type="button" class="separation-person-card-v24556" data-sep-person-id="${sepEsc(p.employee_id)}" onclick="v24555SelectSeparationEmployee('${sepEsc(p.employee_id)}')">${sepAvatar(p.employee_name)}<span><b>${sepEsc(p.employee_name)}</b><small>${sepEsc(p.employee_role||'Equipe de Estoque')} · Disponível para registrar separação</small></span></button>`).join('')}</div><div class="separation-choice-note-v24556">Sua equipe aparece aqui independentemente da aba Rotina. Selecione quem vai realizar a separação e depois escolha o tipo.</div>`:'<div class="empty-state"><i data-lucide="users" class="ico"></i>Nenhum colaborador ativo da equipe está cadastrado no momento.</div>');
     const cards=Object.entries(SEP_META).map(([key,m])=>`<button type="button" class="separation-type-card-v24555 ${session?'':'separation-locked-type-v24556'}" ${session?`onclick="v24555OpenSeparationType('${key}')"`:'disabled'}><span class="sep-icon"><i data-lucide="${m.icon}" class="ico" style="margin:0"></i></span><span><b>${m.label}</b><small>Informe ${m.field.toLowerCase()} e registre quem fez a separação.</small></span></button>`).join('');
     const recent=sepRecent.length?`<div class="separation-current-v24555"><div class="section-head"><div><div class="section-kicker">REGISTROS DE HOJE</div><h3>Minhas separações</h3><div class="sub">Ficam vinculadas ao seu nome e podem ser consultadas pela Gestão.</div></div><span class="status-pill done">${sepRecent.length} registro(s)</span></div><div class="separation-list-v24555">${sepRecent.slice(0,8).map(r=>`<div class="separation-list-row-v24555"><span class="separation-type-badge-v24555">${sepEsc(sepShortType(r.separation_type))}</span><div><b>${sepEsc(r.reference_number)}</b><small>${sepEsc(sepTypeLabel(r.separation_type))}</small></div><small class="separation-list-time">${sepTime(r.created_at)}</small></div>`).join('')}</div></div>`:'';
-    host.innerHTML=`<div class="section-head"><div><div class="section-kicker">1 · IDENTIFICAÇÃO</div><h3>${session?'Quem está usando a aba?':'Quem vai fazer a separação?'}</h3><div class="sub">${session?'Usuário identificado. Você pode trocar o responsável quando necessário.':'Selecione o colaborador que vai realizar a separação.'}</div></div></div>${sessionHtml||peopleHtml}<div style="margin-top:16px"><div class="section-head"><div><div class="section-kicker">2 · TIPO DE SEPARAÇÃO</div><h3>O que você vai separar?</h3><div class="sub">${session?'Escolha uma das opções abaixo.':'Primeiro selecione o colaborador acima.'}</div></div></div><div class="separation-type-grid-v24555">${cards}</div></div>${recent}`;
+    host.innerHTML=`<div class="section-head"><div><div class="section-kicker">1 · IDENTIFICAÇÃO</div><h3>${session?'Quem está usando a aba?':'Quem vai fazer a separação?'}</h3><div class="sub">${session?'Usuário identificado. Você pode trocar o responsável quando necessário.':'Escolha diretamente quem da sua equipe vai realizar a separação.'}</div></div></div>${sessionHtml||peopleHtml}<div style="margin-top:16px"><div class="section-head"><div><div class="section-kicker">2 · TIPO DE SEPARAÇÃO</div><h3>O que você vai separar?</h3><div class="sub">${session?'Escolha uma das opções abaixo.':'Primeiro selecione o colaborador acima.'}</div></div></div><div class="separation-type-grid-v24555">${cards}</div></div>${recent}`;
     refreshIcons();
   }
 
@@ -5955,6 +5968,6 @@ window.V24531='V24.5.33';</script>
     }
   }
 
-  console.info('Gestão do Estoque',V24555,'separação com seleção independente por colaborador');
+  console.info('Gestão do Estoque',V24555,'separação independente da Rotina e da presença diária');
 })();
 </script>
