@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>Gestão do Estoque —</title>
-<meta name="app-version" content="2026.10.02-v24.5.58-separation-independent-entry" />
+<meta name="app-version" content="2026.10.02-v24.5.59-separation-independent-entry" />
 <script>
 (function(){
   function qp(name){var m=new RegExp('(?:^|&amp;|&|\\?)'+name+'=([^&]*)','i').exec(location.search||'');return m?decodeURIComponent(String(m[1]||'').replace(/\+/g,' ')):'';}
@@ -811,6 +811,67 @@ input,select,textarea{max-width:100%}
 .separation-people-grid-v24556{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}.separation-person-card-v24556{border:1px solid var(--line);border-radius:16px;background:#fff;padding:13px 12px;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;transition:.18s;min-height:66px}.separation-person-card-v24556:hover{transform:translateY(-1px);box-shadow:var(--shadow);border-color:#bfd5df}.separation-person-card-v24556 .avatar{width:40px;height:40px;flex:0 0 40px}.separation-person-card-v24556 b{display:block;color:var(--nav);font-size:14px;line-height:1.2}.separation-person-card-v24556 small{display:block;color:var(--muted);margin-top:3px;line-height:1.2}.separation-choice-note-v24556{margin-top:10px;padding:10px 12px;border-radius:12px;background:#f5fafb;color:var(--muted);font-size:12px}.separation-type-card-v24555 b,.separation-type-card-v24555 small{display:block}.separation-type-card-v24555 b{line-height:1.25}.separation-type-card-v24555 small{margin-top:2px}.separation-type-card-v24555 span:last-child{min-width:0}.separation-type-card-v24555{overflow:hidden}.separation-type-card-v24555 .sep-icon{flex:0 0 42px}.separation-locked-type-v24556{opacity:.55;cursor:not-allowed}.separation-locked-type-v24556:hover{transform:none;box-shadow:none;border-color:var(--line)}
 @media(max-width:980px){.separation-people-grid-v24556{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.separation-people-grid-v24556{grid-template-columns:1fr}.separation-type-grid-v24555{grid-template-columns:1fr}.separation-type-card-v24555{min-height:104px;flex-direction:row;align-items:center}.separation-session-v24555{align-items:flex-start}.separation-list-row-v24555{grid-template-columns:1fr;gap:5px}.separation-list-row-v24555 .separation-list-time{justify-self:start}.separation-management-kpis-v24555{grid-template-columns:1fr 1fr}.separation-search-row-v24555{grid-template-columns:1fr}}
+</style>
+
+<style id="v24560-mobile-bottom-nav-final">
+/* V24.5.60 — navegação mobile inferior com as 4 áreas sempre visíveis */
+@media (max-width: 900px){
+  .nav{
+    position:fixed!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100%!important;max-width:none!important;margin:0!important;
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:4px!important;
+    padding:6px max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left))!important;
+    height:auto!important;
+    min-height:66px!important;
+    border-radius:16px 16px 0 0!important;
+    background:rgba(11,74,120,.98)!important;
+    box-shadow:0 -8px 24px rgba(3,31,54,.20)!important;
+    z-index:1000!important;
+  }
+  .nav button{
+    min-width:0!important;
+    width:100%!important;
+    min-height:52px!important;
+    height:52px!important;
+    padding:5px 2px!important;
+    margin:0!important;
+    border-radius:11px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:3px!important;
+    font-size:10px!important;
+    line-height:1!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+  .nav button .ico{
+    width:19px!important;height:19px!important;margin:0!important;
+    flex:0 0 auto!important;
+  }
+  .nav button.active{
+    background:rgba(255,255,255,.13)!important;
+    box-shadow:none!important;
+    color:#fff!important;
+  }
+  .main{
+    padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;
+  }
+  .toast{
+    bottom:calc(74px + env(safe-area-inset-bottom))!important;
+  }
+}
+@media (max-width: 360px){
+  .nav{gap:2px!important;padding-left:max(4px,env(safe-area-inset-left))!important;padding-right:max(4px,env(safe-area-inset-right))!important}
+  .nav button{font-size:9px!important;min-height:50px!important;height:50px!important}
+  .nav button .ico{width:18px!important;height:18px!important}
+  .main{padding-bottom:calc(74px + env(safe-area-inset-bottom))!important}
+}
 </style>
 </head>
 <body>
@@ -5650,9 +5711,9 @@ window.V24531='V24.5.33';</script>
   window.v24545SendSkip=window.v24549SendSkip;
 })();
 </script>
-\n<script id="v24558-separation-independent">
+\n<script id="v24559-separation-independent">
 (function(){
-  const V24555='V24.5.58';
+  const V24555='V24.5.59';
   const SEP_EMP_KEY='v24555SeparationEmployee';
   let sepEmployee=null;
   let sepType=null;
@@ -5759,7 +5820,8 @@ window.V24531='V24.5.33';</script>
 
   async function renderSepPage(){
     const host=document.getElementById('separationApp');if(!host)return;
-    loadSepSession();
+    // Nunca recarrega a pessoa da sessionStorage ao simplesmente renderizar a aba.
+    // A entrada da aba deve sempre começar permitindo escolher um colaborador.
     const session=sepEmployee;
     const people=session?[]:await loadSepPeople();
     const sessionHtml=session?`<div class="separation-session-v24555"><div class="separation-session-main-v24555">${sepAvatar(session.name)}<div><b>${sepEsc(session.name)}</b><small>${sepEsc(session.role||'Equipe de Estoque')}</small></div></div><button class="btn light" type="button" onclick="v24555ChangeSeparationEmployee()"><i data-lucide="users" class="ico"></i>Trocar</button></div>`:'';
@@ -5808,7 +5870,12 @@ window.V24531='V24.5.33';</script>
     finally{if(btn){btn.disabled=false;btn.innerHTML='<i data-lucide="save" class="ico"></i>Registrar separação';refreshIcons();}}
   };
 
-  window.renderSeparationPage=async function(){await loadSepRecent();renderSepPage();};
+  window.renderSeparationPage=async function(){
+    // Ao entrar na aba sem responsável selecionado, NÃO recupera uma sessão antiga.
+    // Depois que um colaborador for escolhido, carregamos apenas os registros dele.
+    if(sepEmployee) await loadSepRecent();
+    await renderSepPage();
+  };
 
   // Final showPage wrapper: adds the new page without breaking the existing routine/management flows.
   const baseShowPageV24555=showPage;
